@@ -1,0 +1,145 @@
+import opentype from 'opentype.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+
+// ── Clover icon path (from Hero.jsx) ──
+const CLOVER_PATH = "M1675.37 130.687C1796.88 117.897 1895.22 172.947 1991.32 238.845C2022.4 260.158 2054.23 284.254 2091.96 291.93C2155.16 304.787 2213.46 255.503 2262.94 223.089C2358.1 160.754 2474.56 118.923 2589.05 143.485C2697.07 166.658 2783.81 234.884 2843.17 326.636C2907.12 425.499 2940.04 545.104 2924.51 662.718C2900.3 846.207 2794.55 986.749 2662.3 1108.52C2602.72 1163.38 2540.69 1214.11 2485.77 1274.04C2406.37 1360.65 2343.12 1470.81 2318.75 1586.25C2312.12 1617.66 2300.48 1677.64 2320.62 1706.28C2325.47 1713.18 2332.52 1716.94 2340.8 1718.13C2372.79 1722.72 2416.25 1697.19 2442.75 1681.9C2569.76 1608.63 2662.9 1482.01 2727.41 1353C2750.33 1307.17 2769.79 1259.53 2791.29 1213.01C2852.93 1079.63 2928.82 957.434 3051.02 871.227C3163.2 792.085 3296.19 758.028 3432.2 782.454C3546.06 802.9 3654.95 860.22 3721.61 956.803C3788.79 1054.12 3802.24 1173.28 3783.09 1287.76C3777.41 1321.7 3767.48 1354.77 3761.53 1388.66C3742.01 1500.05 3795.17 1525.61 3869.08 1591.66C3902.39 1621.56 3932.13 1655.22 3957.7 1691.98C4018.99 1778.36 4043.12 1885.69 4024.69 1989.99C4001.92 2114.74 3918.31 2223.3 3814.83 2293.63C3739.06 2344.41 3651.46 2374.78 3560.52 2381.79C3398.96 2394.15 3246.47 2337.22 3107.03 2261.58C2997.8 2202.33 2889.54 2142.52 2765.28 2121.78C2676.83 2107.02 2560.88 2094.25 2479.57 2138.85C2453.18 2153.31 2472.3 2190.25 2486.12 2206.59C2576.37 2313.35 2725.9 2383.59 2861.78 2408.48C2956.98 2422.24 3053.21 2431.04 3149.02 2440.97C3461.48 2473.34 3760.05 2729.39 3708.05 3072.46C3696.96 3141.47 3667.6 3206.25 3623.01 3260.08C3546.91 3351.75 3440.69 3395.71 3325.01 3412.72C3267 3421.24 3190.6 3414.58 3145.76 3455.06C3111.05 3486.39 3093.8 3539.56 3075.63 3582.7C3040.15 3669.26 2986.19 3747.36 2909.08 3802.18C2695.81 3953.8 2404.92 3856.63 2262.11 3654.94C2148.85 3494.97 2129.25 3307.34 2166.4 3119.48C2180.61 3047.6 2200.09 2978.2 2211.98 2906.46C2213.7 2893.68 2215.74 2880.93 2217.24 2867.92C2232.87 2732.24 2207.57 2561.56 2126.73 2449.34C2065.73 2364.67 2000.77 2534.81 1987.1 2577.12C1946.6 2702.52 1943.07 2834.44 1972.2 2962.89C2014.43 3135.25 2047.86 3289.75 1999.23 3465.19C1927.16 3725.19 1673.22 3918.37 1399.03 3856.2C1245.7 3821.43 1131.65 3683.38 1083.11 3539.26C1045.41 3427.37 1003.68 3413.29 891.422 3404.82C650.411 3386.63 452.42 3228.09 462.585 2971.01C466.718 2853.75 510.216 2741.31 586.066 2651.79C715.521 2501.12 893.472 2440.68 1085.54 2421.66C1167.23 2413.57 1255.56 2410.01 1335.81 2395.3C1453.31 2372.5 1570.54 2318.17 1659.66 2237.88C1686.21 2213.97 1744.2 2155.84 1696.43 2125.88C1671.85 2110.46 1621.79 2102.61 1593.48 2100.32C1461.57 2089.67 1328.94 2120.81 1209.34 2175.53C1157.83 2199.1 1108.85 2228.2 1058.64 2254.31C947.2 2312.63 825.607 2360.11 698.851 2365.82C550.972 2372.02 408.288 2325.78 299.806 2222.52C193.209 2121.05 129.407 1980.75 156.801 1831.72C174.793 1733.84 229.142 1651.22 301.583 1584.14C333.372 1554.71 369.44 1531.09 400.111 1500.49C456.629 1444.11 439.311 1369.75 425.255 1300.08C405.974 1205.06 407.497 1108.34 442.136 1017.14C506.363 848.027 675.469 765.759 849.15 759.782C1117.63 750.544 1317.62 969.471 1408.56 1201.87C1455.06 1322.99 1505.66 1439.9 1590.72 1539.67C1646.97 1607.04 1717.78 1668.7 1799.07 1703.3C1808.91 1707.49 1827.89 1711.83 1838.39 1712.3C1887.81 1714.53 1874.11 1625.04 1869.12 1595.86C1847.81 1471.16 1786.79 1354.89 1704.42 1259.64C1651.32 1198.24 1590.59 1145.34 1532.71 1088.67C1416.77 975.397 1320.54 833.934 1298.23 669.994C1280.37 536.269 1316.85 400.962 1399.53 294.352C1470.9 200.592 1557.73 146.294 1675.37 130.687Z";
+
+// ── Compute actual bounding box of a cubic bezier path ──
+function cubicBezierBBox(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+  let minX = Math.min(p0x, p3x), maxX = Math.max(p0x, p3x);
+  let minY = Math.min(p0y, p3y), maxY = Math.max(p0y, p3y);
+
+  // Find t values where derivative = 0 for each axis
+  for (const [a, b, c, d, getMin, getMax] of [
+    [p0x, p1x, p2x, p3x, () => minX, () => maxX],
+    [p0y, p1y, p2y, p3y, () => minY, () => maxY],
+  ]) {
+    const A = -3*a + 9*b - 9*c + 3*d;
+    const B = 6*a - 12*b + 6*c;
+    const C = -3*a + 3*b;
+    const disc = B*B - 4*A*C;
+    const tValues = [];
+    if (Math.abs(A) < 1e-12) {
+      if (Math.abs(B) > 1e-12) tValues.push(-C / B);
+    } else if (disc >= 0) {
+      const sq = Math.sqrt(disc);
+      tValues.push((-B + sq) / (2*A));
+      tValues.push((-B - sq) / (2*A));
+    }
+    for (const t of tValues) {
+      if (t > 0 && t < 1) {
+        const val = (1-t)**3*a + 3*(1-t)**2*t*b + 3*(1-t)*t**2*c + t**3*d;
+        if (a === p0x) { minX = Math.min(minX, val); maxX = Math.max(maxX, val); }
+        else { minY = Math.min(minY, val); maxY = Math.max(maxY, val); }
+      }
+    }
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+function computePathBBox(d) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const nums = d.match(/[-+]?[0-9]*\.?[0-9]+/g).map(Number);
+  let i = 0, cx = 0, cy = 0;
+  const chars = d.match(/[MCZmcz]/g) || [];
+  let ci = 0;
+
+  // Re-parse properly: walk through the path string
+  const tokens = d.match(/[MCZ]|[-+]?[0-9]*\.?[0-9]+/gi);
+  let cmd = '';
+  let args = [];
+  cx = 0; cy = 0;
+
+  function flush() {
+    if (!cmd) return;
+    if (cmd === 'M') {
+      cx = args[0]; cy = args[1];
+      minX = Math.min(minX, cx); maxX = Math.max(maxX, cx);
+      minY = Math.min(minY, cy); maxY = Math.max(maxY, cy);
+    } else if (cmd === 'C') {
+      for (let j = 0; j < args.length; j += 6) {
+        const bb = cubicBezierBBox(cx, cy, args[j], args[j+1], args[j+2], args[j+3], args[j+4], args[j+5]);
+        minX = Math.min(minX, bb.minX); maxX = Math.max(maxX, bb.maxX);
+        minY = Math.min(minY, bb.minY); maxY = Math.max(maxY, bb.maxY);
+        cx = args[j+4]; cy = args[j+5];
+      }
+    }
+    args = [];
+  }
+
+  for (const tok of tokens) {
+    if (/^[MCZ]$/i.test(tok)) {
+      flush();
+      cmd = tok;
+    } else {
+      args.push(Number(tok));
+    }
+  }
+  flush();
+  return { minX, minY, maxX, maxY };
+}
+
+// ── Load font & generate text path ──
+const fontPath = path.join(ROOT, 'public/fonts/SpaceGrotesk-Bold.ttf');
+const font = opentype.loadSync(fontPath);
+
+const fontSize = 200;
+const textPath = font.getPath('clover', 0, 0, fontSize);
+const textBBox = textPath.getBoundingBox();
+const textWidth = textBBox.x2 - textBBox.x1;
+const textHeight = textBBox.y2 - textBBox.y1;
+
+// Compute the actual icon bounding box from bezier curves
+const iconBBox = computePathBBox(CLOVER_PATH);
+const iconContentW = iconBBox.maxX - iconBBox.minX;
+const iconContentH = iconBBox.maxY - iconBBox.minY;
+
+console.log(`  Icon actual bbox: (${iconBBox.minX.toFixed(1)},${iconBBox.minY.toFixed(1)})→(${iconBBox.maxX.toFixed(1)},${iconBBox.maxY.toFixed(1)})`);
+console.log(`  Icon content: ${iconContentW.toFixed(1)}×${iconContentH.toFixed(1)}`);
+console.log(`  Text bbox: (${textBBox.x1.toFixed(1)},${textBBox.y1.toFixed(1)})→(${textBBox.x2.toFixed(1)},${textBBox.y2.toFixed(1)})`);
+console.log(`  Text content: ${textWidth.toFixed(1)}×${textHeight.toFixed(1)}`);
+
+// Use a nested <svg> for the icon — the browser handles viewBox scaling/clipping
+// This avoids manual transform math entirely
+const iconSize = textHeight; // icon height = text height
+const iconW = iconSize * (iconContentW / iconContentH); // maintain aspect ratio
+const gap = textHeight * 0.25;
+const padding = 2;
+
+const totalWidth = iconW + gap + textWidth;
+const totalHeight = iconSize;
+const svgWidth = totalWidth + padding * 2;
+const svgHeight = totalHeight + padding * 2;
+
+// Icon: nested SVG positioned at left, vertically centered
+const iconX = padding;
+const iconY = padding + (totalHeight - iconSize) / 2;
+
+// Text: positioned after icon + gap, vertically centered
+const textX = padding + iconW + gap - textBBox.x1;
+const textY = padding + (totalHeight - textHeight) / 2 - textBBox.y1;
+
+const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgWidth.toFixed(1)} ${svgHeight.toFixed(1)}" fill="none">
+  <g fill="#FFFFFF">
+    <svg x="${iconX}" y="${iconY}" width="${iconW.toFixed(1)}" height="${iconSize.toFixed(1)}" viewBox="${iconBBox.minX.toFixed(1)} ${iconBBox.minY.toFixed(1)} ${iconContentW.toFixed(1)} ${iconContentH.toFixed(1)}">
+      <path fill="#FFFFFF" d="${CLOVER_PATH}"/>
+    </svg>
+    <g transform="translate(${textX.toFixed(2)}, ${textY.toFixed(2)})">
+      <path d="${textPath.toPathData(2)}"/>
+    </g>
+  </g>
+</svg>
+`;
+
+const outPath = path.join(ROOT, 'public/img/clover-logo-white.svg');
+fs.writeFileSync(outPath, svg, 'utf-8');
+console.log(`\n✓ Wrote ${outPath}`);
+console.log(`  SVG: ${svgWidth.toFixed(1)} × ${svgHeight.toFixed(1)}`);
+console.log(`  Icon: ${iconW.toFixed(1)}×${iconSize.toFixed(1)} at (${iconX},${iconY})`);
+console.log(`  Text at (${textX.toFixed(2)}, ${textY.toFixed(2)})`);

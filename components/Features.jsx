@@ -374,7 +374,7 @@ const Features = () => (
 
         <BentoTilt className="bento-tilt_2 bg-black">
           <BentoCard
-            src="/videos/aethon.webm"
+            src="/videos/aethon.mp4"
             videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
             title={
               <img
@@ -392,7 +392,7 @@ const Features = () => (
 
       <BentoTilt className="border-hsla relative mt-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh] bg-black">
         <BentoCard
-          src="/videos/rivex.webm"
+          src="/videos/rivex.mp4"
           videoClassName="!object-contain scale-[1.1]"
           title={
             <img

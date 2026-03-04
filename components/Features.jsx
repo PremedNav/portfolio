@@ -2,9 +2,14 @@
 
 import { useState, useRef } from "react";
 import dynamic from "next/dynamic";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/all";
+import { useGSAP } from "@gsap/react";
 import { TiLocationArrow } from "react-icons/ti";
 import ZoovAnimation from "./ZoovAnimation";
 import CloverAnimation from "./CloverAnimation";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const RiveAnimation = dynamic(() => import("./RiveAnimation"), { ssr: false });
 
@@ -190,20 +195,78 @@ ${L(64)}    );
 ${L(65)}  }
 ${L(66)}}`;
 
-const Features = () => (
-  <section id="projects" className="bg-black pb-52">
+const Features = () => {
+  const sectionRef = useRef(null);
+
+  useGSAP(() => {
+    // Heading: split each character and animate individually
+    sectionRef.current.querySelectorAll('.projects-heading').forEach((el) => {
+      const text = el.textContent;
+      el.textContent = '';
+      text.split('').forEach((char) => {
+        const span = document.createElement('span');
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        span.style.display = 'inline-block';
+        span.style.opacity = '0';
+        span.className = 'projects-char';
+        el.appendChild(span);
+      });
+    });
+
+    gsap.fromTo(
+      '.projects-char',
+      { opacity: 0, y: 40, rotateX: -90, filter: 'blur(8px)' },
+      {
+        opacity: 1,
+        y: 0,
+        rotateX: 0,
+        filter: 'blur(0px)',
+        duration: 0.3,
+        stagger: 0.008,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 75%',
+          toggleActions: 'restart none none reset',
+        },
+      }
+    );
+
+    // Bento cards fade up on scroll
+    const cards = sectionRef.current.querySelectorAll('.bento-card-anim');
+    cards.forEach((card) => {
+      gsap.fromTo(
+        card,
+        { y: 60, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'restart none none reset',
+          },
+        }
+      );
+    });
+  }, { scope: sectionRef });
+
+  return (
+  <section id="projects" className="bg-black pb-52" ref={sectionRef}>
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
-        <p className="font-circular-web text-lg text-blue-50">
+        <p className="projects-heading font-circular-web text-lg text-blue-50">
           What I'm Building
         </p>
-        <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-          A collection of projects spanning medical AI, creative web experiences,
-          and ML infrastructure.each one solving a different hard problem.
+        <p className="projects-heading max-w-md font-circular-web text-lg text-blue-50 opacity-50">
+          A collection of projects spanning medical AI, ML infrastructure,
+          edtech, and industrial intelligence. Each one solving a different hard problem.
         </p>
       </div>
 
-      <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
+      <BentoTilt className="bento-card-anim border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
         <BentoCard
           riveSrc="/rive/hero_section.riv"
           title={
@@ -214,7 +277,7 @@ const Features = () => (
               style={{ marginTop: '-60px', marginBottom: '-60px', marginLeft: '-35px' }}
             />
           }
-          description="A medical AI study platform. Making pre-med prep smarter with adaptive learning and AI-powered tools."
+          description="A study platform for students to study harder, smarter, deeper, and faster — maximizing information gained in the shortest time using AI and a suite of tools."
           ribbon="Under Construction"
           link="https://studyur.com"
           isComingSoon
@@ -222,7 +285,7 @@ const Features = () => (
       </BentoTilt>
 
       <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
           <BentoCard
             title={
               <img
@@ -231,7 +294,7 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="A personal AI assistant. Embedded right here on this site, built to chat about my work and interests."
+            description="A proprietary 12-billion parameter AI model. Not available to the public — built on the belief that LLMs aren't the future, and other AI models will benefit humankind more."
             ribbon="Not Public"
             isComingSoon
           >
@@ -239,7 +302,7 @@ const Features = () => (
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
           <BentoCard
             title={
               <img
@@ -248,7 +311,7 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="A creative web experience. Pushing the boundaries of interactive design and animation."
+            description="A proprietary medical AI transcription platform to help healthcare providers spend more time with patients and less on paperwork. Discontinued after Doximity launched a free AI scribe."
             ribbon="Discontinued"
             isComingSoon
           >
@@ -256,9 +319,10 @@ const Features = () => (
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0">
           <BentoCard
             src="/videos/feature-4.mp4"
+            videoClassName="translate-x-[10%]"
             title={
               <img
                 src="/img/premeder-logo-white.svg"
@@ -266,14 +330,14 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="A pre-med companion app. Tools and resources built for the grind of getting into medical school."
+            description="A pre-health web app for tracking applications, accessing resources, and preparing for every step of the admissions process."
             ribbon="Remodeling"
             link="https://premeder.com"
             isComingSoon
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2">
+        <BentoTilt className="bento-card-anim bento-tilt_2">
           <div className="flex size-full flex-col justify-between bg-yellow-300 p-5">
             <h1 className="bento-title special-font max-w-64 text-black">
               M<b>o</b>re co<b>m</b>ing s<b>o</b>on.
@@ -283,9 +347,10 @@ const Features = () => (
           </div>
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2">
+        <BentoTilt className="bento-card-anim bento-tilt_2">
           <BentoCard
             src="/videos/feature-5.mp4"
+            videoClassName="translate-x-[10%]"
             title={
               <img
                 src="/img/pangroup-logo.svg"
@@ -302,7 +367,7 @@ const Features = () => (
 
       {/* Second project grid */}
       <div className="mt-7 grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
           <BentoCard
             src="/videos/trovex.mp4"
             videoClassName="!object-contain scale-[1.3]"
@@ -313,14 +378,14 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="A blazing-fast semantic search engine. Indexing and retrieving across massive unstructured datasets in real time."
+            description="A proprietary AI-powered search for your files, support chat, receptionist, and more. Intelligent retrieval across your entire workflow."
             ribbon="Under Development"
             link="https://trovex.io"
             isComingSoon
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
           <BentoCard
             title={
               <img
@@ -339,7 +404,7 @@ const Features = () => (
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0">
           <BentoCard
             src="/videos/histia.mp4"
             videoClassName="!left-auto !top-auto !right-4 !bottom-4 !w-[65%] !h-[65%] !object-contain"
@@ -350,13 +415,13 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="An intelligent medical history system. Structured patient timelines powered by NLP and clinical reasoning."
+            description="A proprietary Whole-Slide Imaging platform powered by AI. Automated labeling, annotation, and analysis of whole slides for faster, smarter pathology."
             ribbon="Complete"
             isComingSoon
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2">
+        <BentoTilt className="bento-card-anim bento-tilt_2">
           <BentoCard
             src="/videos/topographify.mp4"
             title={
@@ -366,13 +431,13 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="High-resolution terrain mapping. Real-time 3D topographic generation from satellite and LiDAR data."
+            description="Proprietary high-resolution terrain mapping and analysis. Real-time 3D topographic generation from satellite and LiDAR data."
             ribbon="Complete"
             isComingSoon
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2 bg-black">
+        <BentoTilt className="bento-card-anim bento-tilt_2 bg-black">
           <BentoCard
             src="/videos/aethon.mp4"
             videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
@@ -383,14 +448,14 @@ const Features = () => (
                 className="h-12 md:h-16 w-auto pointer-events-none"
               />
             }
-            description="An autonomous agent framework. Multi-step reasoning, tool use, and memory for AI systems that actually get things done."
+            description="A proprietary AI model trained on biochemical processes and pathways, working to discover novel biochemical mechanisms across eukaryotes, prokaryotes, and archaea."
             ribbon="Complete"
             isComingSoon
           />
         </BentoTilt>
       </div>
 
-      <BentoTilt className="border-hsla relative mt-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh] bg-black">
+      <BentoTilt className="bento-card-anim border-hsla relative mt-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh] bg-black">
         <BentoCard
           src="/videos/rivex.mp4"
           videoClassName="!object-contain scale-[1.1]"
@@ -401,13 +466,14 @@ const Features = () => (
               className="h-12 md:h-16 w-auto pointer-events-none"
             />
           }
-          description="A post-quantum cryptography toolkit. Lattice-based encryption, zero-knowledge proofs, and hardened key exchange for the next era of security."
+          description="A proprietary AI-powered visual inspection platform. Sensor and imaging models that detect issues in robotic and packing machines to prevent downtime before it happens."
           ribbon="Complete"
           isComingSoon
         />
       </BentoTilt>
     </div>
   </section>
-);
+  );
+};
 
 export default Features;

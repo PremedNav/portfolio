@@ -8,7 +8,7 @@ import { TiLocationArrow } from "react-icons/ti";
 
 import Button from "./Button";
 
-const navItems = ["Projects", "About", "Story", "Contact"];
+const navItems = ["Projects", "Contact", "Recommendation Letter"];
 
 const NavBar = () => {
   // State for toggling audio and visual indicator
@@ -150,7 +150,7 @@ const NavBar = () => {
       <header className="absolute top-1/2 w-full -translate-y-1/2">
         <nav className="flex size-full items-center justify-between p-4">
           {/* Logo */}
-          <div ref={logoRef} className="nav-logo relative cursor-pointer" onMouseEnter={handleLogoEnter} onMouseLeave={handleLogoLeave}>
+          <a href="/" ref={logoRef} className="nav-logo relative cursor-pointer" onMouseEnter={handleLogoEnter} onMouseLeave={handleLogoLeave}>
             <svg className="nav-logo-icon" xmlns="http://www.w3.org/2000/svg" height="29" viewBox="250 1300 800 700" fill="none">
               <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0s' }} d="M512.24 1564.06C530 1574.9 574.581 1611.12 592.507 1625.08L748.821 1746.89L889.945 1855.92C909.669 1871.18 947.692 1898.97 964.116 1915.04C949.944 1919.73 938.55 1924.51 924.907 1930.19C897.435 1942.41 870.983 1952.59 842.648 1963.53C733.978 1881.03 627.579 1794.6 518.336 1713.03C518.41 1664.72 513.29 1613.16 512.24 1564.06Z" />
               <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0.1s' }} d="M471.978 1334.04C482.356 1339.12 540.027 1385.34 552.6 1395.05L699.421 1508.05C730.927 1532.41 765.217 1560.36 797.867 1583.28C800.833 1633.78 804.26 1684.26 808.15 1734.72C787.56 1719.87 768.809 1704.02 747.979 1689.09L479.055 1480.76C436.791 1448.15 392.158 1414.75 351.195 1381.37C391.357 1365.08 431.715 1350.04 471.978 1334.04Z" />
@@ -174,7 +174,7 @@ const NavBar = () => {
               <path className="nav-wordmark-rest" d="M3417.56 1738.45C3420.54 1740.72 3421.38 1781.8 3422.95 1789.88C3441.75 1806.48 3462.51 1831.79 3490.28 1834.48C3527.52 1838.08 3563.41 1842.7 3595.39 1826.16C3594.97 1849.91 3594.88 1873.65 3595.13 1897.39C3575.27 1915.79 3555.81 1935.81 3536.77 1954.86L3500.19 1954.82C3475.55 1954.84 3450.91 1954.55 3426.27 1953.94C3418.27 1948.74 3410.6 1943.22 3403.29 1937.4C3376.09 1915.77 3324.5 1872.98 3309.76 1844.46C3305.3 1835.83 3305.69 1815.14 3305.61 1805.27C3343.57 1783.71 3380.9 1761.43 3417.56 1738.45Z" />
               <path className="nav-wordmark-rest" d="M3740.89 1364.44C3746.55 1372.58 3743.86 1787.45 3743.16 1836.15C3735.74 1843.21 3726.65 1850.99 3718.66 1857.66C3681.52 1888.7 3647.47 1924.56 3609.1 1954.36L3584.6 1954.63L3583.22 1952.09C3596.72 1935.58 3610.8 1924.13 3625.09 1908.51C3627.31 1859.85 3624.27 1803.05 3623.89 1754.11L3623.63 1484.45C3659.34 1445.38 3703.46 1403.54 3740.89 1364.44Z" />
             </svg>
-          </div>
+          </a>
 
           {/* Navigation Links and Audio Button */}
           <div className="flex h-full items-center">
@@ -182,7 +182,7 @@ const NavBar = () => {
               {navItems.map((item, index) => (
                 <a
                   key={index}
-                  href={`#${item.toLowerCase()}`}
+                  href={item === 'Recommendation Letter' ? '/recommendation' : `#${item.toLowerCase()}`}
                   className="nav-hover-btn"
                 >
                   {item}

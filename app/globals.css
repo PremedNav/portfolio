@@ -16,7 +16,7 @@
 body {
   width: 100dvw;
   overflow-x: hidden;
-  background-color: #dfdff0;
+  background-color: #000000;
   font-family: "General Sans", sans-serif;
 }
 
@@ -111,8 +111,9 @@ body {
 
   .animated-word {
     @apply special-font font-fk-screamer font-black opacity-0;
-    transform: translate3d(10px, 51px, -60px) rotateY(60deg) rotateX(-40deg);
-    transform-origin: 50% 50% -150px !important;
+    transform: translate3d(0px, 80px, -200px) rotateX(75deg) rotateZ(-5deg) scale(0.7);
+    transform-origin: 50% 100% 0px !important;
+    filter: blur(6px);
     will-change: opacity, transform;
   }
 
@@ -418,4 +419,24 @@ body {
     0 0 22px rgba(255, 255, 255, 0.45),
     0 0 44px rgba(255, 255, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Footer — outlined name text */
+.footer-name-outlined {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px white;
+  paint-order: stroke fill;
+}
+
+@media (min-width: 768px) {
+  .footer-name-outlined {
+    -webkit-text-stroke-width: 3px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .footer-name-outlined {
+    -webkit-text-stroke-width: 4px;
+  }
 }

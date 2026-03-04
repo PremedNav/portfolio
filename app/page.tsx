@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect } from "react";
-import About from "@/components/About";
 import Hero from "@/components/Hero";
 import NavBar from "@/components/Navbar";
 import Features from "@/components/Features";
-import Story from "@/components/Story";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -14,22 +12,27 @@ export default function Home() {
     let lenis: { destroy: () => void; raf: (t: number) => void } | null = null;
     let rafId = 0;
 
-    import('lenis').then((mod) => {
-      const Lenis = mod.default;
-      lenis = new Lenis({
-        duration: 1.2,
-        easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
-        smoothWheel: true,
-      });
+    function initLenis() {
+      import('lenis').then((mod) => {
+        const Lenis = mod.default;
+        lenis = new Lenis({
+          duration: 1.2,
+          easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+          smoothWheel: true,
+        });
 
-      function raf(time: number) {
-        lenis!.raf(time);
+        function raf(time: number) {
+          lenis!.raf(time);
+          rafId = requestAnimationFrame(raf);
+        }
         rafId = requestAnimationFrame(raf);
-      }
-      rafId = requestAnimationFrame(raf);
-    });
+      });
+    }
+
+    window.addEventListener('hero-ready', initLenis, { once: true });
 
     return () => {
+      window.removeEventListener('hero-ready', initLenis);
       cancelAnimationFrame(rafId);
       if (lenis) lenis.destroy();
     };
@@ -39,9 +42,7 @@ export default function Home() {
     <main className="relative min-h-screen w-screen overflow-x-hidden">
       <NavBar />
       <Hero />
-      <About />
       <Features />
-      <Story />
       <Contact />
       <Footer />
     </main>

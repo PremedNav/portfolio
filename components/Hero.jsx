@@ -202,6 +202,16 @@ const Hero = () => {
     };
   }, []);
 
+  // Lock scrolling during the landing animation
+  useEffect(() => {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // Phase 2: when loading finishes → kill pulse, exit
   useEffect(() => {
     if (loading) return;
@@ -222,7 +232,14 @@ const Hero = () => {
         scale: 0.6,
       });
 
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      const tl = gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        onComplete: () => {
+          document.documentElement.style.overflow = '';
+          document.body.style.overflow = '';
+          window.dispatchEvent(new Event('hero-ready'));
+        },
+      });
 
       // Loader fades while video frame starts expanding — crossfade
       tl.to(loader, {

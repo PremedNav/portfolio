@@ -50,7 +50,7 @@ export const BentoTilt = ({ children, className = "" }) => {
   );
 };
 
-export const BentoCard = ({ src, riveSrc, title, description, isComingSoon, ribbon, link, videoClassName, children }) => {
+export const BentoCard = ({ src = null, riveSrc = null, title, description, isComingSoon = false, ribbon = null, link = null, videoClassName = '', children = null }) => {
   const Wrapper = link ? 'a' : 'div';
   const wrapperProps = link ? { href: link, target: '_blank', rel: 'noopener noreferrer' } : {};
 

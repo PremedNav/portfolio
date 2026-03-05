@@ -39,6 +39,19 @@ const CloverIcon = ({ size = 20, loading = false }) => (
   </svg>
 );
 
+const LOGO_GROUPS = [
+  [
+    { src: '/logos/openai.svg', alt: 'OpenAI' },
+    { src: '/logos/anthropic.svg', alt: 'Anthropic' },
+    { src: '/logos/nasa.svg', alt: 'NASA' },
+  ],
+  [
+    { src: '/logos/xai.svg', alt: 'xAI' },
+    { src: '/logos/spacex.svg', alt: 'SpaceX' },
+    { src: '/logos/tesla.svg', alt: 'Tesla' },
+  ],
+];
+
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(1);
   const [hasClicked, setHasClicked] = useState(false);
@@ -56,6 +69,7 @@ const Hero = () => {
   const chatRef = useRef(null);
   const chatMessagesRef = useRef(null);
   const pillRef = useRef(null);
+  const logoContainerRef = useRef(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -295,6 +309,45 @@ const Hero = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [chatOpen]);
 
+  // Logo group crossfade — waits for hero intro
+  useEffect(() => {
+    const container = logoContainerRef.current;
+    if (!container) return;
+    const groups = container.querySelectorAll('.logo-group');
+    if (groups.length < 2) return;
+
+    let current = 0;
+    let interval;
+
+    function startCycling() {
+      interval = setInterval(() => {
+        const prev = current;
+        current = (current + 1) % groups.length;
+
+        gsap.to(groups[prev], {
+          opacity: 0,
+          duration: 1,
+          ease: 'sine.inOut',
+          overwrite: true,
+        });
+        gsap.to(groups[current], {
+          opacity: 1,
+          duration: 1,
+          ease: 'sine.inOut',
+          overwrite: true,
+        });
+      }, 4000);
+    }
+
+    const onReady = () => setTimeout(startCycling, 3000);
+    window.addEventListener('hero-ready', onReady);
+
+    return () => {
+      window.removeEventListener('hero-ready', onReady);
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
   const handleMiniVdClick = () => {
     setHasClicked(true);
 
@@ -430,19 +483,22 @@ const Hero = () => {
           <p className="mb-3 text-right text-[10px] font-medium uppercase tracking-[0.25em] text-white/40">
             Previously optimized systems for
           </p>
-          <div className="flex items-center gap-4 sm:gap-6">
-            {[
-              { src: '/logos/openai.svg', alt: 'OpenAI' },
-              { src: '/logos/anthropic.svg', alt: 'Anthropic' },
-              { src: '/logos/nasa.svg', alt: 'NASA' },
-              { src: '/logos/xai.svg', alt: 'xAI' },
-            ].map((logo) => (
-              <img
-                key={logo.alt}
-                src={logo.src}
-                alt={logo.alt}
-                className="h-3 sm:h-5 w-auto shrink-0 opacity-50"
-              />
+          <div ref={logoContainerRef} className="relative">
+            {LOGO_GROUPS.map((group, gi) => (
+              <div
+                key={gi}
+                className={`logo-group flex items-center justify-end gap-4 sm:gap-6${gi > 0 ? ' absolute top-0 right-0' : ''}`}
+                style={{ opacity: gi === 0 ? 1 : 0, willChange: 'opacity' }}
+              >
+                {group.map((logo) => (
+                  <img
+                    key={logo.alt}
+                    src={logo.src}
+                    alt={logo.alt}
+                    className="h-3 sm:h-5 w-auto shrink-0 opacity-50"
+                  />
+                ))}
+              </div>
             ))}
           </div>
         </div>

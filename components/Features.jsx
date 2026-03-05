@@ -94,7 +94,7 @@ export const BentoCard = ({ src, riveSrc, title, description, isComingSoon, ribb
           </div>
         </div>
       )}
-      <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
+      <div className="relative z-10 flex size-full flex-col justify-between p-5 text-white">
         <div>
           <h1 className="bento-title special-font">{title}</h1>
           {description && (
@@ -127,9 +127,9 @@ export const BentoCard = ({ src, riveSrc, title, description, isComingSoon, ribb
   );
 };
 
-const L = (n) => `<span style="user-select:none" class="text-white/20">${String(n).padStart(2,' ')}  </span>`;
-const synthrCodeHTML = `${L(1)}<span class="text-cyan-400">use</span> <span class="text-teal-300">std::tensor</span>::{<span class="text-teal-300">Tensor</span>, <span class="text-teal-300">SparseMask</span>, <span class="text-teal-300">RotaryEmbed</span>};
-${L(2)}<span class="text-cyan-400">use</span> <span class="text-teal-300">std::ops</span>::{<span class="text-blue-300">einsum</span>, <span class="text-blue-300">softmax</span>, <span class="text-blue-300">dropout</span>, <span class="text-blue-300">rms_norm</span>};
+export const L = (n) => `<span style="user-select:none" class="text-white/20">${String(n).padStart(2,' ')}  </span>`;
+export const synthrCodeHTML = `${L(1)}<span class="text-cyan-400">use</span> <span class="text-teal-300">std::tensor</span>::{<span class="text-teal-300">Tensor</span>, <span class="text-teal-300">SparseMask</span>, <span class="text-teal-300">RotaryEmbed</span>};
+${L(2)}<span class="text-cyan-400">use</span> <span class="text-teal-300">std::ops</span>::{<span class="text-emerald-300">einsum</span>, <span class="text-emerald-300">softmax</span>, <span class="text-emerald-300">dropout</span>, <span class="text-emerald-300">rms_norm</span>};
 ${L(3)}<span class="text-cyan-400">use</span> <span class="text-teal-300">std::distribute</span>::<span class="text-teal-300">Mesh</span>;
 ${L(4)}
 ${L(5)}<span class="text-purple-400">@kernel</span>(grid=[N/<span class="text-amber-300">256</span>], block=[<span class="text-amber-300">256</span>])
@@ -139,7 +139,7 @@ ${L(8)}<span class="text-cyan-400">module</span> <span class="text-yellow-300">T
 ${L(9)}
 ${L(10)}  <span class="text-gray-500">// Flash attention w/ rotary position embeddings</span>
 ${L(11)}  <span class="text-purple-400">@fuse</span>(strategy=<span class="text-green-400">aggressive</span>, mem_bound=<span class="text-green-400">shared</span>)
-${L(12)}  <span class="text-cyan-400">fn</span> <span class="text-blue-300">multi_head_attn</span>(
+${L(12)}  <span class="text-cyan-400">fn</span> <span class="text-emerald-300">multi_head_attn</span>(
 ${L(13)}    Q: <span class="text-teal-300">Tensor</span>&lt;T, [B, H, S, D]&gt;,
 ${L(14)}    K: <span class="text-teal-300">Tensor</span>&lt;T, [B, H, S, D]&gt;,
 ${L(15)}    V: <span class="text-teal-300">Tensor</span>&lt;T, [B, H, S, D]&gt;,
@@ -147,45 +147,45 @@ ${L(16)}    mask: <span class="text-teal-300">SparseMask</span>&lt;[S, S], layou
 ${L(17)}    rope: <span class="text-teal-300">RotaryEmbed</span>&lt;D, base=<span class="text-amber-300">500000</span>&gt;,
 ${L(18)}  ) -&gt; <span class="text-teal-300">Tensor</span>&lt;T, [B, H, S, D]&gt; <span class="text-purple-400">@where</span> D % <span class="text-amber-300">128</span> == <span class="text-amber-300">0</span> {
 ${L(19)}
-${L(20)}    <span class="text-cyan-400">let</span> Q_rot = rope.<span class="text-blue-300">apply</span>(Q, dim=<span class="text-amber-300">-1</span>);
-${L(21)}    <span class="text-cyan-400">let</span> K_rot = rope.<span class="text-blue-300">apply</span>(K, dim=<span class="text-amber-300">-1</span>);
+${L(20)}    <span class="text-cyan-400">let</span> Q_rot = rope.<span class="text-emerald-300">apply</span>(Q, dim=<span class="text-amber-300">-1</span>);
+${L(21)}    <span class="text-cyan-400">let</span> K_rot = rope.<span class="text-emerald-300">apply</span>(K, dim=<span class="text-amber-300">-1</span>);
 ${L(22)}
-${L(23)}    <span class="text-cyan-400">let</span> scale = <span class="text-amber-300">1.0</span> / D.<span class="text-blue-300">sqrt</span>().<span class="text-blue-300">cast</span>&lt;T&gt;();
-${L(24)}    <span class="text-cyan-400">let</span> attn = <span class="text-blue-300">einsum</span>(<span class="text-green-400">"bhsd,bhtd-&gt;bhst"</span>, Q_rot, K_rot)
-${L(25)}      <span class="text-red-400">|&gt;</span> .<span class="text-blue-300">mul</span>(scale)
-${L(26)}      <span class="text-red-400">|&gt;</span> mask.<span class="text-blue-300">apply</span>(_, fill=<span class="text-amber-300">-inf</span>)
-${L(27)}      <span class="text-red-400">|&gt;</span> <span class="text-blue-300">softmax</span>(dim=<span class="text-amber-300">-1</span>, algo=<span class="text-green-400">online_safe</span>)
-${L(28)}      <span class="text-red-400">|&gt;</span> <span class="text-blue-300">dropout</span>(p=<span class="text-amber-300">0.0</span>, <span class="text-purple-400">@compile_only</span>);
+${L(23)}    <span class="text-cyan-400">let</span> scale = <span class="text-amber-300">1.0</span> / D.<span class="text-emerald-300">sqrt</span>().<span class="text-emerald-300">cast</span>&lt;T&gt;();
+${L(24)}    <span class="text-cyan-400">let</span> attn = <span class="text-emerald-300">einsum</span>(<span class="text-green-400">"bhsd,bhtd-&gt;bhst"</span>, Q_rot, K_rot)
+${L(25)}      <span class="text-red-400">|&gt;</span> .<span class="text-emerald-300">mul</span>(scale)
+${L(26)}      <span class="text-red-400">|&gt;</span> mask.<span class="text-emerald-300">apply</span>(_, fill=<span class="text-amber-300">-inf</span>)
+${L(27)}      <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">softmax</span>(dim=<span class="text-amber-300">-1</span>, algo=<span class="text-green-400">online_safe</span>)
+${L(28)}      <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">dropout</span>(p=<span class="text-amber-300">0.0</span>, <span class="text-purple-400">@compile_only</span>);
 ${L(29)}
-${L(30)}    <span class="text-cyan-400">let</span> out = <span class="text-blue-300">einsum</span>(<span class="text-green-400">"bhst,bhtd-&gt;bhsd"</span>, attn, V);
-${L(31)}    <span class="text-cyan-400">return</span> out <span class="text-red-400">|&gt;</span> <span class="text-blue-300">rearrange</span>(<span class="text-green-400">"b h s d -&gt; b s (h d)"</span>)
-${L(32)}               <span class="text-red-400">|&gt;</span> <span class="text-blue-300">linear</span>(<span class="text-cyan-400">self</span>.Wo, bias=<span class="text-green-400">none</span>);
+${L(30)}    <span class="text-cyan-400">let</span> out = <span class="text-emerald-300">einsum</span>(<span class="text-green-400">"bhst,bhtd-&gt;bhsd"</span>, attn, V);
+${L(31)}    <span class="text-cyan-400">return</span> out <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">rearrange</span>(<span class="text-green-400">"b h s d -&gt; b s (h d)"</span>)
+${L(32)}               <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">linear</span>(<span class="text-cyan-400">self</span>.Wo, bias=<span class="text-green-400">none</span>);
 ${L(33)}  }
 ${L(34)}
 ${L(35)}  <span class="text-gray-500">// Gated FFN with SwiGLU activation</span>
 ${L(36)}  <span class="text-purple-400">@pipeline</span>(stages=<span class="text-amber-300">4</span>, interleave=<span class="text-green-400">1F1B</span>)
 ${L(37)}  <span class="text-purple-400">@checkpoint</span>(policy=<span class="text-green-400">selective</span>, granularity=<span class="text-green-400">op</span>)
-${L(38)}  <span class="text-cyan-400">fn</span> <span class="text-blue-300">feedforward</span>(
+${L(38)}  <span class="text-cyan-400">fn</span> <span class="text-emerald-300">feedforward</span>(
 ${L(39)}    x: <span class="text-teal-300">Tensor</span>&lt;T, [B, S, E]&gt;,
 ${L(40)}  ) -&gt; <span class="text-teal-300">Tensor</span>&lt;T, [B, S, E]&gt; {
-${L(41)}    <span class="text-cyan-400">let</span> gate = x <span class="text-red-400">|&gt;</span> <span class="text-blue-300">linear</span>(<span class="text-cyan-400">self</span>.Wg) <span class="text-red-400">|&gt;</span> <span class="text-blue-300">silu</span>();
-${L(42)}    <span class="text-cyan-400">let</span> up   = x <span class="text-red-400">|&gt;</span> <span class="text-blue-300">linear</span>(<span class="text-cyan-400">self</span>.Wu);
+${L(41)}    <span class="text-cyan-400">let</span> gate = x <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">linear</span>(<span class="text-cyan-400">self</span>.Wg) <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">silu</span>();
+${L(42)}    <span class="text-cyan-400">let</span> up   = x <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">linear</span>(<span class="text-cyan-400">self</span>.Wu);
 ${L(43)}    <span class="text-cyan-400">return</span> (gate * up)
-${L(44)}      <span class="text-red-400">|&gt;</span> <span class="text-blue-300">linear</span>(<span class="text-cyan-400">self</span>.Wd)
-${L(45)}      <span class="text-red-400">|&gt;</span> <span class="text-blue-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ, eps=<span class="text-amber-300">1e-6</span>);
+${L(44)}      <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">linear</span>(<span class="text-cyan-400">self</span>.Wd)
+${L(45)}      <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ, eps=<span class="text-amber-300">1e-6</span>);
 ${L(46)}  }
 ${L(47)}
 ${L(48)}  <span class="text-gray-500">// Forward pass w/ residual + MoE routing</span>
 ${L(49)}  <span class="text-purple-400">@distribute</span>(mesh=[dp=<span class="text-amber-300">8</span>, tp=<span class="text-amber-300">4</span>, pp=<span class="text-amber-300">2</span>, ep=<span class="text-amber-300">16</span>])
-${L(50)}  <span class="text-cyan-400">fn</span> <span class="text-blue-300">forward</span>(x: <span class="text-teal-300">Tensor</span>&lt;T, [B, S, E]&gt;) -&gt; <span class="text-teal-300">Loss</span> {
+${L(50)}  <span class="text-cyan-400">fn</span> <span class="text-emerald-300">forward</span>(x: <span class="text-teal-300">Tensor</span>&lt;T, [B, S, E]&gt;) -&gt; <span class="text-teal-300">Loss</span> {
 ${L(51)}    <span class="text-cyan-400">let</span> residual = x;
-${L(52)}    <span class="text-cyan-400">let</span> h = x <span class="text-red-400">|&gt;</span> <span class="text-blue-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ1, eps=<span class="text-amber-300">1e-6</span>)
-${L(53)}              <span class="text-red-400">|&gt;</span> <span class="text-cyan-400">self</span>.<span class="text-blue-300">multi_head_attn</span>(_, _, _)
-${L(54)}              <span class="text-red-400">|&gt;</span> residual.<span class="text-blue-300">add</span>(_);
-${L(55)}    <span class="text-cyan-400">let</span> out = h <span class="text-red-400">|&gt;</span> <span class="text-blue-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ2, eps=<span class="text-amber-300">1e-6</span>)
-${L(56)}                <span class="text-red-400">|&gt;</span> <span class="text-cyan-400">self</span>.<span class="text-blue-300">feedforward</span>(_)
-${L(57)}                <span class="text-red-400">|&gt;</span> h.<span class="text-blue-300">add</span>(_);
-${L(58)}    <span class="text-cyan-400">return</span> out <span class="text-red-400">|&gt;</span> <span class="text-blue-300">sparse_moe</span>(
+${L(52)}    <span class="text-cyan-400">let</span> h = x <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ1, eps=<span class="text-amber-300">1e-6</span>)
+${L(53)}              <span class="text-red-400">|&gt;</span> <span class="text-cyan-400">self</span>.<span class="text-emerald-300">multi_head_attn</span>(_, _, _)
+${L(54)}              <span class="text-red-400">|&gt;</span> residual.<span class="text-emerald-300">add</span>(_);
+${L(55)}    <span class="text-cyan-400">let</span> out = h <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">rms_norm</span>(<span class="text-cyan-400">self</span>.γ2, eps=<span class="text-amber-300">1e-6</span>)
+${L(56)}                <span class="text-red-400">|&gt;</span> <span class="text-cyan-400">self</span>.<span class="text-emerald-300">feedforward</span>(_)
+${L(57)}                <span class="text-red-400">|&gt;</span> h.<span class="text-emerald-300">add</span>(_);
+${L(58)}    <span class="text-cyan-400">return</span> out <span class="text-red-400">|&gt;</span> <span class="text-emerald-300">sparse_moe</span>(
 ${L(59)}      experts=<span class="text-cyan-400">self</span>.experts[<span class="text-amber-300">0</span>..<span class="text-amber-300">E</span>],
 ${L(60)}      router=<span class="text-cyan-400">self</span>.gate,
 ${L(61)}      top_k=<span class="text-amber-300">2</span>,
@@ -257,10 +257,10 @@ const Features = () => {
   <section id="projects" className="bg-black pb-52" ref={sectionRef}>
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
-        <p className="projects-heading font-circular-web text-lg text-blue-50">
+        <p className="projects-heading font-circular-web text-lg text-white">
           What I'm Building
         </p>
-        <p className="projects-heading max-w-md font-circular-web text-lg text-blue-50 opacity-50">
+        <p className="projects-heading max-w-md font-circular-web text-lg text-white opacity-50">
           A collection of projects spanning medical AI, ML infrastructure,
           edtech, and industrial intelligence. Each one solving a different hard problem.
         </p>
@@ -279,7 +279,6 @@ const Features = () => {
           }
           description="A study platform for students to study harder, smarter, deeper, and faster — maximizing information gained in the shortest time using AI and a suite of tools."
           ribbon="Under Construction"
-          link="https://studyur.com"
           isComingSoon
         />
       </BentoTilt>
@@ -332,7 +331,6 @@ const Features = () => {
             }
             description="A pre-health web app for tracking applications, accessing resources, and preparing for every step of the admissions process."
             ribbon="Remodeling"
-            link="https://premeder.com"
             isComingSoon
           />
         </BentoTilt>
@@ -380,7 +378,6 @@ const Features = () => {
             }
             description="A proprietary AI-powered search for your files, support chat, receptionist, and more. Intelligent retrieval across your entire workflow."
             ribbon="Under Development"
-            link="https://trovex.io"
             isComingSoon
           />
         </BentoTilt>

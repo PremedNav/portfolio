@@ -19,7 +19,7 @@ import {
   FaHeart, FaHandsHelping, FaChevronDown, FaGripVertical,
   FaCalendarAlt, FaMapMarkerAlt, FaUserTie, FaGraduationCap,
   FaStar, FaCode, FaChalkboardTeacher, FaMusic, FaBook,
-  FaStethoscope,
+  FaStethoscope, FaPen, FaUniversity,
 } from 'react-icons/fa';
 import { MdAccessTime } from 'react-icons/md';
 import { TiLocationArrow } from 'react-icons/ti';
@@ -183,6 +183,127 @@ const ACADEMICS = {
   prevMajor: 'Biochemistry',
 };
 
+// ─── AMCAS GPA Calculations (BCPM vs AO) ────────────────────────────────────
+
+const GRADE_POINTS: Record<string, number> = {
+  'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+  'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+  'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+  'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+  'F': 0.0,
+};
+
+const BCPM_PREFIXES = ['BIOL', 'CHEM', 'PHYS', 'MATH'];
+
+function isBCPM(code: string): boolean {
+  const prefix = code.split(/\s+/)[0];
+  return BCPM_PREFIXES.includes(prefix);
+}
+
+function computeGPAs() {
+  let bcpmQP = 0, bcpmCr = 0, aoQP = 0, aoCr = 0;
+  for (const sem of SEMESTERS) {
+    for (const c of sem.courses) {
+      const pts = GRADE_POINTS[c.grade];
+      if (pts === undefined) continue; // skip IP, W, etc.
+      const qp = pts * c.credits;
+      if (isBCPM(c.code)) { bcpmQP += qp; bcpmCr += c.credits; }
+      else { aoQP += qp; aoCr += c.credits; }
+    }
+  }
+  return {
+    bcpm: bcpmCr > 0 ? +(bcpmQP / bcpmCr).toFixed(3) : 0,
+    ao: aoCr > 0 ? +(aoQP / aoCr).toFixed(3) : 0,
+    bcpmCredits: bcpmCr,
+    aoCredits: aoCr,
+  };
+}
+
+const AMCAS_GPAS = computeGPAs();
+
+// ─── School List Data ────────────────────────────────────────────────────────
+
+interface School {
+  name: string;
+  location: string;
+  mcat: number;
+  gpa: number;
+  logo?: string; // filename in /img/school-icons/
+}
+
+interface SchoolTier {
+  label: string;
+  color: string;     // Tailwind color token (rose, yellow, emerald)
+  bgPill: string;    // pill bg class
+  textPill: string;  // pill text class
+  schools: School[];
+}
+
+const SCHOOL_LIST: SchoolTier[] = [
+  {
+    label: 'Reach',
+    color: 'rose',
+    bgPill: 'bg-rose-400/15',
+    textPill: 'text-rose-400',
+    schools: [
+      { name: 'Harvard Medical School', location: 'Boston, MA', mcat: 520, gpa: 3.9, logo: 'harvard.svg' },
+      { name: 'UCSF School of Medicine', location: 'San Francisco, CA', mcat: 519, gpa: 3.85, logo: 'ucsf.svg' },
+      { name: 'Johns Hopkins SOM', location: 'Baltimore, MD', mcat: 521, gpa: 3.93, logo: 'johns_hopkins.svg' },
+      { name: 'Columbia VP&S', location: 'New York, NY', mcat: 521, gpa: 3.9, logo: 'columbia.svg' },
+      { name: 'Duke SOM', location: 'Durham, NC', mcat: 520, gpa: 3.88, logo: 'duke.svg' },
+      { name: 'UPenn Perelman SOM', location: 'Philadelphia, PA', mcat: 522, gpa: 3.93, logo: 'upenn.svg' },
+      { name: 'NYU Grossman SOM', location: 'New York, NY', mcat: 522, gpa: 3.96, logo: 'nyu.svg' },
+      { name: 'Stanford SOM', location: 'Stanford, CA', mcat: 519, gpa: 3.89, logo: 'stanford.svg' },
+      { name: 'WashU SOM', location: 'St. Louis, MO', mcat: 522, gpa: 3.95, logo: 'washu.svg' },
+      { name: 'U of Michigan Med', location: 'Ann Arbor, MI', mcat: 519, gpa: 3.87, logo: 'michigan.svg' },
+      { name: 'Yale SOM', location: 'New Haven, CT', mcat: 521, gpa: 3.9, logo: 'yale.svg' },
+      { name: 'Mayo Clinic Alix SOM', location: 'Rochester, MN', mcat: 521, gpa: 3.93, logo: 'mayo.svg' },
+    ],
+  },
+  {
+    label: 'Target',
+    color: 'yellow',
+    bgPill: 'bg-yellow-300/15',
+    textPill: 'text-yellow-300',
+    schools: [
+      { name: 'Icahn SOM at Mt. Sinai', location: 'New York, NY', mcat: 520, gpa: 3.87, logo: 'icahn.svg' },
+      { name: 'Northwestern Feinberg', location: 'Chicago, IL', mcat: 520, gpa: 3.91, logo: 'northwestern.svg' },
+      { name: 'Weill Cornell Medicine', location: 'New York, NY', mcat: 520, gpa: 3.9, logo: 'weill_cornell.svg' },
+      { name: 'UChicago Pritzker SOM', location: 'Chicago, IL', mcat: 521, gpa: 3.92, logo: 'pritzker.svg' },
+      { name: 'Case Western Reserve', location: 'Cleveland, OH', mcat: 518, gpa: 3.82, logo: 'case_western.svg' },
+      { name: 'Brown Alpert Med', location: 'Providence, RI', mcat: 517, gpa: 3.79, logo: 'brown.svg' },
+      { name: 'BU Chobanian & Avedisian', location: 'Boston, MA', mcat: 518, gpa: 3.82, logo: 'boston_university.svg' },
+    ],
+  },
+  {
+    label: 'Baseline',
+    color: 'emerald',
+    bgPill: 'bg-emerald-400/15',
+    textPill: 'text-emerald-400',
+    schools: [
+      { name: 'Albert Einstein COM', location: 'Bronx, NY', mcat: 517, gpa: 3.82, logo: 'albert_einstein.svg' },
+      { name: 'Dartmouth Geisel SOM', location: 'Hanover, NH', mcat: 516, gpa: 3.78, logo: 'geisel.svg' },
+      { name: 'CU Anschutz SOM', location: 'Aurora, CO', mcat: 513, gpa: 3.77, logo: 'cu_anschutz.svg' },
+      { name: 'Tufts University SOM', location: 'Boston, MA', mcat: 515, gpa: 3.72, logo: 'tufts.svg' },
+      { name: 'Georgetown SOM', location: 'Washington, DC', mcat: 514, gpa: 3.65, logo: 'georgetown.svg' },
+      { name: 'Creighton SOM', location: 'Omaha, NE', mcat: 512, gpa: 3.78, logo: 'creighton.svg' },
+    ],
+  },
+];
+
+const SCHOOL_COUNT = SCHOOL_LIST.reduce((sum, tier) => sum + tier.schools.length, 0);
+
+// ─── Personal Statement ──────────────────────────────────────────────────────
+
+const PERSONAL_STATEMENT = {
+  maxChars: 5300,
+  text: `"Sit still - this always works!" I sat still as my father urged, breathing in the intense scent of mustard oil while he gently rubbed it across my chest. Within days, my cough would fade. My father's confidence was absolute: "Traditional remedies, beta. Passed down for generations." In our home, this remedy was our trusted cure whenever illness arose, that is... until the day my Nanaji (Grandfather) was diagnosed with leukemia.
+
+Eight months later, the phone rang at 11AM. I already knew. The mustard oil sat unused on his nightstand in Amritsar, 8,000 miles away. No home remedy could reach through phone lines. The day after his funeral, I stared at my father's medicine cabinet, staring at our amber bottle of tiwana mustard oil. I unscrewed the cap, and it was that familiar intense scent, but now it smelled different. Not like comfort. Like limitations. Like all the questions, my father couldn't answer when I'd asked, "Why couldn't the doctors fix it?" In that moment, I understood: I didn't want to be limited to home remedies. I wanted to be the person with answers when home remedies weren't enough.
+
+[DRAFT IN PROGRESS - Currently developing the narrative about exploring medicine, volunteer experiences, and path to physician...]`,
+};
+
 // ─── Activity Data ───────────────────────────────────────────────────────────
 
 const INITIAL_CATEGORIES: Category[] = [
@@ -191,6 +312,20 @@ const INITIAL_CATEGORIES: Category[] = [
     name: 'Academics',
     hours: 0,
     icon: <FaGraduationCap />,
+    activities: [],
+  },
+  {
+    id: 'personal-statement',
+    name: 'Personal Statement',
+    hours: 0,
+    icon: <FaPen />,
+    activities: [],
+  },
+  {
+    id: 'schools',
+    name: "Schools I'm Applying To",
+    hours: 0,
+    icon: <FaUniversity />,
     activities: [],
   },
   {
@@ -299,23 +434,9 @@ const INITIAL_CATEGORIES: Category[] = [
 
 const TOTAL_HOURS = INITIAL_CATEGORIES.reduce((sum, c) => sum + c.hours, 0);
 
-const SHORT_NAMES: Record<string, string> = {
-  'academics': 'Academics',
-  'projects': 'Projects',
-  'volunteer-medical': 'Vol. Medical',
-  'volunteer-nonmedical': 'Vol. Non-Med',
-  'shadowing': 'Shadowing',
-  'research': 'Research',
-  'teaching': 'Teaching',
-  'employment-nonmedical': 'Employment',
-  'leadership': 'Leadership',
-  'artistic': 'Artistic',
-  'other': 'Other',
-};
-
 // Activity count (for display): each entry = 1 AMCAS activity, Projects = 1
 const ACTIVITY_COUNT = INITIAL_CATEGORIES
-  .filter(c => c.id !== 'academics' && c.id !== 'projects')
+  .filter(c => c.id !== 'academics' && c.id !== 'personal-statement' && c.id !== 'projects' && c.id !== 'schools')
   .reduce((sum, c) => sum + c.activities.length, 0) + 1; // +1 for Projects
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -399,6 +520,7 @@ export default function RecommendationPage() {
   const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState(false);
   const [toast, setToast] = useState(false);
+  const [recipient, setRecipient] = useState('');
 
   const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -417,8 +539,17 @@ export default function RecommendationPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'Thankyou!') {
+    const passwordMap: Record<string, string> = {
+      'ThankyouDrMoran!': 'moran',
+      'ThankyouDrKim!': 'kim',
+      'ThankyouDrBull!': 'bull',
+      'ThankyouHadee!': 'hadee',
+      'ThankyouShelby&Breck!': 'shelby-breck'
+    };
+
+    if (passwordMap[password]) {
       setError(false);
+      setRecipient(passwordMap[password]);
       setUnlocked(true);
     } else {
       setError(true);
@@ -527,12 +658,6 @@ export default function RecommendationPage() {
       opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power3.out', delay: 0.6,
     });
 
-    // Stats grid — scroll triggered stagger
-    gsap.from('.stat-card', {
-      y: 40, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power3.out',
-      scrollTrigger: { trigger: '.stats-grid', start: 'top 85%' },
-    });
-
     // Each section wrapper — scroll triggered fade up
     gsap.utils.toArray<HTMLElement>('.section-wrapper').forEach((el) => {
       gsap.from(el, {
@@ -547,10 +672,18 @@ export default function RecommendationPage() {
   const renderAcademicContent = () => (
     <div className="px-4 pb-6 sm:px-6">
       {/* Quick stats row */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
         <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
           <span className="font-fk-screamer text-2xl font-black text-yellow-300">{ACADEMICS.cumGPA}</span>
           <span className="font-general text-[9px] uppercase tracking-wider text-white/40">Cumulative GPA</span>
+        </div>
+        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
+          <span className="font-fk-screamer text-2xl font-black text-yellow-300">{AMCAS_GPAS.bcpm}</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">BCPM GPA</span>
+        </div>
+        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
+          <span className="font-fk-screamer text-2xl font-black text-white">{AMCAS_GPAS.ao}</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">AO GPA</span>
         </div>
         <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
           <span className="font-fk-screamer text-2xl font-black text-white">{ACADEMICS.totalCredits}</span>
@@ -663,6 +796,98 @@ export default function RecommendationPage() {
           </div>
         ))}
       </div>
+    </div>
+  );
+
+  // ── Render: Personal Statement section content ──────────────────────────
+
+  const renderPersonalStatementContent = () => {
+    const charCount = PERSONAL_STATEMENT.text.length;
+    const maxChars = PERSONAL_STATEMENT.maxChars;
+    const hasText = charCount > 0;
+    return (
+      <div className="px-4 pb-6 sm:px-6">
+        <div className="inner-card rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/10">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
+              AMCAS Personal Statement
+            </span>
+            <span className={`font-general text-[10px] tracking-wider ${
+              charCount > maxChars ? 'text-red-400' : charCount > maxChars * 0.9 ? 'text-amber-300/50' : 'text-white/20'
+            }`}>
+              {charCount.toLocaleString()}/{maxChars.toLocaleString()}
+            </span>
+          </div>
+          {hasText ? (
+            <p className="font-robert-regular text-sm leading-relaxed text-white/60 whitespace-pre-wrap">
+              {PERSONAL_STATEMENT.text}
+            </p>
+          ) : (
+            <p className="font-robert-regular text-sm italic text-white/15">
+              Not written yet
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Render: Schools section content ──────────────────────────────────────
+
+  const renderSchoolsContent = () => (
+    <div className="px-4 pb-6 sm:px-6">
+      {SCHOOL_LIST.map((tier) => (
+        <div key={tier.label} className="mb-6 last:mb-0">
+          {/* Tier sub-header */}
+          <div className="inner-card mb-3 flex items-center gap-2">
+            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${tier.bgPill} ${tier.textPill}`}>
+              {tier.label}
+            </span>
+            <span className="font-robert-regular text-xs text-white/30">
+              {tier.schools.length} {tier.schools.length === 1 ? 'school' : 'schools'}
+            </span>
+          </div>
+
+          {/* School cards grid */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {tier.schools.map((school) => (
+              <div
+                key={school.name}
+                className="inner-card flex flex-col gap-2 rounded-lg bg-white/[0.03] p-3 ring-1 ring-white/10"
+              >
+                <div className="flex items-center gap-2">
+                  {school.logo && (
+                    <img
+                      src={`/img/school-icons/${school.logo}`}
+                      alt=""
+                      className="h-6 w-6 shrink-0 rounded object-contain"
+                    />
+                  )}
+                  <span className="font-robert-medium text-xs text-white leading-tight">
+                    {school.name}
+                  </span>
+                  {school.name === 'Harvard Medical School' && (
+                    <span className="shrink-0 rounded-full bg-yellow-300/10 px-2 py-0.5 text-[9px] font-medium text-yellow-300 ring-1 ring-yellow-300/20">
+                      Dream
+                    </span>
+                  )}
+                </div>
+                <span className="font-robert-regular text-[11px] text-white/50">
+                  {school.location}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${tier.bgPill} ${tier.textPill}`}>
+                    {school.mcat} MCAT
+                  </span>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${tier.bgPill} ${tier.textPill}`}>
+                    {school.gpa.toFixed(2)} GPA
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 
@@ -828,10 +1053,31 @@ export default function RecommendationPage() {
             title="Rec<b>o</b>mmendation <br /> Mat<b>e</b>rial"
             containerClass="!text-left"
           />
-          <p className="hero-sub mt-6 max-w-2xl font-robert-regular text-sm leading-relaxed text-white/50" style={{ opacity: 0 }}>
-            A comprehensive overview of academics, activities, and experiences — organized for quick reference.
-            Click any section to expand, or drag to reorder.
-          </p>
+          <div className="hero-sub mt-6 max-w-3xl font-robert-regular text-sm leading-relaxed text-white/50 space-y-3" style={{ opacity: 0 }}>
+            {recipient === 'moran' && (
+              <p><strong className="text-white/70">Hi Dr. Moran</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
+            )}
+
+            {recipient === 'kim' && (
+              <p><strong className="text-white/70">Hi Dr. Kim</strong> — I really appreciate your understanding when I absolutely failed my first biochem test. On top of that, thank you for letting me into your research and being a part of something meaningful.</p>
+            )}
+
+            {recipient === 'bull' && (
+              <p><strong className="text-white/70">Hi Dr. Bull</strong> — You have been an immensely fantastic mentor. I really appreciate you letting me shadow once a month, which most people aren't able to do. You confirmed that I wanted to become a physician and made me realize I would love to be a medical director myself. Seeing what you do in that role has really made me appreciate that kind of work.</p>
+            )}
+
+            {recipient === 'hadee' && (
+              <p><strong className="text-white/70">Hi Hadee</strong> — Thank you for letting me in without any hesitation, for talking to me kindly, and being understanding about my schedule. You've been one of the best mentors I've ever had. Seeing you as a provider for so many and being really understanding of patients and their situations will stick with me. I've learned lessons from you that I'll pass on to others as I continue my journey as a physician.</p>
+            )}
+
+            {recipient === 'shelby-breck' && (
+              <>
+                <p><strong className="text-white/70">Hi Breck</strong> — Thank you for trying something new and letting me into your lab when you'd never had an undergrad before, and for trusting that I would be more benefit than not. I appreciate you meeting with me to talk about my research and being so understanding.</p>
+
+                <p><strong className="text-white/70">Hi Shelby</strong> — Thank you for letting me onto your project and helping me so many times, even with the silliest questions. You were always there to support me through my research journey and I'm really grateful for all you've done for me. I really hope the best for you after graduation, after you get your PhD, and that you do something you really want to do.</p>
+              </>
+            )}
+          </div>
 
           {/* Top highlights */}
           <div className="mt-8 flex flex-wrap items-end gap-8">
@@ -852,6 +1098,22 @@ export default function RecommendationPage() {
               </span>
             </div>
             <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
+              <span className="font-fk-screamer text-5xl font-black text-yellow-300">
+                {ACTIVITY_COUNT}
+              </span>
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+                Activities
+              </span>
+            </div>
+            <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
+              <span className="font-fk-screamer text-5xl font-black text-white">
+                {SCHOOL_COUNT}
+              </span>
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+                Schools
+              </span>
+            </div>
+            <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
               <span className="font-fk-screamer text-5xl font-black text-yellow-300">MCAT</span>
               <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
                 {(() => {
@@ -869,32 +1131,16 @@ export default function RecommendationPage() {
           </div>
         </div>
 
-        {/* Summary Stats Grid */}
-        <div className="stats-grid mx-auto mt-12 grid max-w-6xl grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-11 xl:grid-cols-11">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className="stat-card flex flex-col items-center gap-2 rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10 backdrop-blur-sm"
-            >
-              <span className="text-xl text-yellow-300">{cat.icon}</span>
-              <span className="font-general text-[9px] uppercase tracking-wider text-white/50 text-center leading-tight">
-                {SHORT_NAMES[cat.id] || cat.name}
-              </span>
-              <span className="font-fk-screamer text-base font-black text-white">
-                {cat.id === 'academics' ? `${ACADEMICS.cumGPA} GPA` : cat.id === 'projects' ? '11' : `${formatHours(cat.hours)}h`}
-              </span>
-            </div>
-          ))}
-        </div>
-
         {/* Sections */}
         <div className="sections-container mx-auto mt-16 flex max-w-6xl flex-col gap-4">
           {categories.map((cat) => {
             const isExpanded = expanded.has(cat.id);
             const isDragTarget = dragOverId === cat.id && draggedId !== cat.id;
             const isAcademics = cat.id === 'academics';
+            const isPS = cat.id === 'personal-statement';
+            const isSchools = cat.id === 'schools';
             const isProjects = cat.id === 'projects';
-            const isSpecial = isAcademics || isProjects;
+            const isSpecial = isAcademics || isPS || isProjects || isSchools;
 
             return (
               <div
@@ -933,12 +1179,16 @@ export default function RecommendationPage() {
 
                   {/* Badge */}
                   <span className="rounded-full bg-yellow-300/15 px-3 py-0.5 font-robert-regular text-xs font-medium text-yellow-300">
-                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
+                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
                   </span>
 
                   <span className="hidden font-robert-regular text-xs text-white/30 sm:inline">
                     {isAcademics
                       ? `${SEMESTERS.length} semesters · ${ACADEMICS.totalCredits} credits`
+                      : isPS
+                      ? '5,300 char limit'
+                      : isSchools
+                      ? `${SCHOOL_LIST[0].schools.length} reach · ${SCHOOL_LIST[1].schools.length} target · ${SCHOOL_LIST[2].schools.length} baseline`
                       : isProjects
                       ? 'Software, AI, medical tech'
                       : `${cat.activities.length} ${cat.activities.length === 1 ? 'entry' : 'entries'}`}
@@ -957,7 +1207,7 @@ export default function RecommendationPage() {
                   className="overflow-hidden"
                   style={{ height: 0, opacity: 0 }}
                 >
-                  {isAcademics ? renderAcademicContent() : isProjects ? renderProjectsContent() : (
+                  {isAcademics ? renderAcademicContent() : isPS ? renderPersonalStatementContent() : isSchools ? renderSchoolsContent() : isProjects ? renderProjectsContent() : (
                     <div className="grid grid-cols-1 gap-4 px-4 pb-6 sm:px-6 md:grid-cols-2 lg:grid-cols-3">
                       {cat.activities.map((activity, idx) => (
                         <BentoTilt key={idx} className="inner-card h-full">

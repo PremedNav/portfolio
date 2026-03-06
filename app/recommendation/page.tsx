@@ -540,7 +540,7 @@ export default function RecommendationPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const passwordMap: Record<string, string> = {
-      'ThankyouDrMoran!': 'moran',
+      'ThankyouDrMaron!': 'maron',
       'ThankyouDrKim!': 'kim',
       'ThankyouDrBull!': 'bull',
       'ThankyouHadee!': 'hadee',
@@ -1054,8 +1054,8 @@ export default function RecommendationPage() {
             containerClass="!text-left"
           />
           <div className="hero-sub mt-6 max-w-3xl font-robert-regular text-sm leading-relaxed text-white/50 space-y-3" style={{ opacity: 0 }}>
-            {recipient === 'moran' && (
-              <p><strong className="text-white/70">Hi Dr. Moran</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
+            {recipient === 'maron' && (
+              <p><strong className="text-white/70">Hi Dr. Maron</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
             )}
 
             {recipient === 'kim' && (

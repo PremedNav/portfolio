@@ -18,7 +18,7 @@ import {
   FaUserMd, FaFlask, FaEye, FaBriefcase, FaUsers,
   FaHeart, FaHandsHelping, FaChevronDown, FaGripVertical,
   FaCalendarAlt, FaMapMarkerAlt, FaUserTie, FaGraduationCap,
-  FaStar, FaCode, FaChalkboardTeacher, FaMusic, FaBook,
+  FaStar, FaRegStar, FaCode, FaChalkboardTeacher, FaMusic, FaBook,
   FaStethoscope, FaPen, FaUniversity,
 } from 'react-icons/fa';
 import { MdAccessTime } from 'react-icons/md';
@@ -293,6 +293,22 @@ const SCHOOL_LIST: SchoolTier[] = [
 
 const SCHOOL_COUNT = SCHOOL_LIST.reduce((sum, tier) => sum + tier.schools.length, 0);
 
+const PROJECT_NAMES = ['Studyur', 'Clover', 'Zoov', 'PreMeder', 'Trovex', 'Pangroup', 'Synthr', 'Histia', 'Topographify', 'Aethon', 'Rivex'];
+
+const PROJECT_INFO: Record<string, { desc: string; ribbon: string }> = {
+  Studyur: { desc: 'AI-powered study platform for maximizing learning efficiency.', ribbon: 'Under Construction' },
+  Clover: { desc: 'Proprietary 12-billion parameter AI model.', ribbon: 'Not Public' },
+  Zoov: { desc: 'Medical AI transcription platform for healthcare providers.', ribbon: 'Discontinued' },
+  PreMeder: { desc: 'Pre-health web app for tracking applications & admissions prep.', ribbon: 'Remodeling' },
+  Trovex: { desc: 'AI-powered search for files, support chat, and workflow retrieval.', ribbon: 'Under Development' },
+  Pangroup: { desc: 'Nonprofit helping high school students get into dream colleges.', ribbon: 'Discontinued' },
+  Synthr: { desc: 'Programming language for ML pipelines with tensor-native syntax.', ribbon: 'Complete' },
+  Histia: { desc: 'AI-powered Whole-Slide Imaging for pathology analysis.', ribbon: 'Complete' },
+  Topographify: { desc: 'High-resolution terrain mapping from satellite & LiDAR data.', ribbon: 'Complete' },
+  Aethon: { desc: 'AI model for discovering novel biochemical mechanisms.', ribbon: 'Complete' },
+  Rivex: { desc: 'AI visual inspection for robotic & packing machine maintenance.', ribbon: 'Complete' },
+};
+
 // ─── Personal Statement ──────────────────────────────────────────────────────
 
 const PERSONAL_STATEMENT = {
@@ -526,6 +542,24 @@ export default function RecommendationPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [starred, setStarred] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      try { return new Set(JSON.parse(localStorage.getItem('rec-starred') || '[]')); } catch { return new Set(); }
+    }
+    return new Set();
+  });
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [letterGuideOpen, setLetterGuideOpen] = useState(false);
+
+  const toggleStar = useCallback((title: string) => {
+    setStarred(prev => {
+      const next = new Set(prev);
+      if (next.has(title)) next.delete(title); else next.add(title);
+      localStorage.setItem('rec-starred', JSON.stringify(Array.from(next)));
+      return next;
+    });
+  }, []);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -544,7 +578,8 @@ export default function RecommendationPage() {
       'ThankyouDrKim!': 'kim',
       'ThankyouDrBull!': 'bull',
       'ThankyouHadee!': 'hadee',
-      'ThankyouShelby&Breck!': 'shelby-breck'
+      'ThankyouShelby&Breck!': 'shelby-breck',
+      '12345': 'general'
     };
 
     if (passwordMap[password]) {
@@ -729,12 +764,17 @@ export default function RecommendationPage() {
 
       {/* Semester cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {SEMESTERS.map((sem) => (
+        {SEMESTERS.map((sem) => {
+          const semStarred = starred.has(sem.term);
+          if (showStarredOnly && !semStarred) return null;
+          return (
           <div
             key={sem.term}
-            className={`inner-card rounded-lg p-4 ring-1 ${
+            className={`inner-card rounded-lg p-4 ring-1 transition-all duration-200 ${
               sem.inProgress
                 ? 'bg-yellow-300/[0.03] ring-yellow-300/20'
+                : semStarred
+                ? 'bg-yellow-300/[0.04] ring-yellow-300/20'
                 : 'bg-white/[0.03] ring-white/8'
             }`}
           >
@@ -766,6 +806,9 @@ export default function RecommendationPage() {
                     {sem.gpa.toFixed(3)}
                   </span>
                 )}
+                <button onClick={() => toggleStar(sem.term)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                  {semStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                </button>
               </div>
             </div>
 
@@ -794,7 +837,8 @@ export default function RecommendationPage() {
               ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -805,13 +849,19 @@ export default function RecommendationPage() {
     const charCount = PERSONAL_STATEMENT.text.length;
     const maxChars = PERSONAL_STATEMENT.maxChars;
     const hasText = charCount > 0;
+    const psStarred = starred.has('personal-statement');
     return (
       <div className="px-4 pb-6 sm:px-6">
-        <div className="inner-card rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/10">
+        <div className={`inner-card rounded-lg p-5 ring-1 transition-all duration-200 ${psStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/[0.03] ring-white/10'}`}>
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
-              AMCAS Personal Statement
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
+                AMCAS Personal Statement
+              </span>
+              <button onClick={() => toggleStar('personal-statement')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                {psStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+              </button>
+            </div>
             <span className={`font-general text-[10px] tracking-wider ${
               charCount > maxChars ? 'text-red-400' : charCount > maxChars * 0.9 ? 'text-amber-300/50' : 'text-white/20'
             }`}>
@@ -827,6 +877,74 @@ export default function RecommendationPage() {
               Not written yet
             </p>
           )}
+        </div>
+
+        {/* What is needed / topics guide */}
+        <div className="inner-card mt-4 rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/10">
+          <h4 className="mb-3 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
+            What the Personal Statement Needs to Cover
+          </h4>
+          <p className="mb-4 font-robert-regular text-xs leading-relaxed text-white/30">
+            The AMCAS personal statement (5,300 characters) should answer one question: <span className="text-white/50">Why do you want to be a physician?</span> Here are the key themes and moments to weave in:
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">1.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Origin / Inciting Moment</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">The mustard oil moment, Nanaji&apos;s leukemia, limitations of home remedies — what first sparked the desire</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">2.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Why Physician Specifically</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Not PA, not nursing, not research only — what about the physician role uniquely fits? Autonomy, longitudinal care, the full scope of practice</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">3.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Clinical Experiences</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Mountain Peak primary care, shadowing at Denver Health &amp; SPARC, hospice — specific patient moments that confirmed the path</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">4.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Research &amp; Intellectual Curiosity</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Duerkop Lab (bacteriophage/immunology), RaCAS best poster — show the scientific mindset and curiosity</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">5.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Service &amp; Leadership</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Tutoring/SL (2,300+ hrs), MAPS president, Badminton Club founder — impact on community and growth as a leader</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">6.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Personal Identity &amp; Perspective</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Indian-American background, cultural health beliefs, first-gen experiences — what unique lens you bring to medicine</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">7.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Growth &amp; Reflection</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Show how experiences changed you — don&apos;t just list them. What did you learn? How did your understanding of medicine evolve?</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
+              <span className="mt-0.5 text-yellow-300/60">8.</span>
+              <div>
+                <span className="font-robert-medium text-xs text-white/60">Future Vision</span>
+                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Where do you see yourself? Bridging traditional/modern medicine, underserved communities, specific specialty interest</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -850,10 +968,13 @@ export default function RecommendationPage() {
 
           {/* School cards grid */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {tier.schools.map((school) => (
+            {tier.schools.map((school) => {
+              const schoolStarred = starred.has(school.name);
+              if (showStarredOnly && !schoolStarred) return null;
+              return (
               <div
                 key={school.name}
-                className="inner-card flex flex-col gap-2 rounded-lg bg-white/[0.03] p-3 ring-1 ring-white/10"
+                className={`inner-card flex flex-col gap-2 rounded-lg p-3 ring-1 transition-all duration-200 ${schoolStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/[0.03] ring-white/10'}`}
               >
                 <div className="flex items-center gap-2">
                   {school.logo && (
@@ -863,7 +984,7 @@ export default function RecommendationPage() {
                       className="h-6 w-6 shrink-0 rounded object-contain"
                     />
                   )}
-                  <span className="font-robert-medium text-xs text-white leading-tight">
+                  <span className="min-w-0 flex-1 font-robert-medium text-xs text-white leading-tight">
                     {school.name}
                   </span>
                   {school.name === 'Harvard Medical School' && (
@@ -871,6 +992,9 @@ export default function RecommendationPage() {
                       Dream
                     </span>
                   )}
+                  <button onClick={() => toggleStar(school.name)} className="group shrink-0 rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {schoolStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
                 </div>
                 <span className="font-robert-regular text-[11px] text-white/50">
                   {school.location}
@@ -884,7 +1008,8 @@ export default function RecommendationPage() {
                   </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
@@ -893,133 +1018,173 @@ export default function RecommendationPage() {
 
   // ── Render: Projects section content ──────────────────────────────────────
 
-  const renderProjectsContent = () => (
-    <div className="flex flex-col gap-5 px-4 pb-6 sm:px-6">
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          riveSrc="/rive/hero_section.riv"
-          title={<img src="/img/studyur-logo-white.svg" alt="Studyur" className="h-28 md:h-36 w-auto pointer-events-none" style={{ marginTop: '-40px', marginBottom: '-40px', marginLeft: '-25px' }} />}
-          description="A study platform for students to study harder, smarter, deeper, and faster — maximizing information gained in the shortest time using AI and a suite of tools."
-          ribbon="Under Construction"
-          link="https://studyur.com"
-          isComingSoon
-        />
-      </BentoTilt>
+  const renderProjectsContent = () => {
+    const pc = (name: string, content: React.ReactNode) => {
+      const s = starred.has(name);
+      if (showStarredOnly && !s) return null;
+      return (
+        <div key={name} className={`relative rounded-md transition-all duration-200 ${s ? 'ring-2 ring-yellow-300/30' : ''}`}>
+          <button
+            onClick={() => toggleStar(name)}
+            className="absolute top-3 right-3 z-20 group rounded-full bg-black/50 backdrop-blur-sm p-2 transition-all hover:bg-yellow-300/20"
+          >
+            {s ? <FaStar className="text-sm text-yellow-300" /> : <FaRegStar className="text-sm text-white/30 group-hover:text-yellow-300/60" />}
+          </button>
+          {content}
+        </div>
+      );
+    };
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          title={<img src="/img/clover-logo-white.svg" alt="Clover" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary 12-billion parameter AI model. Not available to the public — built on the belief that LLMs aren't the future, and other AI models will benefit humankind more."
-          ribbon="Not Public"
-          isComingSoon
-        >
-          <CloverAnimation />
-        </BentoCard>
-      </BentoTilt>
+    return (
+      <div className="flex flex-col gap-5 px-4 pb-6 sm:px-6">
+        {pc('Studyur', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              riveSrc="/rive/hero_section.riv"
+              title={<img src="/img/studyur-logo-white.svg" alt="Studyur" className="h-28 md:h-36 w-auto pointer-events-none" style={{ marginTop: '-40px', marginBottom: '-40px', marginLeft: '-25px' }} />}
+              description="A study platform for students to study harder, smarter, deeper, and faster — maximizing information gained in the shortest time using AI and a suite of tools."
+              ribbon="Under Construction"
+              link="https://studyur.com"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          title={<img src="/img/zoov-logo-white.svg" alt="Zoov" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary medical AI transcription platform to help healthcare providers spend more time with patients and less on paperwork. Discontinued after Doximity launched a free AI scribe."
-          ribbon="Discontinued"
-          isComingSoon
-        >
-          <ZoovAnimation />
-        </BentoCard>
-      </BentoTilt>
+        {pc('Clover', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              title={<img src="/img/clover-logo-white.svg" alt="Clover" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary 12-billion parameter AI model. Not available to the public — built on the belief that LLMs aren't the future, and other AI models will benefit humankind more."
+              ribbon="Not Public"
+              isComingSoon
+            >
+              <CloverAnimation />
+            </BentoCard>
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/feature-4.mp4"
-          videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
-          title={<img src="/img/premeder-logo-white.svg" alt="PreMeder" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A pre-health web app for tracking applications, accessing resources, and preparing for every step of the admissions process."
-          ribbon="Remodeling"
-          link="https://premeder.com"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('Zoov', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              title={<img src="/img/zoov-logo-white.svg" alt="Zoov" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary medical AI transcription platform to help healthcare providers spend more time with patients and less on paperwork. Discontinued after Doximity launched a free AI scribe."
+              ribbon="Discontinued"
+              isComingSoon
+            >
+              <ZoovAnimation />
+            </BentoCard>
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/trovex.mp4"
-          videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
-          title={<img src="/img/trovex-logo-white.svg" alt="Trovex" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary AI-powered search for your files, support chat, receptionist, and more. Intelligent retrieval across your entire workflow."
-          ribbon="Under Development"
-          link="https://trovex.io"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('PreMeder', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/feature-4.mp4"
+              videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
+              title={<img src="/img/premeder-logo-white.svg" alt="PreMeder" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A pre-health web app for tracking applications, accessing resources, and preparing for every step of the admissions process."
+              ribbon="Remodeling"
+              link="https://premeder.com"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/feature-5.mp4"
-          videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
-          title={<img src="/img/pangroup-logo.svg" alt="Pangroup" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A nonprofit helping high school students get into their dream college, discontinued due to scheduling conflicts among all founders."
-          ribbon="Discontinued"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('Trovex', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/trovex.mp4"
+              videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
+              title={<img src="/img/trovex-logo-white.svg" alt="Trovex" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary AI-powered search for your files, support chat, receptionist, and more. Intelligent retrieval across your entire workflow."
+              ribbon="Under Development"
+              link="https://trovex.io"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          title={<img src="/img/synthr-logo-white.svg" alt="Synthr" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A programming language purpose-built for ML pipelines. Tensor-native syntax, auto-differentiation, and GPU-first execution."
-          ribbon="Complete"
-          isComingSoon
-        >
-          <div className="size-full bg-black overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
-            <pre className="text-white/90 max-w-3xl" dangerouslySetInnerHTML={{ __html: synthrCodeHTML }} />
-          </div>
-        </BentoCard>
-      </BentoTilt>
+        {pc('Pangroup', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/feature-5.mp4"
+              videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
+              title={<img src="/img/pangroup-logo.svg" alt="Pangroup" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A nonprofit helping high school students get into their dream college, discontinued due to scheduling conflicts among all founders."
+              ribbon="Discontinued"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/histia.mp4"
-          videoClassName="!left-auto !top-auto !right-6 !bottom-6 !w-[80%] !h-[80%] !object-contain"
-          title={<img src="/img/histia-logo-white.svg" alt="Histia" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary Whole-Slide Imaging platform powered by AI. Automated labeling, annotation, and analysis of whole slides for faster, smarter pathology."
-          ribbon="Complete"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('Synthr', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              title={<img src="/img/synthr-logo-white.svg" alt="Synthr" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A programming language purpose-built for ML pipelines. Tensor-native syntax, auto-differentiation, and GPU-first execution."
+              ribbon="Complete"
+              isComingSoon
+            >
+              <div className="size-full bg-black overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
+                <pre className="text-white/90 max-w-3xl" dangerouslySetInnerHTML={{ __html: synthrCodeHTML }} />
+              </div>
+            </BentoCard>
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/topographify.mp4"
-          title={<img src="/img/topographify-logo-white.svg" alt="Topographify" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="Proprietary high-resolution terrain mapping and analysis. Real-time 3D topographic generation from satellite and LiDAR data."
-          ribbon="Complete"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('Histia', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/histia.mp4"
+              videoClassName="!left-auto !top-auto !right-6 !bottom-6 !w-[80%] !h-[80%] !object-contain"
+              title={<img src="/img/histia-logo-white.svg" alt="Histia" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary Whole-Slide Imaging platform powered by AI. Automated labeling, annotation, and analysis of whole slides for faster, smarter pathology."
+              ribbon="Complete"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/aethon.mp4"
-          videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
-          title={<img src="/img/aethon-logo-white.svg" alt="Aethon" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary AI model trained on biochemical processes and pathways, working to discover novel biochemical mechanisms across eukaryotes, prokaryotes, and archaea."
-          ribbon="Complete"
-          isComingSoon
-        />
-      </BentoTilt>
+        {pc('Topographify', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/topographify.mp4"
+              title={<img src="/img/topographify-logo-white.svg" alt="Topographify" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="Proprietary high-resolution terrain mapping and analysis. Real-time 3D topographic generation from satellite and LiDAR data."
+              ribbon="Complete"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
 
-      <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
-        <BentoCard
-          src="/videos/rivex.mp4"
-          videoClassName="!object-contain scale-[1.1]"
-          title={<img src="/img/rivex-logo-white.svg" alt="Rivex" className="h-12 md:h-16 w-auto pointer-events-none" />}
-          description="A proprietary AI-powered visual inspection platform. Sensor and imaging models that detect issues in robotic and packing machines to prevent downtime before it happens."
-          ribbon="Complete"
-          isComingSoon
-        />
-      </BentoTilt>
-    </div>
-  );
+        {pc('Aethon', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/aethon.mp4"
+              videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
+              title={<img src="/img/aethon-logo-white.svg" alt="Aethon" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary AI model trained on biochemical processes and pathways, working to discover novel biochemical mechanisms across eukaryotes, prokaryotes, and archaea."
+              ribbon="Complete"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
+
+        {pc('Rivex', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              src="/videos/rivex.mp4"
+              videoClassName="!object-contain scale-[1.1]"
+              title={<img src="/img/rivex-logo-white.svg" alt="Rivex" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="A proprietary AI-powered visual inspection platform. Sensor and imaging models that detect issues in robotic and packing machines to prevent downtime before it happens."
+              ribbon="Complete"
+              isComingSoon
+            />
+          </BentoTilt>
+        ))}
+      </div>
+    );
+  };
 
   // ── Password screen ──────────────────────────────────────────────────────
 
@@ -1131,8 +1296,342 @@ export default function RecommendationPage() {
           </div>
         </div>
 
+        {/* Starred section */}
+        <div className="section-wrapper mx-auto mt-16 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
+          {/* Collapsible header */}
+          <button
+            type="button"
+            onClick={() => setQrOpen(prev => !prev)}
+            className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
+          >
+            <FaStar className="text-lg text-yellow-300" />
+            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
+              Quick Reference
+            </h3>
+            {starred.size > 0 && (
+              <span className="rounded-full bg-yellow-300/15 px-2.5 py-0.5 font-robert-regular text-xs font-medium text-yellow-300">
+                {starred.size}
+              </span>
+            )}
+            <span className="ml-auto flex items-center gap-3">
+              <span className="hidden font-robert-regular text-xs text-white/30 sm:inline">
+                {starred.size === 0 ? 'Star items below to save them here' : `${starred.size} item${starred.size === 1 ? '' : 's'} starred`}
+              </span>
+              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${qrOpen ? 'rotate-180' : ''}`} />
+            </span>
+          </button>
+
+          {/* Collapsible body */}
+          <div className={`overflow-hidden transition-all duration-300 ${qrOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+              <p className="mb-4 max-w-xl font-robert-regular text-sm leading-relaxed text-white/40">
+                Star anything that stands out — activities, semesters, schools, projects, or my personal statement. Starred items appear here for quick reference as you write.
+              </p>
+
+          {/* Starred items rendered inline */}
+          {starred.size > 0 ? (
+            <div className="mt-6 space-y-6">
+              {/* ── Starred Semesters ── */}
+              {(() => {
+                const items = SEMESTERS.filter(s => starred.has(s.term));
+                if (!items.length) return null;
+                return (
+                  <div>
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                      <FaGraduationCap className="text-sm text-yellow-300/60" /> Semesters
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                      {items.map((sem) => (
+                        <div key={sem.term} className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20">
+                          <div className="mb-3 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-fk-screamer text-sm font-black uppercase tracking-wide text-white">{sem.term}</h4>
+                              {sem.inProgress && <span className="rounded-full bg-yellow-300/15 px-2 py-0.5 text-[10px] font-medium text-yellow-300">In Progress</span>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {sem.deanslist && <span className="flex items-center gap-1 rounded-full bg-yellow-300/10 px-2 py-0.5 text-[10px] font-medium text-yellow-300"><FaStar className="text-[8px]" /> Dean&apos;s List</span>}
+                              <span className="font-robert-regular text-[11px] text-white/30">{sem.credits}cr</span>
+                              {!sem.inProgress && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${sem.gpa === 4.0 ? 'bg-green-400/15 text-green-400' : 'bg-white/10 text-white/60'}`}>{sem.gpa.toFixed(3)}</span>}
+                              <button onClick={() => toggleStar(sem.term)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                                <FaStar className="text-xs text-yellow-300" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            {sem.courses.map((course, i) => (
+                              <div key={i} className="flex items-center gap-2 rounded bg-white/[0.02] px-2 py-1.5">
+                                <span className="w-[5.5rem] shrink-0 font-general text-[10px] tracking-wide text-white/30">{course.code}</span>
+                                <span className="min-w-0 flex-1 flex items-center gap-1.5 truncate font-robert-regular text-xs text-white/60">
+                                  <span className="truncate">{course.title}</span>
+                                  {course.honors && <span className="shrink-0 rounded bg-yellow-300/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Honors</span>}
+                                </span>
+                                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${gradeStyle(course.grade)}`}>{gradeLabel(course.grade)}</span>
+                                <span className="w-6 shrink-0 text-right font-general text-[10px] text-white/20">{course.credits}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Starred Personal Statement ── */}
+              {starred.has('personal-statement') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> Personal Statement
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">AMCAS Personal Statement</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-general text-[10px] tracking-wider ${PERSONAL_STATEMENT.text.length > PERSONAL_STATEMENT.maxChars ? 'text-red-400' : 'text-white/20'}`}>
+                          {PERSONAL_STATEMENT.text.length.toLocaleString()}/{PERSONAL_STATEMENT.maxChars.toLocaleString()}
+                        </span>
+                        <button onClick={() => toggleStar('personal-statement')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                          <FaStar className="text-xs text-yellow-300" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="font-robert-regular text-sm leading-relaxed text-white/60 whitespace-pre-wrap">{PERSONAL_STATEMENT.text}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Starred Schools ── */}
+              {(() => {
+                const items = SCHOOL_LIST.flatMap(t => t.schools.filter(s => starred.has(s.name)).map(s => ({ ...s, tier: t })));
+                if (!items.length) return null;
+                return (
+                  <div>
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                      <FaUniversity className="text-sm text-yellow-300/60" /> Schools
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {items.map((school) => (
+                        <div key={school.name} className="flex flex-col gap-2 rounded-lg bg-yellow-300/[0.04] p-3 ring-1 ring-yellow-300/20">
+                          <div className="flex items-center gap-2">
+                            {school.logo && <img src={`/img/school-icons/${school.logo}`} alt="" className="h-6 w-6 shrink-0 rounded object-contain" />}
+                            <span className="min-w-0 flex-1 font-robert-medium text-xs text-white leading-tight">{school.name}</span>
+                            <button onClick={() => toggleStar(school.name)} className="group shrink-0 rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                              <FaStar className="text-xs text-yellow-300" />
+                            </button>
+                          </div>
+                          <span className="font-robert-regular text-[11px] text-white/50">{school.location}</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${school.tier.bgPill} ${school.tier.textPill}`}>{school.mcat} MCAT</span>
+                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${school.tier.bgPill} ${school.tier.textPill}`}>{school.gpa.toFixed(2)} GPA</span>
+                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${school.tier.bgPill} ${school.tier.textPill}`}>{school.tier.label}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Starred Projects ── */}
+              {(() => {
+                const items = PROJECT_NAMES.filter(p => starred.has(p));
+                if (!items.length) return null;
+                return (
+                  <div>
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                      <FaCode className="text-sm text-yellow-300/60" /> Projects
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {items.map((name) => {
+                        const info = PROJECT_INFO[name];
+                        if (!info) return null;
+                        return (
+                          <div key={name} className="flex flex-col gap-2 rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-robert-medium text-sm text-white">{name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-medium text-white/50">{info.ribbon}</span>
+                                <button onClick={() => toggleStar(name)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                                  <FaStar className="text-xs text-yellow-300" />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="font-robert-regular text-xs leading-relaxed text-white/50">{info.desc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Starred Activities ── */}
+              {(() => {
+                const items = categories
+                  .filter(c => !['academics', 'personal-statement', 'schools', 'projects'].includes(c.id))
+                  .flatMap(c => c.activities.filter(a => starred.has(a.title)).map(a => ({ ...a, categoryName: c.name })));
+                if (!items.length) return null;
+                return (
+                  <div>
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                      <FaHeart className="text-sm text-yellow-300/60" /> Activities
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                      {items.map((activity) => (
+                        <div key={activity.title} className="flex flex-col gap-3 rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h3 className="font-robert-medium text-sm font-semibold text-white">{activity.title}</h3>
+                              <span className="mt-0.5 inline-block font-robert-regular text-[10px] text-white/30">{activity.categoryName}</span>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              {activity.hours > 0 && (
+                                <span className="flex items-center gap-1 rounded-full bg-yellow-300/15 px-2 py-0.5 text-[11px] font-medium text-yellow-300">
+                                  <MdAccessTime className="text-xs" />{formatHours(activity.hours)}h
+                                </span>
+                              )}
+                              <button onClick={(e) => { e.stopPropagation(); toggleStar(activity.title); }} className="group rounded-full p-1.5 transition-all duration-200 hover:bg-yellow-300/10">
+                                <FaStar className="text-sm text-yellow-300" />
+                              </button>
+                            </div>
+                          </div>
+                          {activity.role && (
+                            <div className="flex items-center gap-1.5 text-white/50">
+                              <FaUserTie className="shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.role}</span>
+                            </div>
+                          )}
+                          {activity.contact && (
+                            <div className="flex items-start gap-1.5 text-white/40">
+                              <FaUserMd className="mt-0.5 shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.contact}</span>
+                            </div>
+                          )}
+                          {activity.location && (
+                            <div className="flex items-center gap-1.5 text-white/40">
+                              <FaMapMarkerAlt className="shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.location}</span>
+                            </div>
+                          )}
+                          {(() => {
+                            const maxChars = activity.mostMeaningful ? 1325 : 700;
+                            const charCount = (activity.description || '').length;
+                            return (
+                              <div className="mt-1 rounded bg-white/[0.02] p-2.5">
+                                {activity.mostMeaningful && <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>}
+                                {charCount > 0
+                                  ? <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.description}</p>
+                                  : <p className="font-robert-regular text-[11px] italic text-white/15">No description yet</p>}
+                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${charCount > maxChars ? 'text-red-400' : 'text-white/15'}`}>{charCount}/{maxChars}</span></div>
+                              </div>
+                            );
+                          })()}
+                          <div className="mt-auto flex items-center justify-between pt-2">
+                            {dateRange(activity) && (
+                              <div className="flex items-center gap-1.5 text-white/30">
+                                <FaCalendarAlt className="text-[10px]" /><span className="font-robert-regular text-[11px]">{dateRange(activity)}</span>
+                              </div>
+                            )}
+                            {activity.ongoing !== undefined && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${activity.ongoing ? 'bg-green-400/15 text-green-400' : 'bg-white/10 text-white/40'}`}>
+                                {activity.ongoing ? 'Ongoing' : 'Completed'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-lg border border-dashed border-white/10 px-4 py-3">
+              <p className="font-robert-regular text-xs text-white/20">
+                No items starred yet. Click the <FaRegStar className="inline text-[10px] text-white/30" /> icon on any item below to save it here.
+              </p>
+            </div>
+          )}
+            </div>
+          </div>
+        </div>
+
+        {/* Letter Writing Guide */}
+        <div className="section-wrapper mx-auto mt-4 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
+          <button
+            type="button"
+            onClick={() => setLetterGuideOpen(prev => !prev)}
+            className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
+          >
+            <FaPen className="text-lg text-yellow-300" />
+            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
+              Letter Format &amp; Guide
+            </h3>
+            <span className="ml-auto">
+              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${letterGuideOpen ? 'rotate-180' : ''}`} />
+            </span>
+          </button>
+
+          <div className={`overflow-hidden transition-all duration-300 ${letterGuideOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="px-5 pb-6 sm:px-6">
+
+              {/* Letter Format Template */}
+              <div className="rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/8 font-robert-regular text-xs leading-relaxed text-white/50">
+                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Header</span>
+                  <p className="mt-1.5 text-white/30">[Your institutional letterhead]</p>
+                  <p className="text-white/30">[Date]</p>
+                  <p className="mt-2 text-white/40">Dear Admissions Committee,</p>
+                </div>
+
+                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraph 1 — Introduction</span>
+                  <p className="mt-1.5 text-white/30">Who you are, your role, how long you&apos;ve known the applicant, and in what capacity. State whether your observations are direct.</p>
+                </div>
+
+                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraphs 2–3 — Specific Examples</span>
+                  <p className="mt-1.5 text-white/30">Use <span className="text-white/50">SAC format</span>: describe a <span className="text-white/50">Situation</span>, the <span className="text-white/50">Action</span> they took, and the <span className="text-white/50">Consequence</span>. 2–3 detailed anecdotes you directly observed. This is the core of the letter.</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {['Empathy', 'Reliability', 'Resilience', 'Teamwork', 'Critical Thinking', 'Service', 'Communication', 'Self-Awareness'].map(c => (
+                      <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/30">{c}</span>
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-white/20">AAMC competencies you might address (pick ones you&apos;ve observed)</p>
+                </div>
+
+                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraph 4 — Comparative Ranking</span>
+                  <p className="mt-1.5 text-white/30">Where the applicant stands among peers. e.g. <span className="italic text-white/40">&quot;Among the top 5% of pre-med students I have taught in 15 years.&quot;</span></p>
+                </div>
+
+                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Closing — Strong Endorsement</span>
+                  <p className="mt-1.5 text-white/30">A clear, confident recommendation. e.g. <span className="italic text-white/40">&quot;I give my highest and most enthusiastic recommendation for admission to medical school.&quot;</span></p>
+                </div>
+
+                <div>
+                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Signature Block</span>
+                  <p className="mt-1.5 text-white/30">Sincerely,</p>
+                  <p className="text-white/30">[Your signature]</p>
+                  <p className="text-white/30">[Full name], [Degree(s)]</p>
+                  <p className="text-white/30">[Title / Position]</p>
+                  <p className="text-white/30">[Department &amp; Institution]</p>
+                  <p className="text-white/30">[Email] · [Phone]</p>
+                </div>
+              </div>
+
+              {/* Quick notes */}
+              <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1 rounded-lg bg-yellow-300/[0.03] px-4 py-3 ring-1 ring-yellow-300/10 font-robert-regular text-[11px] sm:grid-cols-2">
+                <p className="text-white/40"><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
+                <p className="text-white/40"><span className="text-white/60">Submit via:</span> AMCAS Letter Service or Interfolio</p>
+                <p className="text-white/40"><span className="text-white/60">Avoid:</span> Vague praise, restating GPA/MCAT, describing your own work</p>
+                <p className="text-white/40"><span className="text-white/60">Focus on:</span> The student — specific moments you witnessed</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
         {/* Sections */}
-        <div className="sections-container mx-auto mt-16 flex max-w-6xl flex-col gap-4">
+        <div className="sections-container mx-auto mt-4 flex max-w-6xl flex-col gap-4">
           {categories.map((cat) => {
             const isExpanded = expanded.has(cat.id);
             const isDragTarget = dragOverId === cat.id && draggedId !== cat.id;
@@ -1141,6 +1640,13 @@ export default function RecommendationPage() {
             const isSchools = cat.id === 'schools';
             const isProjects = cat.id === 'projects';
             const isSpecial = isAcademics || isPS || isProjects || isSchools;
+            const hasStarredItems = isSpecial
+              ? (isAcademics && SEMESTERS.some(s => starred.has(s.term)))
+                || (isPS && starred.has('personal-statement'))
+                || (isSchools && SCHOOL_LIST.some(t => t.schools.some(s => starred.has(s.name))))
+                || (isProjects && PROJECT_NAMES.some(p => starred.has(p)))
+              : cat.activities.some(a => starred.has(a.title));
+            if (showStarredOnly && !hasStarredItems) return null;
 
             return (
               <div
@@ -1208,20 +1714,35 @@ export default function RecommendationPage() {
                   style={{ height: 0, opacity: 0 }}
                 >
                   {isAcademics ? renderAcademicContent() : isPS ? renderPersonalStatementContent() : isSchools ? renderSchoolsContent() : isProjects ? renderProjectsContent() : (
-                    <div className="grid grid-cols-1 gap-4 px-4 pb-6 sm:px-6 md:grid-cols-2 lg:grid-cols-3">
-                      {cat.activities.map((activity, idx) => (
+                    <div className="grid grid-cols-1 gap-4 px-4 pb-6 sm:px-6 lg:grid-cols-2">
+                      {cat.activities.map((activity, idx) => {
+                        const isStarred = starred.has(activity.title);
+                        if (showStarredOnly && !isStarred) return null;
+                        return (
                         <BentoTilt key={idx} className="inner-card h-full">
-                          <div className="flex h-full flex-col gap-3 rounded-lg bg-white/5 p-5 ring-1 ring-white/10">
+                          <div className={`flex h-full flex-col gap-3 rounded-lg p-5 ring-1 transition-all duration-200 ${
+                            isStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/5 ring-white/10'
+                          }`}>
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="font-robert-medium text-sm font-semibold text-white">
                                 {activity.title}
                               </h3>
-                              {activity.hours > 0 && (
-                                <span className="flex shrink-0 items-center gap-1 rounded-full bg-yellow-300/15 px-2 py-0.5 text-[11px] font-medium text-yellow-300">
-                                  <MdAccessTime className="text-xs" />
-                                  {formatHours(activity.hours)}h
-                                </span>
-                              )}
+                              <div className="flex shrink-0 items-center gap-1.5">
+                                {activity.hours > 0 && (
+                                  <span className="flex items-center gap-1 rounded-full bg-yellow-300/15 px-2 py-0.5 text-[11px] font-medium text-yellow-300">
+                                    <MdAccessTime className="text-xs" />
+                                    {formatHours(activity.hours)}h
+                                  </span>
+                                )}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleStar(activity.title); }}
+                                  className="group rounded-full p-1.5 transition-all duration-200 hover:bg-yellow-300/10"
+                                >
+                                  {isStarred
+                                    ? <FaStar className="text-sm text-yellow-300 transition-transform duration-200 group-hover:scale-110" />
+                                    : <FaRegStar className="text-sm text-white/20 transition-all duration-200 group-hover:text-yellow-300/60 group-hover:scale-110" />}
+                                </button>
+                              </div>
                             </div>
 
                             {activity.role && (
@@ -1300,7 +1821,8 @@ export default function RecommendationPage() {
                             </div>
                           </div>
                         </BentoTilt>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

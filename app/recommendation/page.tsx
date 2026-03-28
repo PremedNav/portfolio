@@ -550,7 +550,6 @@ export default function RecommendationPage() {
   });
   const [showStarredOnly, setShowStarredOnly] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
-  const [letterGuideOpen, setLetterGuideOpen] = useState(false);
 
   const toggleStar = useCallback((title: string) => {
     setStarred(prev => {
@@ -1553,82 +1552,6 @@ export default function RecommendationPage() {
           </div>
         </div>
 
-        {/* Letter Writing Guide */}
-        <div className="section-wrapper mx-auto mt-4 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
-          <button
-            type="button"
-            onClick={() => setLetterGuideOpen(prev => !prev)}
-            className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
-          >
-            <FaPen className="text-lg text-yellow-300" />
-            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
-              Letter Format &amp; Guide
-            </h3>
-            <span className="ml-auto">
-              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${letterGuideOpen ? 'rotate-180' : ''}`} />
-            </span>
-          </button>
-
-          <div className={`overflow-hidden transition-all duration-300 ${letterGuideOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="px-5 pb-6 sm:px-6">
-
-              {/* Letter Format Template */}
-              <div className="rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/8 font-robert-regular text-xs leading-relaxed text-white/50">
-                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Header</span>
-                  <p className="mt-1.5 text-white/30">[Your institutional letterhead]</p>
-                  <p className="text-white/30">[Date]</p>
-                  <p className="mt-2 text-white/40">Dear Admissions Committee,</p>
-                </div>
-
-                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraph 1 — Introduction</span>
-                  <p className="mt-1.5 text-white/30">Who you are, your role, how long you&apos;ve known the applicant, and in what capacity. State whether your observations are direct.</p>
-                </div>
-
-                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraphs 2–3 — Specific Examples</span>
-                  <p className="mt-1.5 text-white/30">Use <span className="text-white/50">SAC format</span>: describe a <span className="text-white/50">Situation</span>, the <span className="text-white/50">Action</span> they took, and the <span className="text-white/50">Consequence</span>. 2–3 detailed anecdotes you directly observed. This is the core of the letter.</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {['Empathy', 'Reliability', 'Resilience', 'Teamwork', 'Critical Thinking', 'Service', 'Communication', 'Self-Awareness'].map(c => (
-                      <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/30">{c}</span>
-                    ))}
-                  </div>
-                  <p className="mt-1.5 text-[10px] text-white/20">AAMC competencies you might address (pick ones you&apos;ve observed)</p>
-                </div>
-
-                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Paragraph 4 — Comparative Ranking</span>
-                  <p className="mt-1.5 text-white/30">Where the applicant stands among peers. e.g. <span className="italic text-white/40">&quot;Among the top 5% of pre-med students I have taught in 15 years.&quot;</span></p>
-                </div>
-
-                <div className="mb-4 border-b border-dashed border-white/10 pb-4">
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Closing — Strong Endorsement</span>
-                  <p className="mt-1.5 text-white/30">A clear, confident recommendation. e.g. <span className="italic text-white/40">&quot;I give my highest and most enthusiastic recommendation for admission to medical school.&quot;</span></p>
-                </div>
-
-                <div>
-                  <span className="font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/50">Signature Block</span>
-                  <p className="mt-1.5 text-white/30">Sincerely,</p>
-                  <p className="text-white/30">[Your signature]</p>
-                  <p className="text-white/30">[Full name], [Degree(s)]</p>
-                  <p className="text-white/30">[Title / Position]</p>
-                  <p className="text-white/30">[Department &amp; Institution]</p>
-                  <p className="text-white/30">[Email] · [Phone]</p>
-                </div>
-              </div>
-
-              {/* Quick notes */}
-              <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1 rounded-lg bg-yellow-300/[0.03] px-4 py-3 ring-1 ring-yellow-300/10 font-robert-regular text-[11px] sm:grid-cols-2">
-                <p className="text-white/40"><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
-                <p className="text-white/40"><span className="text-white/60">Submit via:</span> AMCAS Letter Service or Interfolio</p>
-                <p className="text-white/40"><span className="text-white/60">Avoid:</span> Vague praise, restating GPA/MCAT, describing your own work</p>
-                <p className="text-white/40"><span className="text-white/60">Focus on:</span> The student — specific moments you witnessed</p>
-              </div>
-
-            </div>
-          </div>
-        </div>
 
         {/* Sections */}
         <div className="sections-container mx-auto mt-4 flex max-w-6xl flex-col gap-4">

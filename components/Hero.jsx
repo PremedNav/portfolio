@@ -5,15 +5,17 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
 import { TiLocationArrow, TiLocation } from "react-icons/ti";
 import { useEffect, useRef, useState } from "react";
+import dynamic from 'next/dynamic';
 
 import Button from "./Button";
-import VideoPreview from "./VideoPreview";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const HelmetReveal = dynamic(() => import('./HelmetReveal'), { ssr: false });
+
 const CLOVER_PATH = "M1675.37 130.687C1796.88 117.897 1895.22 172.947 1991.32 238.845C2022.4 260.158 2054.23 284.254 2091.96 291.93C2155.16 304.787 2213.46 255.503 2262.94 223.089C2358.1 160.754 2474.56 118.923 2589.05 143.485C2697.07 166.658 2783.81 234.884 2843.17 326.636C2907.12 425.499 2940.04 545.104 2924.51 662.718C2900.3 846.207 2794.55 986.749 2662.3 1108.52C2602.72 1163.38 2540.69 1214.11 2485.77 1274.04C2406.37 1360.65 2343.12 1470.81 2318.75 1586.25C2312.12 1617.66 2300.48 1677.64 2320.62 1706.28C2325.47 1713.18 2332.52 1716.94 2340.8 1718.13C2372.79 1722.72 2416.25 1697.19 2442.75 1681.9C2569.76 1608.63 2662.9 1482.01 2727.41 1353C2750.33 1307.17 2769.79 1259.53 2791.29 1213.01C2852.93 1079.63 2928.82 957.434 3051.02 871.227C3163.2 792.085 3296.19 758.028 3432.2 782.454C3546.06 802.9 3654.95 860.22 3721.61 956.803C3788.79 1054.12 3802.24 1173.28 3783.09 1287.76C3777.41 1321.7 3767.48 1354.77 3761.53 1388.66C3742.01 1500.05 3795.17 1525.61 3869.08 1591.66C3902.39 1621.56 3932.13 1655.22 3957.7 1691.98C4018.99 1778.36 4043.12 1885.69 4024.69 1989.99C4001.92 2114.74 3918.31 2223.3 3814.83 2293.63C3739.06 2344.41 3651.46 2374.78 3560.52 2381.79C3398.96 2394.15 3246.47 2337.22 3107.03 2261.58C2997.8 2202.33 2889.54 2142.52 2765.28 2121.78C2676.83 2107.02 2560.88 2094.25 2479.57 2138.85C2453.18 2153.31 2472.3 2190.25 2486.12 2206.59C2576.37 2313.35 2725.9 2383.59 2861.78 2408.48C2956.98 2422.24 3053.21 2431.04 3149.02 2440.97C3461.48 2473.34 3760.05 2729.39 3708.05 3072.46C3696.96 3141.47 3667.6 3206.25 3623.01 3260.08C3546.91 3351.75 3440.69 3395.71 3325.01 3412.72C3267 3421.24 3190.6 3414.58 3145.76 3455.06C3111.05 3486.39 3093.8 3539.56 3075.63 3582.7C3040.15 3669.26 2986.19 3747.36 2909.08 3802.18C2695.81 3953.8 2404.92 3856.63 2262.11 3654.94C2148.85 3494.97 2129.25 3307.34 2166.4 3119.48C2180.61 3047.6 2200.09 2978.2 2211.98 2906.46C2213.7 2893.68 2215.74 2880.93 2217.24 2867.92C2232.87 2732.24 2207.57 2561.56 2126.73 2449.34C2065.73 2364.67 2000.77 2534.81 1987.1 2577.12C1946.6 2702.52 1943.07 2834.44 1972.2 2962.89C2014.43 3135.25 2047.86 3289.75 1999.23 3465.19C1927.16 3725.19 1673.22 3918.37 1399.03 3856.2C1245.7 3821.43 1131.65 3683.38 1083.11 3539.26C1045.41 3427.37 1003.68 3413.29 891.422 3404.82C650.411 3386.63 452.42 3228.09 462.585 2971.01C466.718 2853.75 510.216 2741.31 586.066 2651.79C715.521 2501.12 893.472 2440.68 1085.54 2421.66C1167.23 2413.57 1255.56 2410.01 1335.81 2395.3C1453.31 2372.5 1570.54 2318.17 1659.66 2237.88C1686.21 2213.97 1744.2 2155.84 1696.43 2125.88C1671.85 2110.46 1621.79 2102.61 1593.48 2100.32C1461.57 2089.67 1328.94 2120.81 1209.34 2175.53C1157.83 2199.1 1108.85 2228.2 1058.64 2254.31C947.2 2312.63 825.607 2360.11 698.851 2365.82C550.972 2372.02 408.288 2325.78 299.806 2222.52C193.209 2121.05 129.407 1980.75 156.801 1831.72C174.793 1733.84 229.142 1651.22 301.583 1584.14C333.372 1554.71 369.44 1531.09 400.111 1500.49C456.629 1444.11 439.311 1369.75 425.255 1300.08C405.974 1205.06 407.497 1108.34 442.136 1017.14C506.363 848.027 675.469 765.759 849.15 759.782C1117.63 750.544 1317.62 969.471 1408.56 1201.87C1455.06 1322.99 1505.66 1439.9 1590.72 1539.67C1646.97 1607.04 1717.78 1668.7 1799.07 1703.3C1808.91 1707.49 1827.89 1711.83 1838.39 1712.3C1887.81 1714.53 1874.11 1625.04 1869.12 1595.86C1847.81 1471.16 1786.79 1354.89 1704.42 1259.64C1651.32 1198.24 1590.59 1145.34 1532.71 1088.67C1416.77 975.397 1320.54 833.934 1298.23 669.994C1280.37 536.269 1316.85 400.962 1399.53 294.352C1470.9 200.592 1557.73 146.294 1675.37 130.687Z";
 
-const CloverIcon = ({ size = 20, loading = false }) => (
+const CloverIcon = ({ size = 20, loading = false, color = 'white' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -22,9 +24,7 @@ const CloverIcon = ({ size = 20, loading = false }) => (
     fill="none"
     className="shrink-0"
   >
-    {/* Always show the solid white clover */}
-    <path fill="white" d={CLOVER_PATH} />
-    {/* When loading, overlay an animated yellow stroke tracing the edges */}
+    <path fill={color} d={CLOVER_PATH} />
     {loading && (
       <path
         fill="none"
@@ -52,25 +52,35 @@ const LOGO_GROUPS = [
   ],
 ];
 
+const WIDGETS = [
+  { src: '/widgets/dna.html', title: 'Game of Life', label: 'Game of Life' },
+  { src: '/widgets/quantum.html', title: 'Quantum Network', label: 'Quantum Network' },
+  { src: '/widgets/blackhole.html', title: 'Black Hole', label: 'Black Hole' },
+  { src: '/widgets/neuron.html', title: 'Neuron', label: 'Neural Synapse' },
+  { src: '/widgets/morphology.html', title: 'Morphology', label: 'Morphology' },
+];
+
 const Hero = () => {
-  const [currentIndex, setCurrentIndex] = useState(1);
-  const [hasClicked, setHasClicked] = useState(false);
-
+  const dark = true;
   const [loading, setLoading] = useState(true);
-  const [loadedVideos, setLoadedVideos] = useState(0);
-
   const [coloradoTime, setColoradoTime] = useState('');
+
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { role: 'ai', text: "Hi! I'm Clover. Ask me anything about Navtej's work, experience, or interests." },
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+
   const chatRef = useRef(null);
   const chatMessagesRef = useRef(null);
   const pillRef = useRef(null);
   const logoContainerRef = useRef(null);
+  const loaderRef = useRef(null);
+  const pulseRef = useRef(null);
+  const drawDoneRef = useRef(false);
 
+  // ── Colorado time ──
   useEffect(() => {
     const updateTime = () => {
       setColoradoTime(
@@ -87,17 +97,53 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-scroll chat to bottom on new messages / loading
+  // ── Preload model images → dismiss loader when ready ──
+  useEffect(() => {
+    const srcs = [
+      '/models/face.png', '/models/face-depth.png',
+      '/models/skeleton.png', '/models/skeleton-depth.png',
+    ];
+    let loaded = 0;
+    srcs.forEach((src) => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (loaded >= srcs.length) setLoading(false);
+      };
+      img.src = src;
+    });
+  }, []);
+
+  // Fallback: dismiss loader after 3s
+  useEffect(() => {
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // ── Broadcast theme to widget iframes ──
+  useEffect(() => {
+    const msg = { theme: 'dark' };
+    const iframes = document.querySelectorAll('iframe[data-widget]');
+    iframes.forEach((f) => f.contentWindow?.postMessage(msg, '*'));
+    const handler = (e) => {
+      if (e.data?.type === 'widget-ready' && e.source) {
+        e.source.postMessage(msg, '*');
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // ── Auto-scroll chat to bottom ──
   useEffect(() => {
     const el = chatMessagesRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [chatMessages, chatLoading]);
 
-  // ── Chat panel open/close ──
+  // ── Chat panel open/close animation ──
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
-
     if (chatOpen) {
       el.style.visibility = 'visible';
       el.style.pointerEvents = 'auto';
@@ -137,37 +183,22 @@ const Hero = () => {
     setChatLoading(false);
   };
 
-  const totalVideos = 3;
-  const nextVdRef = useRef(null);
-  const loaderRef = useRef(null);
-
-  const handleVideoLoad = () => {
-    setLoadedVideos((prev) => prev + 1);
-  };
-
+  // ── Lock scrolling during loading ──
   useEffect(() => {
-    if (loadedVideos >= totalVideos - 1) {
-      setLoading(false);
-    }
-  }, [loadedVideos]);
-
-  // Fallback: dismiss loader after 3s even if videos haven't fired onLoadedData
-  useEffect(() => {
-    const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout);
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
   }, []);
 
-  // ── Logo animation: draw in on mount, pulse while loading, exit when done ──
-  const pulseRef = useRef(null);
-  const drawDoneRef = useRef(false);
-
-  // Phase 1: stroke draw on mount → then pulse loop until loading finishes
+  // ── Phase 1: Logo draw animation + pulse ──
   useEffect(() => {
     const loader = loaderRef.current;
     if (!loader) return;
     const paths = loader.querySelectorAll('.logo-path');
 
-    // Set up stroke draw
     paths.forEach((path) => {
       const len = path.getTotalLength();
       gsap.set(path, {
@@ -182,7 +213,6 @@ const Hero = () => {
     const drawTl = gsap.timeline({
       onComplete: () => {
         drawDoneRef.current = true;
-        // Start breathing pulse that loops until loading finishes
         pulseRef.current = gsap.to(paths, {
           opacity: 0.4,
           duration: 0.6,
@@ -194,7 +224,6 @@ const Hero = () => {
       },
     });
 
-    // Draw strokes staggered
     drawTl.to(paths, {
       strokeDashoffset: 0,
       duration: 0.8,
@@ -202,7 +231,6 @@ const Hero = () => {
       ease: 'power2.inOut',
     });
 
-    // Fill in
     drawTl.to(paths, {
       fill: '#FFFFFF',
       strokeWidth: 0,
@@ -216,35 +244,16 @@ const Hero = () => {
     };
   }, []);
 
-  // Lock scrolling during the landing animation
-  useEffect(() => {
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  // Phase 2: when loading finishes → kill pulse, exit
+  // ── Phase 2: Exit animation when loading finishes ──
   useEffect(() => {
     if (loading) return;
-
     const loader = loaderRef.current;
     if (!loader) return;
     const paths = loader.querySelectorAll('.logo-path');
 
     function doExit() {
-      // Kill pulse, snap to full
       if (pulseRef.current) pulseRef.current.kill();
       gsap.set(paths, { opacity: 1 });
-
-      // Set video-frame visible but clipped to the trapezoid shape, scaled down
-      gsap.set('#video-frame', {
-        opacity: 1,
-        clipPath: 'polygon(14% 0%, 72% 0%, 88% 90%, 0% 95%)',
-        scale: 0.6,
-      });
 
       const tl = gsap.timeline({
         defaults: { ease: 'power3.out' },
@@ -255,15 +264,12 @@ const Hero = () => {
         },
       });
 
-      // Loader fades while video frame starts expanding — crossfade
-      tl.to(loader, {
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power2.in',
-        onComplete: () => { loader.style.display = 'none'; },
-      }, 0);
-
-      // Video frame: trapezoid → full rect, scaled down → full size
+      // Trapezoid frame entrance
+      gsap.set('#video-frame', {
+        opacity: 1,
+        clipPath: 'polygon(14% 0%, 72% 0%, 88% 90%, 0% 95%)',
+        scale: 0.6,
+      });
       tl.to('#video-frame', {
         clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
         scale: 1,
@@ -271,23 +277,30 @@ const Hero = () => {
         ease: 'power4.inOut',
       }, 0.2);
 
-      // Headings: clip-path text reveal (wipe up)
+      // Loader fades out
+      tl.to(loader, {
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power2.in',
+        onComplete: () => { loader.style.display = 'none'; },
+      }, 0);
+
+      // Headings: clip-path text reveal
       gsap.set('.hero-heading-anim', { opacity: 1 });
       tl.fromTo('.hero-heading-anim',
         { clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0 100%)', y: 20 },
         { clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0 100%)', y: 0, duration: 0.8, stagger: 0.1, ease: 'power4.out' },
-        0.9
+        0.5
       );
 
       // Subtext + button: fade up
       tl.fromTo('.hero-subtext-anim',
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power2.out' },
-        1.2
+        0.8
       );
     }
 
-    // If draw already finished, exit immediately. Otherwise wait for it.
     if (drawDoneRef.current) {
       doExit();
     } else {
@@ -301,7 +314,7 @@ const Hero = () => {
     }
   }, [loading]);
 
-  // Close chat on any scroll
+  // ── Close chat on scroll ──
   useEffect(() => {
     if (!chatOpen) return;
     const handleScroll = () => setChatOpen(false);
@@ -309,7 +322,7 @@ const Hero = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [chatOpen]);
 
-  // Logo group crossfade — waits for hero intro
+  // ── Logo group crossfade ──
   useEffect(() => {
     const container = logoContainerRef.current;
     if (!container) return;
@@ -323,64 +336,20 @@ const Hero = () => {
       interval = setInterval(() => {
         const prev = current;
         current = (current + 1) % groups.length;
-
-        gsap.to(groups[prev], {
-          opacity: 0,
-          duration: 1,
-          ease: 'sine.inOut',
-          overwrite: true,
-        });
-        gsap.to(groups[current], {
-          opacity: 1,
-          duration: 1,
-          ease: 'sine.inOut',
-          overwrite: true,
-        });
+        gsap.to(groups[prev], { opacity: 0, duration: 1, ease: 'sine.inOut', overwrite: true });
+        gsap.to(groups[current], { opacity: 1, duration: 1, ease: 'sine.inOut', overwrite: true });
       }, 4000);
     }
 
     const onReady = () => setTimeout(startCycling, 3000);
     window.addEventListener('hero-ready', onReady);
-
     return () => {
       window.removeEventListener('hero-ready', onReady);
       if (interval) clearInterval(interval);
     };
   }, []);
 
-  const handleMiniVdClick = () => {
-    setHasClicked(true);
-
-    setCurrentIndex((prevIndex) => (prevIndex % totalVideos) + 1);
-  };
-
-  useGSAP(
-    () => {
-      if (hasClicked) {
-        gsap.set("#next-video", { visibility: "visible" });
-        gsap.to("#next-video", {
-          transformOrigin: "center center",
-          scale: 1,
-          width: "100%",
-          height: "100%",
-          duration: 1,
-          ease: "power1.inOut",
-          onStart: () => nextVdRef.current.play(),
-        });
-        gsap.from("#current-video", {
-          transformOrigin: "center center",
-          scale: 0,
-          duration: 1.5,
-          ease: "power1.inOut",
-        });
-      }
-    },
-    {
-      dependencies: [currentIndex],
-      revertOnUpdate: true,
-    }
-  );
-
+  // ── Trapezoid scroll animation ──
   useGSAP(() => {
     gsap.set("#video-frame", {
       clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
@@ -399,10 +368,10 @@ const Hero = () => {
     });
   });
 
-  const getVideoSrc = (index) => `/videos/hero-${index}.mp4`;
-
   return (
-    <div className="relative h-dvh w-screen overflow-x-hidden">
+    <div className="relative h-dvh w-screen overflow-hidden bg-black">
+
+      {/* ── Loading Screen ── */}
       <div
         ref={loaderRef}
         className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden"
@@ -433,131 +402,208 @@ const Hero = () => {
         </svg>
       </div>
 
+      {/* ── Video Frame (trapezoid container) ── */}
       <div
         id="video-frame"
-        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
+        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-black"
         style={{ opacity: 0 }}
       >
-        <div>
-          <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
-            <VideoPreview>
-              <div
-                onClick={handleMiniVdClick}
-                className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
-              >
-                <video
-                  ref={nextVdRef}
-                  src={getVideoSrc((currentIndex % totalVideos) + 1)}
-                  loop
-                  muted
-                  id="current-video"
-                  className="size-64 origin-center scale-150 object-cover object-center"
-                  onLoadedData={handleVideoLoad}
-                />
-              </div>
-            </VideoPreview>
-          </div>
 
-          <video
-            ref={nextVdRef}
-            src={getVideoSrc(currentIndex)}
-            loop
-            muted
-            id="next-video"
-            className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-            onLoadedData={handleVideoLoad}
-          />
-          <video
-            src={getVideoSrc(
-              currentIndex === totalVideos ? 1 : currentIndex
-            )}
-            autoPlay
-            loop
-            muted
-            className="absolute left-0 top-0 size-full object-cover object-center"
-            onLoadedData={handleVideoLoad}
-          />
-        </div>
+      {/* ── HelmetReveal: face/skeleton + contour bg + brush ── */}
+      <HelmetReveal dark={dark} />
 
-        <div className="hero-subtext-anim absolute bottom-8 right-8 z-40 hidden sm:block" style={{ opacity: 0 }}>
-          <p className="mb-3 text-right text-[10px] font-medium uppercase tracking-[0.25em] text-white/40">
-            Previously optimized systems for
-          </p>
-          <div ref={logoContainerRef} className="relative">
-            {LOGO_GROUPS.map((group, gi) => (
-              <div
-                key={gi}
-                className={`logo-group flex items-center justify-end gap-4 sm:gap-6${gi > 0 ? ' absolute top-0 right-0' : ''}`}
-                style={{ opacity: gi === 0 ? 1 : 0, willChange: 'opacity' }}
-              >
-                {group.map((logo) => (
-                  <img
-                    key={logo.alt}
-                    src={logo.src}
-                    alt={logo.alt}
-                    className="h-3 sm:h-5 w-auto shrink-0 opacity-50"
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-0 z-40 px-5 sm:px-10">
-            <h1 className="hero-heading-anim special-font hero-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-blue-100" style={{ opacity: 0 }}>
-              Navtej Singh
-            </h1>
-
-            <p className="hero-subtext-anim mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-blue-100/70" style={{ opacity: 0 }}>
-              Software Architect &nbsp;|&nbsp; Pre-Med
-            </p>
-
-            <p className="hero-subtext-anim mt-2 flex items-center gap-3 text-xs text-white/75" style={{ opacity: 0 }}>
-              <span className="flex items-center gap-1.5">
-                <TiLocation className="text-sm" />
-                Colorado, USA
-              </span>
-              {coloradoTime && (
-                <span className="text-white/75">{coloradoTime}</span>
-              )}
-            </p>
-
-            <p className="hero-subtext-anim mt-5 max-w-sm font-robert-regular text-sm leading-relaxed text-white/75" style={{ opacity: 0 }}>
-              Hi! I&apos;m a 20-year-old pre-med student and software architect, programming since I was 6. I build medical AI platforms, ML infrastructure, and distributed systems. I&apos;ve recently been doing web dev for fun. I don&apos;t take compensation, I just love solving hard problems.
-            </p>
-
-            <div className="hero-subtext-anim mt-5" style={{ opacity: 0 }}>
-              <a href="mailto:navmainemail@gmail.com">
-                <Button
-                  id="watch-trailer"
-                  title="Get in touch"
-                  leftIcon={<TiLocationArrow />}
-                  containerClass="bg-yellow-300 flex-center gap-1"
-                />
-              </a>
-            </div>
-
-            <p className="hero-subtext-anim mt-4 font-robert-regular text-xs text-blue-100/40" style={{ opacity: 0 }}>
-              <span className="hidden sm:inline">Talk to Clover, an LLM I made, via the clover in the bottom middle.</span>
-              <span className="sm:hidden">Tap the clover in the bottom right to chat with Clover, an LLM I made.</span>
-            </p>
-
-        </div>
-
-        {/* AI Chat Pill — bottom right on mobile, bottom center on desktop */}
-        <div className="hero-subtext-anim absolute bottom-6 right-5 z-40 sm:right-auto sm:left-1/2 sm:-translate-x-1/2" style={{ opacity: 0 }}>
-          <button
-            ref={pillRef}
-            onClick={() => setChatOpen((prev) => !prev)}
-            className="hover:scale-110 transition-transform duration-200 cursor-pointer"
+      {/* ── 5 Interactive 3D Widgets (preload behind loader) ── */}
+      {WIDGETS.map((w, i) => {
+        const positions = [
+          { top: '50%', left: '-2%',  ty: '-50%' },
+          { top: '8%',  left: '10%' },
+          { top: '-2%', left: '50%', tx: '-50%' },
+          { top: '8%',  right: '10%' },
+          { top: '50%', right: '-2%', ty: '-50%' },
+        ];
+        const p = positions[i];
+        return (
+          <div
+            key={w.title}
+            className="group absolute z-[12] pointer-events-auto w-[180px] h-[180px] sm:w-[280px] sm:h-[280px]"
+            style={{
+              top: p.top,
+              left: p.left,
+              right: p.right,
+              transform: `translate(${p.tx || '0'}, ${p.ty || '0'})`,
+            }}
           >
-            <CloverIcon size={20} loading />
-          </button>
+            <iframe
+              src={w.src}
+              data-widget
+              className="absolute inset-0 w-full h-full"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                WebkitMaskImage: 'radial-gradient(circle at center, black 25%, transparent 65%)',
+                maskImage: 'radial-gradient(circle at center, black 25%, transparent 65%)',
+              }}
+              title={w.title}
+              loading="lazy"
+              allowTransparency
+              onLoad={(e) => {
+                e.target.contentWindow?.postMessage(
+                  { theme: dark ? 'dark' : 'light' }, '*'
+                );
+              }}
+            />
+            {/* Curved arc label on hover */}
+            <svg
+              className="absolute left-0 w-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              style={{ top: '70%', height: '40px' }}
+              viewBox="0 0 200 40"
+              overflow="visible"
+            >
+              <defs>
+                <path
+                  id={`arc-${i}`}
+                  d="M 20,5 A 100,100 0 0,0 180,5"
+                  fill="none"
+                />
+              </defs>
+              <text
+                className="select-none"
+                fill={dark ? 'rgba(232,230,225,0.7)' : 'rgba(26,26,26,0.7)'}
+                fontSize="11"
+                fontWeight="600"
+                letterSpacing="0.15em"
+                textAnchor="middle"
+              >
+                <textPath href={`#arc-${i}`} startOffset="50%">
+                  {w.label.toUpperCase()}
+                </textPath>
+              </text>
+            </svg>
+          </div>
+        );
+      })}
+
+      {/* ── Hero Text Content ── */}
+      <div className="absolute bottom-8 left-0 z-[30] px-5 sm:px-10">
+        <h1
+          className={`hero-heading-anim special-font hero-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]' : 'text-[#1a1a1a]'
+          }`}
+          style={{ opacity: 0 }}
+        >
+          Navtej Singh
+        </h1>
+
+        <p
+          className={`hero-subtext-anim mt-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]/70' : 'text-[#1a1a1a]/70'
+          }`}
+          style={{ opacity: 0 }}
+        >
+          Software Architect &nbsp;|&nbsp; Pre-Med
+        </p>
+
+        <p
+          className={`hero-subtext-anim mt-2 flex items-center gap-3 text-xs transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]/60' : 'text-[#1a1a1a]/60'
+          }`}
+          style={{ opacity: 0 }}
+        >
+          <span className="flex items-center gap-1.5">
+            <TiLocation className="text-sm" />
+            Colorado, USA
+          </span>
+          {coloradoTime && <span>{coloradoTime}</span>}
+        </p>
+
+        <p
+          className={`hero-subtext-anim mt-5 max-w-sm font-robert-regular text-sm leading-relaxed transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]/60' : 'text-[#1a1a1a]/60'
+          }`}
+          style={{ opacity: 0 }}
+        >
+          Hi! I&apos;m a 20-year-old pre-med student and software architect,
+          programming since I was 6. I build medical AI platforms, ML
+          infrastructure, and distributed systems. I&apos;ve recently been doing web dev for fun. I don&apos;t take compensation, I just love solving hard problems.
+        </p>
+
+        <div className="hero-subtext-anim mt-5" style={{ opacity: 0 }}>
+          <a href="mailto:navmainemail@gmail.com" className="group relative inline-block cursor-pointer">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 56" preserveAspectRatio="none">
+              <path
+                d="M8,2 L170,2 Q185,2 190,10 L198,42 Q200,50 192,54 L24,54 Q10,54 6,46 L2,14 Q0,6 8,2 Z"
+                className="fill-yellow-300"
+              />
+            </svg>
+            <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-black">
+              <TiLocationArrow />
+              <span className="relative inline-flex overflow-hidden">
+                <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
+                  Get in touch
+                </span>
+                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                  Get in touch
+                </span>
+              </span>
+            </span>
+          </a>
         </div>
 
+        <p
+          className={`hero-subtext-anim mt-4 font-robert-regular text-xs transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]/30' : 'text-[#1a1a1a]/30'
+          }`}
+          style={{ opacity: 0 }}
+        >
+          <span className="hidden sm:inline">Talk to Clover, an LLM I made, via the clover in the bottom middle.</span>
+          <span className="sm:hidden">Tap the clover in the bottom right to chat with Clover, an LLM I made.</span>
+        </p>
       </div>
 
-      {/* AI Chat Panel */}
+      {/* ── Logos — bottom right ── */}
+      <div className="hero-subtext-anim absolute bottom-8 right-8 z-[30] hidden sm:block" style={{ opacity: 0 }}>
+        <p
+          className={`mb-3 text-right text-[10px] font-medium uppercase tracking-[0.25em] transition-colors duration-700 ${
+            dark ? 'text-[#e8e6e1]/40' : 'text-[#1a1a1a]/40'
+          }`}
+        >
+          Previously optimized systems for
+        </p>
+        <div ref={logoContainerRef} className="relative">
+          {LOGO_GROUPS.map((group, gi) => (
+            <div
+              key={gi}
+              className={`logo-group flex items-center justify-end gap-4 sm:gap-6${gi > 0 ? ' absolute top-0 right-0' : ''}`}
+              style={{ opacity: gi === 0 ? 1 : 0, willChange: 'opacity' }}
+            >
+              {group.map((logo) => (
+                <img
+                  key={logo.alt}
+                  src={logo.src}
+                  alt={logo.alt}
+                  className="h-3 sm:h-5 w-auto shrink-0 opacity-50 transition-all duration-700"
+                  style={{ filter: dark ? 'none' : 'invert(1)' }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Chat Pill ── */}
+      <div className="hero-subtext-anim absolute bottom-6 right-5 z-[35] sm:right-auto sm:left-1/2 sm:-translate-x-1/2" style={{ opacity: 0 }}>
+        <button
+          ref={pillRef}
+          onClick={() => setChatOpen((prev) => !prev)}
+          className="hover:scale-110 transition-transform duration-200 cursor-pointer"
+        >
+          <CloverIcon size={20} loading color="white" />
+        </button>
+      </div>
+
+      </div>{/* end #video-frame */}
+
+      {/* ── Chat Panel ── */}
       <div
         ref={chatRef}
         data-lenis-prevent
@@ -565,76 +611,77 @@ const Hero = () => {
         style={{ visibility: 'hidden', pointerEvents: 'none', opacity: 0, backgroundColor: '#1c1c2e', border: '1px solid rgba(255,255,255,0.1)', top: 'calc(50% - min(35vh, 300px))', left: 'calc(50% - min(45vw, 320px))' }}
         onWheel={(e) => e.stopPropagation()}
       >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div className="flex items-center gap-3">
-              <CloverIcon size={30} />
-              <div>
-                <span className="font-robert-regular text-sm font-medium text-white/90 block leading-tight">Clover</span>
-                <span className="text-[10px] text-green-400/80 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-                  Online
-                </span>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-3">
+            <CloverIcon size={30} />
+            <div>
+              <span className="font-robert-regular text-sm font-medium text-white/90 block leading-tight">Clover</span>
+              <span className="text-[10px] text-green-400/80 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                Online
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setChatOpen(false)}
+            className="w-8 h-8 rounded-lg flex-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all"
+          >
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div ref={chatMessagesRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              {msg.role === 'ai' && (
+                <div className="shrink-0 mt-0.5">
+                  <CloverIcon size={22} />
+                </div>
+              )}
+              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                msg.role === 'user'
+                  ? 'text-white/90 rounded-br-md'
+                  : 'text-white/75 rounded-bl-md'
+              }`} style={{ backgroundColor: msg.role === 'user' ? '#2a2a40' : '#232338' }}>
+                {msg.text}
               </div>
             </div>
+          ))}
+          {chatLoading && (
+            <div className="flex gap-3 flex-row">
+              <div className="shrink-0 mt-0.5">
+                <CloverIcon size={22} loading />
+              </div>
+              <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm" style={{ backgroundColor: '#232338' }}>
+                <span className="shimmer-text">Thinking</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="px-4 pb-4 pt-2">
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#232338', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
+              placeholder="Ask about Navtej..."
+              className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none font-robert-regular"
+            />
             <button
-              onClick={() => setChatOpen(false)}
-              className="w-8 h-8 rounded-lg flex-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all"
+              onClick={handleChatSend}
+              className="w-8 h-8 rounded-lg bg-yellow-300 hover:bg-yellow-200 flex-center transition-colors shrink-0"
             >
-              <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M7 11V3M7 3L3.5 6.5M7 3L10.5 6.5" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
           </div>
-
-          {/* Messages */}
-          <div ref={chatMessagesRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-            {chatMessages.map((msg, i) => (
-              <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                {msg.role === 'ai' && (
-                  <div className="shrink-0 mt-0.5">
-                    <CloverIcon size={22} />
-                  </div>
-                )}
-                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'text-white/90 rounded-br-md'
-                    : 'text-white/75 rounded-bl-md'
-                }`} style={{ backgroundColor: msg.role === 'user' ? '#2a2a40' : '#232338' }}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {chatLoading && (
-              <div className="flex gap-3 flex-row">
-                <div className="shrink-0 mt-0.5">
-                  <CloverIcon size={22} loading />
-                </div>
-                <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm" style={{ backgroundColor: '#232338' }}>
-                  <span className="shimmer-text">Thinking</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Input */}
-          <div className="px-4 pb-4 pt-2">
-            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#232338', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
-                placeholder="Ask about Navtej..."
-                className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none font-robert-regular"
-              />
-              <button
-                onClick={handleChatSend}
-                className="w-8 h-8 rounded-lg bg-yellow-300 hover:bg-yellow-200 flex-center transition-colors shrink-0"
-              >
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M7 11V3M7 3L3.5 6.5M7 3L10.5 6.5" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-          </div>
+        </div>
       </div>
+
     </div>
   );
 };

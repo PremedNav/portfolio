@@ -587,10 +587,10 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       uniforms: {
         uTime: { value: 0 },
         uAspect: { value: cw / ch },
-        uBgColor: { value: new THREE.Vector3(0.941, 0.929, 0.902) },
-        uLineColor: { value: new THREE.Vector3(0.78, 0.76, 0.73) },
-        uInkBg: { value: new THREE.Vector3(0.03, 0.03, 0.05) },
-        uInkLine: { value: new THREE.Vector3(0.1, 0.1, 0.14) },
+        uBgColor: { value: new THREE.Vector3(0.11, 0.122, 0.149) },
+        uLineColor: { value: new THREE.Vector3(0.22, 0.24, 0.28) },
+        uInkBg: { value: new THREE.Vector3(0.92, 0.91, 0.88) },
+        uInkLine: { value: new THREE.Vector3(0.98, 0.97, 0.95) },
         uFluidMask: { value: dye.read.texture },
       },
     });

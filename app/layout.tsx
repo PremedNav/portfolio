@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="relative min-h-screen w-screen overflow-x-hidden" data-overlayscrollbars-initialize="">
+      <body className="relative min-h-screen w-screen overflow-x-hidden bg-black" data-overlayscrollbars-initialize="">
         <ScrollbarProvider>{children}</ScrollbarProvider>
       </body>
     </html>

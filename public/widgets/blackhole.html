@@ -46,7 +46,7 @@
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
     camera.position.set(-6.5, 5.0, 6.5);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
@@ -55,7 +55,8 @@
     renderer.toneMappingExposure = 1.2;
     document.body.appendChild(renderer.domElement);
 
-    const composer = new EffectComposer(renderer);
+    const rt = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { type: THREE.HalfFloatType });
+    const composer = new EffectComposer(renderer, rt);
     composer.addPass(new RenderPass(scene, camera));
 
     const bloomPass = new UnrealBloomPass(
@@ -110,6 +111,23 @@
     };
     const lensingPass = new ShaderPass(lensingShader);
     composer.addPass(lensingPass);
+
+    // Alpha recovery — make dark bg pixels transparent
+    const alphaPass = new ShaderPass({
+        uniforms: { tDiffuse: { value: null } },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            varying vec2 vUv;
+            void main() {
+                vec4 c = texture2D(tDiffuse, vUv);
+                float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+                c.a = smoothstep(0.0, 0.06, lum);
+                gl_FragColor = c;
+            }
+        `
+    });
+    composer.addPass(alphaPass);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;

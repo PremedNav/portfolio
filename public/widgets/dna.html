@@ -90,6 +90,7 @@ function seed() {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, S, S, 0, gl.RGBA, gl.UNSIGNED_BYTE, d);
 }
 seed();
+setInterval(seed, 10000);
 
 /* ── Shaders ────────────────────────────────── */
 const VS = `

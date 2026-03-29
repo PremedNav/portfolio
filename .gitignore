@@ -26,3 +26,17 @@ nul
 *.njsproj
 *.sln
 *.sw?
+
+# Personal documents / drafts
+*.pdf
+*.txt
+extract_ps_comments.py
+extracted_ps_analysis.txt
+personal_statement_final_draft.txt
+sample-personal-statement-draft.txt
+reference-amcas/
+codepen1_full.html
+codepens.txt
+cp1.html
+cp3.html
+tsconfig.tsbuildinfo

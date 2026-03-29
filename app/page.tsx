@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative min-h-screen w-screen overflow-x-hidden">
+    <main className="relative min-h-screen w-screen overflow-x-hidden bg-black">
       <NavBar />
       <Hero />
       <Features />

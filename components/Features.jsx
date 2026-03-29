@@ -199,37 +199,29 @@ const Features = () => {
   const sectionRef = useRef(null);
 
   useGSAP(() => {
-    // Heading: split each character and animate individually
-    sectionRef.current.querySelectorAll('.projects-heading').forEach((el) => {
-      const text = el.textContent;
-      el.textContent = '';
-      text.split('').forEach((char) => {
-        const span = document.createElement('span');
-        span.textContent = char === ' ' ? '\u00A0' : char;
-        span.style.display = 'inline-block';
-        span.style.opacity = '0';
-        span.className = 'projects-char';
-        el.appendChild(span);
-      });
+    // Lando Norris-style: colored blocks cover text, then wipe away left-to-right
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: 'top 75%',
+        toggleActions: 'restart none none reset',
+      },
     });
 
-    gsap.fromTo(
-      '.projects-char',
-      { opacity: 0, y: 40, rotateX: -90, filter: 'blur(8px)' },
-      {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        filter: 'blur(0px)',
-        duration: 0.3,
-        stagger: 0.008,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 75%',
-          toggleActions: 'restart none none reset',
-        },
-      }
+    // Blocks start fully covering, then wipe off to the right
+    tl.fromTo(
+      '.ln-block',
+      { x: '0%' },
+      { x: '101%', duration: 0.7, stagger: 0.12, ease: 'power3.inOut' },
+      0.2
+    );
+
+    // Subtitle fade up
+    tl.fromTo(
+      '.ln-sub',
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6, stagger: 0.05, ease: 'power2.out' },
+      0.6
     );
 
     // Bento cards fade up on scroll
@@ -257,13 +249,19 @@ const Features = () => {
   <section id="projects" className="bg-black pb-52" ref={sectionRef}>
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
-        <p className="projects-heading font-circular-web text-lg text-white">
-          What I'm Building
-        </p>
-        <p className="projects-heading max-w-md font-circular-web text-lg text-white opacity-50">
-          A collection of projects spanning medical AI, ML infrastructure,
-          edtech, and industrial intelligence. Each one solving a different hard problem.
-        </p>
+        <div className="relative overflow-hidden inline-block">
+          <span className="ln-block absolute inset-0 bg-yellow-300" />
+          <p className="font-circular-web text-lg text-white">
+            What I&apos;m Building
+          </p>
+        </div>
+        <div className="relative overflow-hidden mt-1 max-w-md">
+          <span className="ln-block absolute inset-0 bg-yellow-300/80" />
+          <p className="font-circular-web text-lg text-white opacity-50">
+            A collection of projects spanning medical AI, ML infrastructure,
+            edtech, and industrial intelligence. Each one solving a different hard problem.
+          </p>
+        </div>
       </div>
 
       <BentoTilt className="bento-card-anim border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">

@@ -38,6 +38,7 @@ interface Activity {
   endDate?: string;
   ongoing?: boolean;
   description?: string;
+  meaningfulEssay?: string;
   mostMeaningful?: boolean;
 }
 
@@ -313,11 +314,19 @@ const PROJECT_INFO: Record<string, { desc: string; ribbon: string }> = {
 
 const PERSONAL_STATEMENT = {
   maxChars: 5300,
-  text: `"Sit still - this always works!" I sat still as my father urged, breathing in the intense scent of mustard oil while he gently rubbed it across my chest. Within days, my cough would fade. My father's confidence was absolute: "Traditional remedies, beta. Passed down for generations." In our home, this remedy was our trusted cure whenever illness arose, that is... until the day my Nanaji (Grandfather) was diagnosed with leukemia.
+  text: `\u201CSit still \u2014 this always works!\u201D I sat still as my father urged, breathing in the intense scent of mustard oil while he gently rubbed it across my chest. Within days, my cough would fade. My father\u2019s confidence was absolute: \u201CTraditional remedies, Beta. Passed down for generations.\u201D In our home, this remedy was our trusted cure whenever illness arose, that is. . . until the day my nanaji (grandfather) was diagnosed with leukemia.
 
-Eight months later, the phone rang at 11AM. I already knew. The mustard oil sat unused on his nightstand in Amritsar, 8,000 miles away. No home remedy could reach through phone lines. The day after his funeral, I stared at my father's medicine cabinet, staring at our amber bottle of tiwana mustard oil. I unscrewed the cap, and it was that familiar intense scent, but now it smelled different. Not like comfort. Like limitations. Like all the questions, my father couldn't answer when I'd asked, "Why couldn't the doctors fix it?" In that moment, I understood: I didn't want to be limited to home remedies. I wanted to be the person with answers when home remedies weren't enough.
+Eight months after Nanaji\u2019s diagnosis, the phone rang at 11 AM. I already knew. The mustard oil sat unused on his nightstand in Amritsar, 8,000 miles away. No home remedy could reach through phone lines. The day after his funeral, I stared at my father\u2019s medicine cabinet, at our amber bottle of Tiwana mustard oil. I unscrewed the cap, and it was that familiar intense scent, but now it smelled different. Not like comfort. Like limitations. As with all the questions, my father couldn\u2019t answer when I asked, \u201CWhy couldn\u2019t the doctors resolve it?\u201D In that moment, I understood: I didn\u2019t want to be limited to home remedies. I wanted to be the person with answers when home remedies weren\u2019t enough.
 
-[DRAFT IN PROGRESS - Currently developing the narrative about exploring medicine, volunteer experiences, and path to physician...]`,
+A year after Nanaji\u2019s passing, I started exploring medicine by volunteering at Mountain Peak Primary Care. I learned basic skills: taking vital signs, asking about the chief complaint, and doing blood work. It became routine. Four months in, \u201CBob,\u201D a man in his 50s, came in to detox with trembling hands. I roomed him, took his vitals, and then I did something that wasn\u2019t routine: I just talked to him. In between his tremors, Bob told me that drinking had taken everything away from him: his wife, his kids, his memories. He didn\u2019t just want to detox; he wanted his life back. No one had taught me to take a seat and listen, but in that moment, it felt like the most important thing I could do. I wasn\u2019t naive enough to believe one conversation changed Bob\u2019s path; he was the one who chose to go to sober living and showed up every single day. Months later, he came in for his next visit. This time, he wasn\u2019t sitting alone in the waiting room. This time, Bob had his family by his side. That day, I understood something I couldn\u2019t learn from taking vitals. Medicine isn\u2019t just about treating what\u2019s wrong; it\u2019s about helping someone fight for what\u2019s still possible.
+
+Shadowing at Lowry Family Health Center showed me what that fight looks like from the physician\u2019s side. I met \u201CTom,\u201D a patient in his mid-40s who had alienated himself from the world: no internet, no friends, no job \u2014 just him, his mom, and a television. He believed society had no place for him. Still, he came to see Dr. Bull. He had been off multiple medications for months, dealing with chronic pain and mental health problems that left him so desperate he resorted to scrambling around his room, swallowing whatever pills he found on the ground. Where I saw a crisis, Dr. Bull saw a patient who had already made the hardest choice: showing up. She looked at him and said, \u201CWe\u2019re going to get this figured out.\u201D She didn\u2019t judge him; she met him where he was, remade his care plan, and before he left, prescribed all the medications he needed. One month later, I saw Tom again. This time, he was steady \u2014 coming back because he trusted her. Dr. Bull showed me what a physician can be at the core: the person someone turns to when they\u2019ve turned away from everyone else. That\u2019s the physician I will become \u2014 one who never lets a patient believe there\u2019s no place for them.
+
+That understanding deepened at Dignity Hospice, where \u201CLani\u201D was one of my patients. Over the weeks, she never once brought up her diagnosis. She talked about her life: the job she stuck with for over 40 years because it was safe, not because she loved it; the trip she kept pushing back because there was always another summer; and the things she wished she could say to people no longer around to hear them. One afternoon, she stopped mid-sentence and said, \u201CI don\u2019t know when I\u2019ll be gone, but never wait like I did.\u201D Lani passed three weeks later. She was the first patient I lost. I thought about her on the drive home, the day after, and the week after that \u2014 not because I could\u2019ve done something different, but because she showed me what I\u2019ll be holding every time I open a chart. Not just a diagnosis. Someone\u2019s whole life: their stories, regrets, wisdom, and everything they never got to finish. I will carry what Lani trusted me with into every patient room I walk into \u2014 by never reducing a patient to just their chart.
+
+From Nanaji\u2019s passing to Lani\u2019s and onwards, my understanding of what it means to be a physician has grown far beyond the answers I sought in my father\u2019s cabinet. I want to be the physician whom patients trust when they\u2019re most vulnerable; the one who sees the whole person, not just the chart; and the one who helps patients fight for what\u2019s still possible.
+
+That amber bottle of Tiwana mustard oil still sits in my father\u2019s cabinet. I opened it recently: the same scent, same intensity. But it doesn\u2019t smell like limitations anymore. It smells like purpose. The loss that started it all; the patients who trusted me with their stories; the physicians who showed me what this work demands; and the moments I\u2019ll carry for the rest of my life \u2014 all of it has prepared me for a career in medicine.`,
 };
 
 // ─── Activity Data ───────────────────────────────────────────────────────────
@@ -357,7 +366,7 @@ const INITIAL_CATEGORIES: Category[] = [
     hours: 990,
     icon: <FaStethoscope />,
     activities: [
-      { title: 'Mountain Peak Primary Care LLC', hours: 910, role: 'Medical Assistant (Volunteer)', contact: 'Hadee Ahmadi, FNP · (720) 710-4933', location: '9450 E Mississippi Ave, Unit B, Denver, CO 80247', startDate: '07/10/2024', ongoing: true, description: '', mostMeaningful: true },
+      { title: 'Mountain Peak Primary Care LLC', hours: 910, role: 'Medical Assistant (Volunteer)', contact: 'Hadee Ahmadi, FNP \u00b7 (720) 710-4933', location: '9450 E Mississippi Ave, Unit B, Denver, CO 80247', startDate: '07/10/2024', ongoing: true, description: 'Volunteering at Mountain Peak Primary Care (MPPC) taught me that care begins the moment a patient walks through the door. At our Denver clinic, many patients\u2014Afghan refugees, Latino and Black families, immigrants\u2014arrive uninsured and navigating an unfamiliar system. As I greet them, take their vitals, and draw their blood, I have witnessed how a familiar phrase can transform apprehension into trust. I began teaching myself Farsi after noticing the relief on a patient\u2019s face when I offered a simple \u201CSalaam,\u201D and learned Spanish phrases to bridge the same gap. I have learned that healthcare disparities are not just statistics in a textbook; they are the people our team cares for every day.', meaningfulEssay: '\u201CSalaam chotor asti, khub asti?\u201D \u2014 Hello, how are you? Are you good? \u2014 I greeted \u201CHamza\u201D as he approached the clinic door. I noticed him balancing on forearm crutches, struggling to open it, so I held it wide and walked inside beside him. He smiled. I will never forget what came next. As I asked the intake questions, Hamza began sharing far more than required. He opened up about his life with cerebral palsy and confided how uneasy his recent physical exam results had left him. Then he told me something that stopped me: he had walked in expecting to be judged, bracing for the stigma he had faced before. But because I greeted him in Farsi, genuinely asked about his day, and treated him as a person first, he felt safe. He let his guard down. I thanked Hamza for his trust, took careful notes on each concern, and ensured each reached his provider. I wanted his voice to carry beyond our conversation. Hamza taught me that a patient\u2019s willingness to be vulnerable is earned through the smallest gestures: holding a door open, learning someone\u2019s language, greeting them like family. I will carry this forward: to earn every patient\u2019s trust and empower them to be a part of their own care. Every patient deserves to feel they belong, that their fears will be heard, and that they are more than their diagnosis.', mostMeaningful: true },
       { title: 'Dignity Hospice of Colorado', hours: 80, role: 'Volunteer', contact: 'Jennifer (Volunteer Coordinator) · (720) 222-3315', location: '400 E 84th Ave, Suite W-202, Thornton, CO 80229', ongoing: true, description: '' },
     ],
   },
@@ -550,6 +559,48 @@ export default function RecommendationPage() {
   });
   const [showStarredOnly, setShowStarredOnly] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [letterGuideOpen, setLetterGuideOpen] = useState(false);
+  const qrContentRef = useRef<HTMLDivElement>(null);
+  const letterContentRef = useRef<HTMLDivElement>(null);
+
+  const togglePanel = useCallback((
+    ref: React.RefObject<HTMLDivElement | null>,
+    isOpen: boolean,
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    const el = ref.current;
+    if (!el) return;
+    if (isOpen) {
+      // Collapse
+      const cards = el.querySelectorAll('.panel-card');
+      const tl = gsap.timeline();
+      if (cards.length) {
+        tl.to(cards, { y: -10, opacity: 0, duration: 0.2, stagger: 0.02, ease: 'power2.in' });
+      }
+      tl.to(el, {
+        height: 0, duration: 0.35, ease: 'power3.inOut',
+        onComplete: () => { el.style.overflow = 'hidden'; gsap.set(el, { opacity: 0 }); },
+      }, cards.length ? '-=0.1' : 0);
+      setOpen(false);
+    } else {
+      // Expand
+      el.style.overflow = 'hidden';
+      el.style.height = '0px';
+      el.style.display = 'block';
+      gsap.set(el, { opacity: 1 });
+      const cards = el.querySelectorAll('.panel-card');
+      gsap.set(cards, { opacity: 0, y: 20 });
+      const natural = el.scrollHeight;
+      const tl = gsap.timeline({
+        onComplete: () => { el.style.height = 'auto'; el.style.overflow = 'visible'; },
+      });
+      tl.to(el, { height: natural, duration: 0.5, ease: 'power3.out' });
+      if (cards.length) {
+        tl.to(cards, { y: 0, opacity: 1, duration: 0.45, stagger: 0.05, ease: 'power3.out' }, '-=0.3');
+      }
+      setOpen(true);
+    }
+  }, []);
 
   const toggleStar = useCallback((title: string) => {
     setStarred(prev => {
@@ -845,7 +896,7 @@ export default function RecommendationPage() {
   // ── Render: Personal Statement section content ──────────────────────────
 
   const renderPersonalStatementContent = () => {
-    const charCount = PERSONAL_STATEMENT.text.length;
+    const charCount = PERSONAL_STATEMENT.text.replace(/\n/g, '').length;
     const maxChars = PERSONAL_STATEMENT.maxChars;
     const hasText = charCount > 0;
     const psStarred = starred.has('personal-statement');
@@ -878,73 +929,6 @@ export default function RecommendationPage() {
           )}
         </div>
 
-        {/* What is needed / topics guide */}
-        <div className="inner-card mt-4 rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/10">
-          <h4 className="mb-3 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
-            What the Personal Statement Needs to Cover
-          </h4>
-          <p className="mb-4 font-robert-regular text-xs leading-relaxed text-white/30">
-            The AMCAS personal statement (5,300 characters) should answer one question: <span className="text-white/50">Why do you want to be a physician?</span> Here are the key themes and moments to weave in:
-          </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">1.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Origin / Inciting Moment</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">The mustard oil moment, Nanaji&apos;s leukemia, limitations of home remedies — what first sparked the desire</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">2.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Why Physician Specifically</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Not PA, not nursing, not research only — what about the physician role uniquely fits? Autonomy, longitudinal care, the full scope of practice</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">3.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Clinical Experiences</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Mountain Peak primary care, shadowing at Denver Health &amp; SPARC, hospice — specific patient moments that confirmed the path</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">4.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Research &amp; Intellectual Curiosity</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Duerkop Lab (bacteriophage/immunology), RaCAS best poster — show the scientific mindset and curiosity</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">5.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Service &amp; Leadership</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Tutoring/SL (2,300+ hrs), MAPS president, Badminton Club founder — impact on community and growth as a leader</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">6.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Personal Identity &amp; Perspective</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Indian-American background, cultural health beliefs, first-gen experiences — what unique lens you bring to medicine</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">7.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Growth &amp; Reflection</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Show how experiences changed you — don&apos;t just list them. What did you learn? How did your understanding of medicine evolve?</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded bg-white/[0.02] px-3 py-2">
-              <span className="mt-0.5 text-yellow-300/60">8.</span>
-              <div>
-                <span className="font-robert-medium text-xs text-white/60">Future Vision</span>
-                <p className="mt-0.5 font-robert-regular text-[11px] text-white/30">Where do you see yourself? Bridging traditional/modern medicine, underserved communities, specific specialty interest</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     );
   };
@@ -1282,13 +1266,25 @@ export default function RecommendationPage() {
               <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
                 {(() => {
                   const now = new Date();
-                  const testDate = new Date('2026-04-24');
-                  const scoreDate = new Date('2026-05-27');
+                  const testDate = new Date('2026-05-22');
+                  const scoreDate = new Date('2026-06-23');
                   const daysToTest = Math.ceil((testDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
                   const daysToScore = Math.ceil((scoreDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                  if (daysToTest > 0) return `Apr 24 · ${daysToTest}d away`;
-                  if (daysToScore > 0) return `Score May 27 · ${daysToScore}d`;
+                  if (daysToTest > 0) return `May 22 · ${daysToTest}d away`;
+                  if (daysToScore > 0) return `Score Jun 23 · ${daysToScore}d`;
                   return 'Score Available';
+                })()}
+              </span>
+              <span className="mx-2 text-white/10">|</span>
+              <span className="font-fk-screamer text-5xl font-black text-red-400">LETTERS DUE</span>
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-red-400/60">
+                {(() => {
+                  const now = new Date();
+                  const dueDate = new Date('2026-05-25');
+                  const daysLeft = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                  if (daysLeft > 0) return `May 25 · ${daysLeft}d left · Submit on Interfolio`;
+                  if (daysLeft === 0) return 'Due Today · Submit on Interfolio';
+                  return 'Past Due';
                 })()}
               </span>
             </div>
@@ -1300,7 +1296,7 @@ export default function RecommendationPage() {
           {/* Collapsible header */}
           <button
             type="button"
-            onClick={() => setQrOpen(prev => !prev)}
+            onClick={() => togglePanel(qrContentRef, qrOpen, setQrOpen)}
             className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
           >
             <FaStar className="text-lg text-yellow-300" />
@@ -1321,15 +1317,15 @@ export default function RecommendationPage() {
           </button>
 
           {/* Collapsible body */}
-          <div className={`overflow-hidden transition-all duration-300 ${qrOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div ref={qrContentRef} style={{ height: 0, overflow: 'hidden', opacity: 0 }}>
             <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-              <p className="mb-4 max-w-xl font-robert-regular text-sm leading-relaxed text-white/40">
+              <p className="panel-card mb-4 max-w-xl font-robert-regular text-sm leading-relaxed text-white/40">
                 Star anything that stands out — activities, semesters, schools, projects, or my personal statement. Starred items appear here for quick reference as you write.
               </p>
 
           {/* Starred items rendered inline */}
           {starred.size > 0 ? (
-            <div className="mt-6 space-y-6">
+            <div className="panel-card mt-6 space-y-6">
               {/* ── Starred Semesters ── */}
               {(() => {
                 const items = SEMESTERS.filter(s => starred.has(s.term));
@@ -1386,8 +1382,8 @@ export default function RecommendationPage() {
                     <div className="mb-3 flex items-center justify-between">
                       <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">AMCAS Personal Statement</span>
                       <div className="flex items-center gap-2">
-                        <span className={`font-general text-[10px] tracking-wider ${PERSONAL_STATEMENT.text.length > PERSONAL_STATEMENT.maxChars ? 'text-red-400' : 'text-white/20'}`}>
-                          {PERSONAL_STATEMENT.text.length.toLocaleString()}/{PERSONAL_STATEMENT.maxChars.toLocaleString()}
+                        <span className={`font-general text-[10px] tracking-wider ${PERSONAL_STATEMENT.text.replace(/\n/g, '').length > PERSONAL_STATEMENT.maxChars ? 'text-red-400' : 'text-white/20'}`}>
+                          {PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/{PERSONAL_STATEMENT.maxChars.toLocaleString()}
                         </span>
                         <button onClick={() => toggleStar('personal-statement')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
                           <FaStar className="text-xs text-yellow-300" />
@@ -1510,15 +1506,25 @@ export default function RecommendationPage() {
                             </div>
                           )}
                           {(() => {
-                            const maxChars = activity.mostMeaningful ? 1325 : 700;
-                            const charCount = (activity.description || '').length;
+                            const descCount = (activity.description || '').length;
                             return (
                               <div className="mt-1 rounded bg-white/[0.02] p-2.5">
-                                {activity.mostMeaningful && <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>}
-                                {charCount > 0
+                                {descCount > 0
                                   ? <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.description}</p>
                                   : <p className="font-robert-regular text-[11px] italic text-white/15">No description yet</p>}
-                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${charCount > maxChars ? 'text-red-400' : 'text-white/15'}`}>{charCount}/{maxChars}</span></div>
+                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-white/15'}`}>{descCount}/700</span></div>
+                              </div>
+                            );
+                          })()}
+                          {activity.mostMeaningful && (() => {
+                            const essayCount = (activity.meaningfulEssay || '').length;
+                            return (
+                              <div className="mt-2 rounded bg-yellow-300/[0.03] p-2.5 ring-1 ring-yellow-300/10">
+                                <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>
+                                {essayCount > 0
+                                  ? <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.meaningfulEssay}</p>
+                                  : <p className="font-robert-regular text-[11px] italic text-white/15">No most meaningful essay yet</p>}
+                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-white/15'}`}>{essayCount}/1325</span></div>
                               </div>
                             );
                           })()}
@@ -1540,9 +1546,131 @@ export default function RecommendationPage() {
                   </div>
                 );
               })()}
+
+              {/* ── Starred Letter Requirement Items ── */}
+              {starred.has('submission-details') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> Submission Details
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
+                    <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
+                      <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-white/45">
+                      <p><span className="text-white/60">Submit via:</span> Interfolio</p>
+                      <p><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
+                      <p><span className="text-white/60">Format:</span> Institutional letterhead</p>
+                      <p><span className="text-white/60">Written for:</span> Navtej Singh</p>
+                    </div>
+                    <div className="mt-3 rounded bg-white/[0.03] px-3 py-2 ring-1 ring-white/5">
+                      <p className="text-[11px] text-white/35"><span className="text-white/50">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {starred.has('letter-format') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> Letter Format
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
+                    <div className="space-y-4 text-white/35">
+                      <div>
+                        <p className="text-white/50">[Your Institutional Letterhead]</p>
+                        <p className="text-white/30">[Date]</p>
+                      </div>
+                      <p className="text-white/50">Dear Admissions Committee, <span className="text-white/20">or</span> Dear Members of the Admissions Committee, <span className="text-white/20">or</span> To Whom It May Concern,</p>
+                      <p className="py-3 text-center text-white/20 italic">[All the awesome stuff you have to say about me]</p>
+                    <p className="mt-3 text-white/30 italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
+                      <div>
+                        <p className="text-white/50">Sincerely, <span className="text-white/20">or</span> Respectfully, <span className="text-white/20">or</span> With highest regards, <span className="text-white/20">or</span> Warmly, <span className="text-white/20">or</span> Best,</p>
+                        <p className="mt-2 text-white/30">[Signature]</p>
+                        <p className="text-white/30">[Full Name], [Degree(s)]</p>
+                        <p className="text-white/30">[Title / Position]</p>
+                        <p className="text-white/30">[Department &amp; Institution]</p>
+                        <p className="text-white/30">[Email] · [Phone]</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {starred.has('committees-value') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> What Admissions Committees Value
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
+                    <p className="text-[11px] text-white/30 mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Specific moments you witnessed','How they handled challenges','Growth over time','Intellectual curiosity','How they work with others','Maturity & self-awareness','Comparison to peers','Integrity & reliability'].map(topic => (
+                        <span key={topic} className="rounded-full bg-yellow-300/10 px-3 py-1 text-[11px] text-white/40 ring-1 ring-yellow-300/20">{topic}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {starred.has('aamc-guidelines') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> AAMC Guidelines
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
+                    <ol className="list-decimal list-inside space-y-2 text-white/45">
+                      <li>Provide an <span className="text-white/60">accurate assessment</span> of suitability rather than advocate.</li>
+                      <li>Explain your <span className="text-white/60">relationship</span> — how long, what capacity, direct or indirect.</li>
+                      <li><span className="text-white/60">Quality over quantity</span> — focus on the applicant.</li>
+                      <li>Only include grades/GPA/MCAT with <span className="text-white/60">context</span>.</li>
+                      <li>Focus on <span className="text-white/60">behaviors observed directly</span>.</li>
+                      <li>Ask permission for <span className="text-white/60">sensitive information</span>.</li>
+                      <li>Include <span className="text-white/60">unique contributions</span> and growth.</li>
+                      <li>Provide <span className="text-white/60">comparison context</span> if comparing.</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+
+              {starred.has('aamc-competencies') && (
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <FaPen className="text-sm text-yellow-300/60" /> AAMC Core Competencies
+                  </h4>
+                  <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Thinking &amp; Reasoning</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Critical Thinking','Quantitative Reasoning','Scientific Inquiry','Written Communication'].map(c => (
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Science</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Living Systems','Human Behavior'].map(c => (
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Pre-Professional</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Service Orientation','Social Skills','Cultural Competence','Teamwork','Oral Communication','Ethical Responsibility','Reliability & Dependability','Resilience & Adaptability','Capacity for Improvement'].map(c => (
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-white/10 px-4 py-3">
+            <div className="panel-card mt-4 rounded-lg border border-dashed border-white/10 px-4 py-3">
               <p className="font-robert-regular text-xs text-white/20">
                 No items starred yet. Click the <FaRegStar className="inline text-[10px] text-white/30" /> icon on any item below to save it here.
               </p>
@@ -1552,6 +1680,166 @@ export default function RecommendationPage() {
           </div>
         </div>
 
+
+        {/* Letter Requirements & Topics */}
+        <div className="section-wrapper mx-auto mt-4 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
+          <button
+            type="button"
+            onClick={() => togglePanel(letterContentRef, letterGuideOpen, setLetterGuideOpen)}
+            className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
+          >
+            <FaPen className="text-lg text-yellow-300" />
+            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
+              Letter Requirements
+            </h3>
+            <span className="ml-auto">
+              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${letterGuideOpen ? 'rotate-180' : ''}`} />
+            </span>
+          </button>
+
+          <div ref={letterContentRef} style={{ height: 0, overflow: 'hidden', opacity: 0 }}>
+            <div className="px-5 pb-6 pt-1 sm:px-6 font-robert-regular text-xs leading-relaxed">
+
+              {/* Submission Requirements */}
+              <div className="panel-card relative rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">Submission Details</h4>
+                  <button onClick={() => toggleStar('submission-details')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {starred.has('submission-details') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
+                </div>
+                <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
+                  <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-white/45">
+                  <p><span className="text-white/60">Submit via:</span> Interfolio</p>
+                  <p><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
+                  <p><span className="text-white/60">Format:</span> Institutional letterhead</p>
+                  <p><span className="text-white/60">Written for:</span> Navtej Singh</p>
+                </div>
+                <div className="mt-3 rounded bg-white/[0.03] px-3 py-2 ring-1 ring-white/5">
+                  <p className="text-[11px] text-white/35"><span className="text-white/50">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
+                </div>
+              </div>
+
+              {/* Letter Format Skeleton */}
+              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/8">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">Letter Format</h4>
+                  <button onClick={() => toggleStar('letter-format')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {starred.has('letter-format') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
+                </div>
+                <div className="space-y-4 text-white/35">
+                  <div>
+                    <p className="text-white/50">[Your Institutional Letterhead]</p>
+                    <p className="text-white/30">[Date]</p>
+                  </div>
+                  <div>
+                    <p className="text-white/50">Dear Admissions Committee, <span className="text-white/20">or</span> Dear Members of the Admissions Committee, <span className="text-white/20">or</span> To Whom It May Concern,</p>
+                  </div>
+                  <div className="py-3">
+                    <p className="text-center text-white/20 italic">[All the awesome stuff you have to say about me]</p>
+                    <p className="mt-3 text-white/30 italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
+                  </div>
+                  <div>
+                    <p className="text-white/50">Sincerely, <span className="text-white/20">or</span> Respectfully, <span className="text-white/20">or</span> With highest regards, <span className="text-white/20">or</span> Warmly, <span className="text-white/20">or</span> Best,</p>
+                    <p className="mt-2 text-white/30">[Signature]</p>
+                    <p className="text-white/30">[Full Name], [Degree(s)]</p>
+                    <p className="text-white/30">[Title / Position]</p>
+                    <p className="text-white/30">[Department &amp; Institution]</p>
+                    <p className="text-white/30">[Email] · [Phone]</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Topics admissions committees value */}
+              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">What Admissions Committees Value</h4>
+                  <button onClick={() => toggleStar('committees-value')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {starred.has('committees-value') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-white/30 mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    'Specific moments you witnessed',
+                    'How they handled challenges',
+                    'Growth over time',
+                    'Intellectual curiosity',
+                    'How they work with others',
+                    'Maturity & self-awareness',
+                    'Comparison to peers',
+                    'Integrity & reliability',
+                  ].map(topic => (
+                    <span key={topic} className="rounded-full bg-white/5 px-3 py-1 text-[11px] text-white/40 ring-1 ring-white/8">{topic}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* AAMC Guidelines */}
+              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">AAMC Guidelines</h4>
+                  <button onClick={() => toggleStar('aamc-guidelines')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {starred.has('aamc-guidelines') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-white/25 mb-3">From the AAMC &quot;Guidelines for Writing a Letter of Evaluation for a Medical School Applicant&quot;</p>
+                <ol className="list-decimal list-inside space-y-2 text-white/45">
+                  <li>Provide an <span className="text-white/60">accurate assessment</span> of suitability for medical school rather than advocate for the applicant.</li>
+                  <li>Briefly explain your <span className="text-white/60">relationship</span> — how long you&apos;ve known them, in what capacity, and whether your observations are direct or indirect.</li>
+                  <li><span className="text-white/60">Quality over quantity</span> — focus on the applicant, not details of the lab, course, or institution.</li>
+                  <li>Only include grades, GPA, or MCAT if you also provide <span className="text-white/60">context to interpret them</span>. These are already in the application.</li>
+                  <li>Focus on <span className="text-white/60">behaviors you observed directly</span>. Describe the situation, the behavior, and any consequences.</li>
+                  <li>Ask the applicant&apos;s permission before including <span className="text-white/60">private or sensitive information</span>.</li>
+                  <li>Consider including <span className="text-white/60">unique contributions</span> — obstacles overcome, growth from challenges, or contributions to diversity.</li>
+                  <li>If making <span className="text-white/60">comparisons</span>, provide context — the comparison group and your rationale.</li>
+                </ol>
+              </div>
+
+              {/* AAMC Core Competencies */}
+              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">AAMC Core Competencies</h4>
+                  <button onClick={() => toggleStar('aamc-competencies')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
+                    {starred.has('aamc-competencies') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-white/25 mb-4">Entry-level competencies admissions committees look for. You don&apos;t need to address all of these — just the ones you&apos;ve observed.</p>
+
+                <div className="space-y-3">
+                  <div>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Thinking &amp; Reasoning</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Critical Thinking', 'Quantitative Reasoning', 'Scientific Inquiry', 'Written Communication'].map(c => (
+                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Science</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Living Systems', 'Human Behavior'].map(c => (
+                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Pre-Professional</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Service Orientation', 'Social Skills', 'Cultural Competence', 'Teamwork', 'Oral Communication', 'Ethical Responsibility', 'Reliability & Dependability', 'Resilience & Adaptability', 'Capacity for Improvement'].map(c => (
+                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
 
         {/* Sections */}
         <div className="sections-container mx-auto mt-4 flex max-w-6xl flex-col gap-4">
@@ -1608,7 +1896,7 @@ export default function RecommendationPage() {
 
                   {/* Badge */}
                   <span className="rounded-full bg-yellow-300/15 px-3 py-0.5 font-robert-regular text-xs font-medium text-yellow-300">
-                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
+                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
                   </span>
 
                   <span className="hidden font-robert-regular text-xs text-white/30 sm:inline">
@@ -1691,32 +1979,29 @@ export default function RecommendationPage() {
 
                             {/* Description area with AAMC char count */}
                             {(() => {
-                              const maxChars = activity.mostMeaningful ? 1325 : 700;
-                              const charCount = (activity.description || '').length;
-                              const hasDesc = charCount > 0;
+                              const descCount = (activity.description || '').length;
                               return (
                                 <div className="mt-1 rounded bg-white/[0.02] p-2.5">
-                                  {activity.mostMeaningful && (
-                                    <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">
-                                      Most Meaningful
-                                    </span>
-                                  )}
-                                  {hasDesc ? (
-                                    <p className="font-robert-regular text-xs leading-relaxed text-white/50">
-                                      {activity.description}
-                                    </p>
+                                  {descCount > 0 ? (
+                                    <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.description}</p>
                                   ) : (
-                                    <p className="font-robert-regular text-[11px] italic text-white/15">
-                                      No description yet
-                                    </p>
+                                    <p className="font-robert-regular text-[11px] italic text-white/15">No description yet</p>
                                   )}
-                                  <div className="mt-1.5 flex items-center justify-end gap-1">
-                                    <span className={`font-general text-[9px] tracking-wider ${
-                                      charCount > maxChars ? 'text-red-400' : charCount > maxChars * 0.9 ? 'text-amber-300/50' : 'text-white/15'
-                                    }`}>
-                                      {charCount}/{maxChars}
-                                    </span>
-                                  </div>
+                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-white/15'}`}>{descCount}/700</span></div>
+                                </div>
+                              );
+                            })()}
+                            {activity.mostMeaningful && (() => {
+                              const essayCount = (activity.meaningfulEssay || '').length;
+                              return (
+                                <div className="mt-2 rounded bg-yellow-300/[0.03] p-2.5 ring-1 ring-yellow-300/10">
+                                  <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>
+                                  {essayCount > 0 ? (
+                                    <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.meaningfulEssay}</p>
+                                  ) : (
+                                    <p className="font-robert-regular text-[11px] italic text-white/15">No most meaningful essay yet</p>
+                                  )}
+                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-white/15'}`}>{essayCount}/1325</span></div>
                                 </div>
                               );
                             })()}

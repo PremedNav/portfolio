@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morphology</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  canvas { display: block; position: absolute; top: 0; left: 0; }
+</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script>
+let dark = true;
+window.addEventListener('message', e => { if (e.data?.theme) dark = e.data.theme === 'dark'; });
+window.parent.postMessage({ type: 'widget-ready' }, '*');
+
+const PARTICLE_COUNT = 1200;
+const CONNECTION_DISTANCE = 80;
+const BASE_TRANSITION_SPEED = 0.045;
+const NOISE_SCALE = 0.005;
+
+let particles = [];
+let targets = [];
+let currentShapeIndex = 0;
+let shapes = [
+  { func: getCubePos },
+  { func: getGridPos },
+  { func: getTorusKnotPos },
+  { func: getMandalaPos },
+  { func: getDNAPos }
+];
+
+let hueOffset = 0;
+let transitionProgress = 1;
+let globalScale = 1;
+let globalRotation = 0;
+
+class Particle {
+  constructor(x, y, index) {
+    this.x = x;
+    this.y = y;
+    this.z = random(0, 1);
+    this.vx = 0;
+    this.vy = 0;
+    this.friction = random(0.90, 0.95);
+    this.baseSize = random(1.5, 3.5);
+    this.hueVar = random(-30, 30);
+    this.brightness = random(0.8, 1);
+    this.index = index;
+    this.moveDelay = (index / PARTICLE_COUNT) * 0.3;
+  }
+
+  update(targetX, targetY) {
+    const delayedProgress = constrain(transitionProgress - this.moveDelay, 0, 1);
+    const eased = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    const e = eased(delayedProgress);
+
+    const wobbleX = sin(frameCount * 0.02 + this.y * 0.01) * 5;
+    const wobbleY = cos(frameCount * 0.02 + this.x * 0.01) * 5;
+
+    const dynamicSpeed = BASE_TRANSITION_SPEED * (1 + (1 - e) * 1.5);
+    this.vx += (targetX + wobbleX - this.x) * dynamicSpeed;
+    this.vy += (targetY + wobbleY - this.y) * dynamicSpeed;
+
+    // Mouse repulsion
+    const mx = mouseX - width / 2;
+    const my = mouseY - height / 2;
+    const rx = mx * cos(-globalRotation) - my * sin(-globalRotation);
+    const ry = mx * sin(-globalRotation) + my * cos(-globalRotation);
+    const dm = dist(this.x, this.y, rx, ry);
+    if (dm < 150) {
+      const ang = atan2(this.y - ry, this.x - rx);
+      const f = map(dm, 0, 150, 2, 0);
+      this.vx += cos(ang) * f;
+      this.vy += sin(ang) * f;
+    }
+
+    // Noise drift
+    const ns = lerp(0.08, 0.25, e);
+    const na = noise(this.x * NOISE_SCALE, this.y * NOISE_SCALE, frameCount * 0.01) * TWO_PI * 4;
+    this.vx += cos(na) * ns;
+    this.vy += sin(na) * ns;
+
+    this.vx *= this.friction;
+    this.vy *= this.friction;
+    this.x += this.vx;
+    this.y += this.vy;
+  }
+
+  draw() {
+    const depthScale = 0.5 + this.z * 0.8;
+    const sz = this.baseSize * depthScale;
+    const spd = Math.abs(this.vx) + Math.abs(this.vy);
+    const h = (hueOffset + this.hueVar + spd * 10) % 360;
+    const s = map(this.z, 0, 1, 70, 100);
+    const b = dark ? 100 * this.brightness : 70 * this.brightness;
+    const a = map(this.z, 0, 1, 0.3, 0.9);
+
+    noStroke();
+
+    // Outer glow
+    fill(h, s, b, a * 0.12);
+    circle(this.x, this.y, sz * 5);
+
+    // Inner glow
+    fill(h, s, b, a * 0.25);
+    circle(this.x, this.y, sz * 2.5);
+
+    // Core
+    fill(h, s * 0.5, 100, a);
+    circle(this.x, this.y, sz);
+  }
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  colorMode(HSB, 360, 100, 100, 1);
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push(new Particle(random(-width/2, width/2), random(-height/2, height/2), i));
+  }
+  particles.sort((a, b) => a.z - b.z);
+  recalculateTargets();
+
+  setInterval(() => nextShape(), 5000);
+}
+
+function draw() {
+  // Fade trails while keeping canvas transparent
+  let ctx = drawingContext;
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.fillRect(0, 0, width, height);
+  ctx.restore();
+
+  push();
+  translate(width / 2, height / 2);
+
+  globalRotation += 0.002;
+  rotate(globalRotation);
+
+  if (transitionProgress < 1) {
+    transitionProgress = min(transitionProgress + 0.006, 1);
+    globalScale = lerp(0.8, 1, transitionProgress);
+  }
+  scale(globalScale);
+
+  hueOffset = (hueOffset + 0.4) % 360;
+
+  drawConnections();
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles[i].update(targets[i].x, targets[i].y);
+    particles[i].draw();
+  }
+  pop();
+}
+
+function drawConnections() {
+  const step = 6;
+  for (let i = 0; i < PARTICLE_COUNT; i += step) {
+    const p1 = particles[i];
+    for (let j = 1; j < 5; j++) {
+      const p2 = particles[(i + j * 3) % PARTICLE_COUNT];
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      const dSq = dx * dx + dy * dy;
+      if (dSq < CONNECTION_DISTANCE * CONNECTION_DISTANCE) {
+        const d = Math.sqrt(dSq);
+        const a = map(d, 0, CONNECTION_DISTANCE, dark ? 0.15 : 0.1, 0);
+        stroke((hueOffset + p1.hueVar) % 360, 70, dark ? 100 : 60, a);
+        strokeWeight(0.5);
+        line(p1.x, p1.y, p2.x, p2.y);
+      }
+    }
+  }
+}
+
+function nextShape() {
+  currentShapeIndex = (currentShapeIndex + 1) % shapes.length;
+  transitionProgress = 0;
+  recalculateTargets();
+}
+
+function recalculateTargets() {
+  targets = [];
+  const r = Math.min(width, height) * 0.35;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    targets.push(shapes[currentShapeIndex].func(i, i / PARTICLE_COUNT, r));
+  }
+}
+
+function getCubePos(i, p, r) {
+  const size = r * 0.6;
+  const v = [
+    {x:-1,y:-1,z:-1},{x:1,y:-1,z:-1},{x:1,y:1,z:-1},{x:-1,y:1,z:-1},
+    {x:-1,y:-1,z:1},{x:1,y:-1,z:1},{x:1,y:1,z:1},{x:-1,y:1,z:1}
+  ];
+  const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  const ppe = Math.ceil(PARTICLE_COUNT / edges.length);
+  const ei = Math.floor(i / ppe);
+  if (ei >= edges.length) return {x:0, y:0};
+  const t = (i % ppe) / ppe;
+  const a = v[edges[ei][0]], b = v[edges[ei][1]];
+  let x = (a.x + (b.x - a.x) * t) * size;
+  let y = (a.y + (b.y - a.y) * t) * size;
+  let z = (a.z + (b.z - a.z) * t) * size;
+  const ay = Math.PI * 0.25;
+  const x1 = x * Math.cos(ay) - z * Math.sin(ay);
+  const z1 = x * Math.sin(ay) + z * Math.cos(ay);
+  const ax = Math.PI * 0.2;
+  const y2 = y * Math.cos(ax) - z1 * Math.sin(ax);
+  return { x: x1 + random(-2,2), y: y2 + random(-2,2) };
+}
+
+function getGridPos(i, p, r) {
+  const cols = Math.floor(Math.sqrt(PARTICLE_COUNT));
+  const row = Math.floor(i / cols);
+  const col = i % cols;
+  const sp = r * 2.5 / cols;
+  const st = -r * 1.25;
+  let x = st + col * sp;
+  let z = st + row * sp;
+  let y = sin(x * 0.02) * sin(z * 0.02) * 100;
+  return { x: x - z, y: (x + z) * 0.5 - y };
+}
+
+function getTorusKnotPos(i, p, r) {
+  const angle = p * TWO_PI * 5;
+  const P = 2, Q = 3;
+  const rad = 100 + cos(Q * angle) * 50;
+  let x = rad * cos(P * angle) * (r / 150);
+  let y = rad * sin(P * angle) * (r / 150);
+  let z = -sin(Q * angle) * 100 * (r / 150);
+  return { x: x, y: y * cos(0.5) - z * sin(0.5) };
+}
+
+function getMandalaPos(i, p, r) {
+  const rings = 8;
+  const ri = i % rings;
+  const ppr = Math.floor(PARTICLE_COUNT / rings);
+  const angle = (Math.floor(i / rings) / ppr) * TWO_PI;
+  const cr = (r / rings) * (ri + 1);
+  const v = sin(angle * 8) * (r * 0.05);
+  const fr = cr + v;
+  return { x: cos(angle) * fr, y: sin(angle) * fr };
+}
+
+function getDNAPos(i, p, r) {
+  const strand = i % 2;
+  const h = r * 2.5;
+  const y = map(i, 0, PARTICLE_COUNT, -h/2, h/2);
+  const angle = map(y, -h/2, h/2, 0, TWO_PI * 6);
+  const x = cos(angle + strand * PI) * r * 0.6;
+  return { x, y };
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  recalculateTargets();
+}
+</script>
+</body>
+</html>

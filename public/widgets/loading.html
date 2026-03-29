@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading</title>
+<style>
+    body { margin: 0; overflow: hidden; background: #1c1f26; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+    #hint {
+        position: absolute;
+        bottom: 16px;
+        width: 100%;
+        text-align: center;
+        color: rgba(232,230,225,0.25);
+        font-family: system-ui, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        pointer-events: none;
+    }
+</style>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+}
+</script>
+</head>
+<body>
+<div id="hint">drag to control</div>
+<script type="module">
+    import * as THREE from 'three';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+    // --- Setup ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(10, innerWidth / innerHeight, 1, 10000);
+    camera.position.set(0, 0, 1400);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setClearColor(0x1c1f26);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener('resize', () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+    });
+
+    // --- Load font, then build ---
+    const loader = new FontLoader();
+    loader.load(
+        'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/fonts/droid/droid_sans_bold.typeface.json',
+        (font) => { buildScene(font); }
+    );
+
+    // --- Animation state ---
+    let triangles = null;
+    let progress = 0;
+    let targetProgress = 0;
+    let autoPlay = true;
+    let autoDir = 1;
+    const SPEED = 0.004;
+
+    function buildScene(font) {
+        const textGeo = new TextGeometry('PIECE BY PIECE', {
+            font,
+            size: 14,
+            depth: 0,
+            bevelEnabled: true,
+            bevelSize: 0.75,
+            bevelThickness: 0.5,
+        });
+        textGeo.computeBoundingBox();
+        const bb = textGeo.boundingBox;
+        const cx = -(bb.max.x + bb.min.x) / 2;
+        const cy = -(bb.max.y + bb.min.y) / 2;
+        textGeo.translate(cx, cy, 0);
+
+        // Explode into individual triangles
+        const posAttr = textGeo.getAttribute('position');
+        const indexAttr = textGeo.getIndex();
+        const faceCount = indexAttr ? indexAttr.count / 3 : posAttr.count / 3;
+
+        triangles = [];
+
+        for (let f = 0; f < faceCount; f++) {
+            let i0, i1, i2;
+            if (indexAttr) {
+                i0 = indexAttr.getX(f * 3);
+                i1 = indexAttr.getX(f * 3 + 1);
+                i2 = indexAttr.getX(f * 3 + 2);
+            } else {
+                i0 = f * 3; i1 = f * 3 + 1; i2 = f * 3 + 2;
+            }
+
+            const v0 = new THREE.Vector3().fromBufferAttribute(posAttr, i0);
+            const v1 = new THREE.Vector3().fromBufferAttribute(posAttr, i1);
+            const v2 = new THREE.Vector3().fromBufferAttribute(posAttr, i2);
+
+            const centroid = new THREE.Vector3().addVectors(v0, v1).add(v2).divideScalar(3);
+
+            // Per-triangle geometry
+            const triGeo = new THREE.BufferGeometry();
+            triGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+                v0.x, v0.y, v0.z,
+                v1.x, v1.y, v1.z,
+                v2.x, v2.y, v2.z,
+            ], 3));
+            triGeo.computeVertexNormals();
+
+            const mat = new THREE.MeshBasicMaterial({
+                color: 0xe8e6e1,
+                side: THREE.DoubleSide,
+            });
+
+            const mesh = new THREE.Mesh(triGeo, mat);
+            scene.add(mesh);
+
+            // Random explosion target
+            const dirX = centroid.x > 0 ? 1 : -1;
+            const dirY = centroid.y > 0 ? 1 : -1;
+            const target = new THREE.Vector3(
+                centroid.x + (30 + Math.random() * 60) * dirX,
+                centroid.y + (60 + Math.random() * 80) * dirY,
+                (Math.random() - 0.5) * 40
+            );
+
+            // Delay based on distance from center (outside explodes first)
+            const delay = centroid.length() * THREE.MathUtils.randFloat(0.003, 0.008);
+            const duration = THREE.MathUtils.randFloat(0.15, 0.35);
+
+            // Random rotation axis
+            const rotAxis = new THREE.Vector3(
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+                Math.random() - 0.5
+            ).normalize();
+            const rotAmount = THREE.MathUtils.randFloat(Math.PI, Math.PI * 3);
+
+            triangles.push({
+                mesh,
+                centroid,
+                target,
+                delay,
+                duration,
+                rotAxis,
+                rotAmount,
+            });
+        }
+
+        animate();
+    }
+
+    // --- Smooth easing ---
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function updateTriangles(p) {
+        if (!triangles) return;
+        for (const tri of triangles) {
+            // Local progress for this triangle (accounting for delay)
+            let t = (p - tri.delay) / tri.duration;
+            t = Math.max(0, Math.min(1, t));
+            t = easeInOutCubic(t);
+
+            // Interpolate position
+            const x = THREE.MathUtils.lerp(0, tri.target.x - tri.centroid.x, t);
+            const y = THREE.MathUtils.lerp(0, tri.target.y - tri.centroid.y, t);
+            const z = THREE.MathUtils.lerp(0, tri.target.z, t);
+            tri.mesh.position.set(x, y, z);
+
+            // Rotate
+            tri.mesh.quaternion.setFromAxisAngle(tri.rotAxis, tri.rotAmount * t);
+
+            // Fade out
+            tri.mesh.material.opacity = 1 - t * 0.6;
+            tri.mesh.material.transparent = t > 0;
+        }
+    }
+
+    // --- Interaction (drag to scrub) ---
+    let dragging = false;
+    let dragX = 0;
+
+    window.addEventListener('mousedown', (e) => {
+        dragging = true;
+        dragX = e.clientX;
+        autoPlay = false;
+    });
+    window.addEventListener('mouseup', () => {
+        dragging = false;
+        autoPlay = true;
+    });
+    window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - dragX;
+        dragX = e.clientX;
+        targetProgress = Math.max(0, Math.min(1, targetProgress + dx * 0.002));
+    });
+    window.addEventListener('touchstart', (e) => {
+        dragX = e.touches[0].clientX;
+        autoPlay = false;
+        e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('touchend', (e) => {
+        autoPlay = true;
+        e.preventDefault();
+    });
+    window.addEventListener('touchmove', (e) => {
+        const dx = e.touches[0].clientX - dragX;
+        dragX = e.touches[0].clientX;
+        targetProgress = Math.max(0, Math.min(1, targetProgress + dx * 0.002));
+        e.preventDefault();
+    }, { passive: false });
+
+    // --- Render loop ---
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (autoPlay) {
+            targetProgress += SPEED * autoDir;
+            if (targetProgress >= 1) { targetProgress = 1; autoDir = -1; }
+            if (targetProgress <= 0) { targetProgress = 0; autoDir = 1; }
+        }
+
+        // Smooth lerp
+        progress += (targetProgress - progress) * 0.08;
+
+        updateTriangles(progress);
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

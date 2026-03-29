@@ -256,7 +256,7 @@ const Features = () => {
           </p>
         </div>
         <div className="relative overflow-hidden mt-1 max-w-md">
-          <span className="ln-block absolute inset-0 bg-yellow-300/80" />
+          <span className="ln-block absolute inset-0 bg-yellow-300" />
           <p className="font-circular-web text-lg text-white opacity-50">
             A collection of projects spanning medical AI, ML infrastructure,
             edtech, and industrial intelligence. Each one solving a different hard problem.

@@ -61,9 +61,12 @@ const WIDGETS = [
 ];
 
 const Hero = () => {
-  const dark = true;
+  const dark = false;
   const [loading, setLoading] = useState(true);
   const [coloradoTime, setColoradoTime] = useState('');
+
+  const [heroReady, setHeroReady] = useState(false);
+  const [visibleWidgets, setVisibleWidgets] = useState(0);
 
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
@@ -120,9 +123,28 @@ const Hero = () => {
     return () => clearTimeout(timeout);
   }, []);
 
+  // ── Listen for hero-ready to defer widgets ──
+  useEffect(() => {
+    const onReady = () => setHeroReady(true);
+    window.addEventListener('hero-ready', onReady);
+    return () => window.removeEventListener('hero-ready', onReady);
+  }, []);
+
+  // ── Stagger widget loading after hero is ready ──
+  useEffect(() => {
+    if (!heroReady) return;
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      setVisibleWidgets(count);
+      if (count >= WIDGETS.length) clearInterval(interval);
+    }, 400);
+    return () => clearInterval(interval);
+  }, [heroReady]);
+
   // ── Broadcast theme to widget iframes ──
   useEffect(() => {
-    const msg = { theme: 'dark' };
+    const msg = { theme: 'light' };
     const iframes = document.querySelectorAll('iframe[data-widget]');
     iframes.forEach((f) => f.contentWindow?.postMessage(msg, '*'));
     const handler = (e) => {
@@ -205,7 +227,7 @@ const Hero = () => {
         strokeDasharray: len,
         strokeDashoffset: len,
         fill: 'transparent',
-        stroke: '#FFFFFF',
+        stroke: '#181816',
         strokeWidth: 12,
       });
     });
@@ -232,7 +254,7 @@ const Hero = () => {
     });
 
     drawTl.to(paths, {
-      fill: '#FFFFFF',
+      fill: '#181816',
       strokeWidth: 0,
       duration: 0.3,
       ease: 'power1.inOut',
@@ -269,12 +291,17 @@ const Hero = () => {
         opacity: 1,
         clipPath: 'polygon(14% 0%, 72% 0%, 88% 90%, 0% 95%)',
         scale: 0.6,
+        willChange: 'clip-path, transform',
       });
       tl.to('#video-frame', {
         clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
         scale: 1,
         duration: 1.4,
         ease: 'power4.inOut',
+        force3D: true,
+        onComplete: () => {
+          gsap.set('#video-frame', { willChange: 'auto' });
+        },
       }, 0.2);
 
       // Loader fades out
@@ -285,19 +312,19 @@ const Hero = () => {
         onComplete: () => { loader.style.display = 'none'; },
       }, 0);
 
-      // Headings: clip-path text reveal
+      // Headings: clip-path text reveal (delayed to avoid overlap with frame morph)
       gsap.set('.hero-heading-anim', { opacity: 1 });
       tl.fromTo('.hero-heading-anim',
         { clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0 100%)', y: 20 },
         { clipPath: 'polygon(0 0%, 100% 0%, 100% 100%, 0 100%)', y: 0, duration: 0.8, stagger: 0.1, ease: 'power4.out' },
-        0.5
+        1.0
       );
 
-      // Subtext + button: fade up
+      // Subtext + button: fade up (delayed to avoid overlap with frame morph)
       tl.fromTo('.hero-subtext-anim',
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power2.out' },
-        0.8
+        1.3
       );
     }
 
@@ -369,13 +396,13 @@ const Hero = () => {
   });
 
   return (
-    <div className="relative h-dvh w-screen overflow-hidden bg-black">
+    <div className="relative h-dvh w-screen overflow-hidden bg-[#f8f8f6]">
 
       {/* ── Loading Screen ── */}
       <div
         ref={loaderRef}
         className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden"
-        style={{ backgroundColor: '#000000' }}
+        style={{ backgroundColor: '#f8f8f6' }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -405,15 +432,15 @@ const Hero = () => {
       {/* ── Video Frame (trapezoid container) ── */}
       <div
         id="video-frame"
-        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-black"
+        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-[#f8f8f6]"
         style={{ opacity: 0 }}
       >
 
       {/* ── HelmetReveal: face/skeleton + contour bg + brush ── */}
       <HelmetReveal dark={dark} />
 
-      {/* ── 5 Interactive 3D Widgets (preload behind loader) ── */}
-      {WIDGETS.map((w, i) => {
+      {/* ── 5 Interactive 3D Widgets (deferred + staggered after hero-ready) ── */}
+      {heroReady && WIDGETS.slice(0, visibleWidgets).map((w, i) => {
         const positions = [
           { top: '50%', left: '-2%',  ty: '-50%' },
           { top: '8%',  left: '10%' },
@@ -425,7 +452,7 @@ const Hero = () => {
         return (
           <div
             key={w.title}
-            className="group absolute z-[12] pointer-events-auto w-[180px] h-[180px] sm:w-[280px] sm:h-[280px]"
+            className="group absolute z-[12] pointer-events-auto hidden sm:block w-[180px] h-[180px] sm:w-[280px] sm:h-[280px]"
             style={{
               top: p.top,
               left: p.left,
@@ -484,9 +511,9 @@ const Hero = () => {
       })}
 
       {/* ── Hero Text Content ── */}
-      <div className="absolute bottom-8 left-0 z-[30] px-5 sm:px-10">
+      <div className="absolute bottom-16 sm:bottom-8 left-0 z-[30] px-5 sm:px-10">
         <h1
-          className={`hero-heading-anim special-font hero-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl transition-colors duration-700 ${
+          className={`hero-heading-anim special-font hero-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl transition-colors duration-700 ${
             dark ? 'text-[#e8e6e1]' : 'text-[#1a1a1a]'
           }`}
           style={{ opacity: 0 }}
@@ -495,7 +522,7 @@ const Hero = () => {
         </h1>
 
         <p
-          className={`hero-subtext-anim mt-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors duration-700 ${
+          className={`hero-subtext-anim mt-2 sm:mt-3 text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] transition-colors duration-700 ${
             dark ? 'text-[#e8e6e1]/70' : 'text-[#1a1a1a]/70'
           }`}
           style={{ opacity: 0 }}
@@ -504,7 +531,7 @@ const Hero = () => {
         </p>
 
         <p
-          className={`hero-subtext-anim mt-2 flex items-center gap-3 text-xs transition-colors duration-700 ${
+          className={`hero-subtext-anim mt-1.5 sm:mt-2 flex items-center gap-3 text-[11px] sm:text-xs transition-colors duration-700 ${
             dark ? 'text-[#e8e6e1]/60' : 'text-[#1a1a1a]/60'
           }`}
           style={{ opacity: 0 }}
@@ -517,17 +544,18 @@ const Hero = () => {
         </p>
 
         <p
-          className={`hero-subtext-anim mt-5 max-w-sm font-robert-regular text-sm leading-relaxed transition-colors duration-700 ${
+          className={`hero-subtext-anim mt-3 sm:mt-5 max-w-[280px] sm:max-w-sm font-robert-regular text-xs sm:text-sm leading-relaxed transition-colors duration-700 ${
             dark ? 'text-[#e8e6e1]/60' : 'text-[#1a1a1a]/60'
           }`}
           style={{ opacity: 0 }}
         >
-          Hi! I&apos;m a 20-year-old pre-med student and software architect,
+          <span className="hidden sm:inline">Hi! I&apos;m a 20-year-old pre-med student and software architect,
           programming since I was 6. I build medical AI platforms, ML
-          infrastructure, and distributed systems. I&apos;ve recently been doing web dev for fun. I don&apos;t take compensation, I just love solving hard problems.
+          infrastructure, and distributed systems. I&apos;ve recently been doing web dev for fun. I don&apos;t take compensation, I just love solving hard problems.</span>
+          <span className="sm:hidden">20-year-old pre-med student &amp; software architect. I build medical AI, ML infrastructure, and distributed systems.</span>
         </p>
 
-        <div className="hero-subtext-anim mt-5" style={{ opacity: 0 }}>
+        <div className="hero-subtext-anim mt-4 sm:mt-5 flex items-center gap-3" style={{ opacity: 0 }}>
           <a href="mailto:navmainemail@gmail.com" className="group relative inline-block cursor-pointer">
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 56" preserveAspectRatio="none">
               <path
@@ -547,25 +575,44 @@ const Hero = () => {
               </span>
             </span>
           </a>
+          <a href="/blog" className="group relative inline-block cursor-pointer">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 56" preserveAspectRatio="none">
+              <path
+                d="M8,2 L170,2 Q185,2 190,10 L198,42 Q200,50 192,54 L24,54 Q10,54 6,46 L2,14 Q0,6 8,2 Z"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+              />
+            </svg>
+            <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-white">
+              <TiLocationArrow />
+              <span className="relative inline-flex overflow-hidden">
+                <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
+                  Read my blog
+                </span>
+                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                  Read my blog
+                </span>
+              </span>
+            </span>
+          </a>
         </div>
 
         <p
-          className={`hero-subtext-anim mt-4 font-robert-regular text-xs transition-colors duration-700 ${
+          className={`hero-subtext-anim mt-3 sm:mt-4 font-robert-regular text-[10px] sm:text-xs transition-colors duration-700 ${
             dark ? 'text-[#e8e6e1]/30' : 'text-[#1a1a1a]/30'
           }`}
           style={{ opacity: 0 }}
         >
           <span className="hidden sm:inline">Talk to Clover, an LLM I made, via the clover in the bottom middle.</span>
-          <span className="sm:hidden">Tap the clover in the bottom right to chat with Clover, an LLM I made.</span>
+          <span className="sm:hidden">Tap the clover to chat with Clover AI.</span>
         </p>
       </div>
 
       {/* ── Logos — bottom right ── */}
       <div className="hero-subtext-anim absolute bottom-8 right-8 z-[30] hidden sm:block" style={{ opacity: 0 }}>
         <p
-          className={`mb-3 text-right text-[10px] font-medium uppercase tracking-[0.25em] transition-colors duration-700 ${
-            dark ? 'text-[#e8e6e1]/40' : 'text-[#1a1a1a]/40'
-          }`}
+          className="mb-3 text-right text-[10px] font-medium uppercase tracking-[0.25em] text-white/40"
         >
           Previously optimized systems for
         </p>
@@ -582,7 +629,7 @@ const Hero = () => {
                   src={logo.src}
                   alt={logo.alt}
                   className="h-3 sm:h-5 w-auto shrink-0 opacity-50 transition-all duration-700"
-                  style={{ filter: dark ? 'none' : 'invert(1)' }}
+                  style={{ filter: 'none' }}
                 />
               ))}
             </div>
@@ -591,13 +638,13 @@ const Hero = () => {
       </div>
 
       {/* ── Chat Pill ── */}
-      <div className="hero-subtext-anim absolute bottom-6 right-5 z-[35] sm:right-auto sm:left-1/2 sm:-translate-x-1/2" style={{ opacity: 0 }}>
+      <div className="hero-subtext-anim absolute bottom-5 right-5 z-[35] sm:bottom-6 sm:right-auto sm:left-1/2 sm:-translate-x-1/2" style={{ opacity: 0 }}>
         <button
           ref={pillRef}
           onClick={() => setChatOpen((prev) => !prev)}
           className="hover:scale-110 transition-transform duration-200 cursor-pointer"
         >
-          <CloverIcon size={20} loading color="white" />
+          <CloverIcon size={20} loading color="#181816" />
         </button>
       </div>
 
@@ -607,16 +654,16 @@ const Hero = () => {
       <div
         ref={chatRef}
         data-lenis-prevent
-        className="fixed z-[200] flex flex-col w-[90vw] max-w-[640px] h-[70vh] max-h-[600px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
-        style={{ visibility: 'hidden', pointerEvents: 'none', opacity: 0, backgroundColor: '#1c1c2e', border: '1px solid rgba(255,255,255,0.1)', top: 'calc(50% - min(35vh, 300px))', left: 'calc(50% - min(45vw, 320px))' }}
+        className="fixed z-[200] flex flex-col w-[90vw] max-w-[640px] h-[70vh] max-h-[600px] rounded-2xl overflow-hidden shadow-2xl shadow-black/15"
+        style={{ visibility: 'hidden', pointerEvents: 'none', opacity: 0, backgroundColor: '#ffffff', border: '1px solid #d0d0c6', top: 'calc(50% - min(35vh, 300px))', left: 'calc(50% - min(45vw, 320px))' }}
         onWheel={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #d0d0c6' }}>
           <div className="flex items-center gap-3">
-            <CloverIcon size={30} />
+            <CloverIcon size={30} color="#181816" />
             <div>
-              <span className="font-robert-regular text-sm font-medium text-white/90 block leading-tight">Clover</span>
+              <span className="font-robert-regular text-sm font-medium text-[#181816] block leading-tight">Clover</span>
               <span className="text-[10px] text-green-400/80 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
                 Online
@@ -625,7 +672,7 @@ const Hero = () => {
           </div>
           <button
             onClick={() => setChatOpen(false)}
-            className="w-8 h-8 rounded-lg flex-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all"
+            className="w-8 h-8 rounded-lg flex-center text-[#8a8a7e] hover:text-[#181816] hover:bg-black/5 transition-all"
           >
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
@@ -637,14 +684,14 @@ const Hero = () => {
             <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.role === 'ai' && (
                 <div className="shrink-0 mt-0.5">
-                  <CloverIcon size={22} />
+                  <CloverIcon size={22} color="#181816" />
                 </div>
               )}
-              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed border ${
                 msg.role === 'user'
-                  ? 'text-white/90 rounded-br-md'
-                  : 'text-white/75 rounded-bl-md'
-              }`} style={{ backgroundColor: msg.role === 'user' ? '#2a2a40' : '#232338' }}>
+                  ? 'text-[#181816] rounded-br-md border-[#d0d0c6]'
+                  : 'text-[#5a5a50] rounded-bl-md border-[#d0d0c6]'
+              }`} style={{ backgroundColor: msg.role === 'user' ? '#f0f0ec' : '#f8f8f6' }}>
                 {msg.text}
               </div>
             </div>
@@ -652,9 +699,9 @@ const Hero = () => {
           {chatLoading && (
             <div className="flex gap-3 flex-row">
               <div className="shrink-0 mt-0.5">
-                <CloverIcon size={22} loading />
+                <CloverIcon size={22} loading color="#181816" />
               </div>
-              <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm" style={{ backgroundColor: '#232338' }}>
+              <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm border border-[#d0d0c6]" style={{ backgroundColor: '#f8f8f6' }}>
                 <span className="shimmer-text">Thinking</span>
               </div>
             </div>
@@ -663,14 +710,14 @@ const Hero = () => {
 
         {/* Input */}
         <div className="px-4 pb-4 pt-2">
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#232338', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#f0f0ec', border: '1px solid #d0d0c6' }}>
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
               placeholder="Ask about Navtej..."
-              className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none font-robert-regular"
+              className="flex-1 bg-transparent text-sm text-[#181816] placeholder-[#8a8a7e] outline-none font-robert-regular"
             />
             <button
               onClick={handleChatSend}

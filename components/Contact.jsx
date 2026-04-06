@@ -13,9 +13,9 @@ const ImageClipBox = ({ src, clipClass }) => (
 const Contact = () => {
   return (
     <div id="contact" className="mt-20 mb-0 min-h-96 w-screen  px-10">
-      <div className="relative rounded-lg bg-black py-24 text-white sm:overflow-hidden">
+      <div className="relative rounded-lg bg-[#f8f8f6] py-24 text-[#181816] sm:overflow-hidden">
         <div className="flex flex-col items-center text-center">
-          <p className="mb-10 font-general text-[10px] uppercase">
+          <p className="mb-10 font-general text-[10px] uppercase text-[#8a8a7e]">
             Get In Touch
           </p>
 

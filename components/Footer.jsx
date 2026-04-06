@@ -7,7 +7,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const navItems = ['Projects', 'Contact', 'Recommendation Letter'];
+const navItems = ['Projects', 'Blog', 'Contact', 'Recommendation Letter'];
 
 const Footer = () => {
   const footerRef = useRef(null);
@@ -31,7 +31,7 @@ const Footer = () => {
           strokeDasharray: len,
           strokeDashoffset: len,
           fill: 'transparent',
-          stroke: '#FFFFFF',
+          stroke: '#181816',
           strokeWidth: 12,
         });
       });
@@ -71,7 +71,7 @@ const Footer = () => {
 
       // Fill in
       tl.to(sorted, {
-        fill: '#FFFFFF',
+        fill: '#181816',
         strokeWidth: 0,
         duration: 0.4,
         ease: 'power1.inOut',
@@ -95,13 +95,13 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="relative w-screen bg-black px-6 pb-8 pt-20"
+      className="relative w-screen bg-[#f8f8f6] px-6 pb-8 pt-20"
     >
       <div className="mx-auto max-w-7xl">
         {/* Divider */}
         <div
           ref={lineRef}
-          className="mb-14 h-px w-full origin-left bg-white/10"
+          className="mb-14 w-full origin-left border-t border-dashed border-[#d0d0c6]"
         />
 
         {/* Logo */}
@@ -142,8 +142,8 @@ const Footer = () => {
             {navItems.map((item) => (
               <a
                 key={item}
-                href={item === 'Recommendation Letter' ? '/recommendation' : `#${item.toLowerCase()}`}
-                className="nav-hover-btn !ms-0 !text-[10px] tracking-[0.2em] text-white/30"
+                href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
+                className="nav-hover-btn nav-hover-btn-dark !ms-0 !text-[10px] tracking-[0.2em] !text-[#8a8a7e]"
               >
                 {item}
               </a>
@@ -154,12 +154,12 @@ const Footer = () => {
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
             <a
               href="mailto:navmainemail@gmail.com"
-              className="font-robert-regular text-xs tracking-wider text-white/20 transition-colors duration-300 hover:text-white/50"
+              className="font-robert-regular text-xs tracking-wider text-[#b0b0a4] transition-colors duration-300 hover:text-[#5a5a50]"
             >
               navmainemail@gmail.com
             </a>
 
-            <p className="font-robert-regular text-xs tracking-wider text-white/20">
+            <p className="font-robert-regular text-xs tracking-wider text-[#b0b0a4]">
               &copy; {new Date().getFullYear()} Navtej Singh
             </p>
           </div>

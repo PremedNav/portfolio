@@ -8,9 +8,12 @@ import { TiLocationArrow } from "react-icons/ti";
 
 import Button from "./Button";
 
-const navItems = ["Projects", "Contact", "Recommendation Letter"];
+const navItems = ["Projects", "Blog", "Contact", "Recommendation Letter"];
 
-const NavBar = () => {
+const NavBar = ({ variant = 'dark' }) => {
+  const isLight = variant === 'light'
+  const textColor = isLight ? '#181816' : '#FFFFFF'
+  const floatingBg = isLight ? 'bg-white/80 backdrop-blur-md border-[#e0e0d8]' : 'bg-black rounded-lg border'
   // State for toggling audio and visual indicator
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isIndicatorActive, setIsIndicatorActive] = useState(false);
@@ -60,8 +63,8 @@ const NavBar = () => {
     const allPaths = wordmark.querySelectorAll('.nav-wordmark-n, .nav-wordmark-rest');
     const sortedRest = Array.from(restPaths).sort((a, b) => a.getBBox().x - b.getBBox().x);
     const sortedAll = Array.from(allPaths).sort((a, b) => a.getBBox().x - b.getBBox().x);
-    gsap.set(nPaths, { fill: '#FFFFFF', opacity: 1 });
-    gsap.set(sortedRest, { fill: '#FFFFFF', opacity: 0 });
+    gsap.set(nPaths, { fill: textColor, opacity: 1 });
+    gsap.set(sortedRest, { fill: textColor, opacity: 0 });
 
     // First play: N stays solid, AVTEJ fades in
     const tl = gsap.timeline();
@@ -120,15 +123,15 @@ const NavBar = () => {
     if (currentScrollY === 0) {
       // Topmost position: show navbar without floating-nav
       setIsNavVisible(true);
-      navContainerRef.current.classList.remove("floating-nav");
+      navContainerRef.current.classList.remove("floating-nav", "floating-nav-light");
     } else if (currentScrollY > lastScrollY) {
       // Scrolling down: hide navbar and apply floating-nav
       setIsNavVisible(false);
-      navContainerRef.current.classList.add("floating-nav");
+      navContainerRef.current.classList.add(isLight ? "floating-nav-light" : "floating-nav");
     } else if (currentScrollY < lastScrollY) {
       // Scrolling up: show navbar with floating-nav
       setIsNavVisible(true);
-      navContainerRef.current.classList.add("floating-nav");
+      navContainerRef.current.classList.add(isLight ? "floating-nav-light" : "floating-nav");
     }
 
     setLastScrollY(currentScrollY);
@@ -152,16 +155,16 @@ const NavBar = () => {
           {/* Logo */}
           <a href="/" ref={logoRef} className="nav-logo relative cursor-pointer" onMouseEnter={handleLogoEnter} onMouseLeave={handleLogoLeave}>
             <svg className="nav-logo-icon" xmlns="http://www.w3.org/2000/svg" height="29" viewBox="250 1300 800 700" fill="none">
-              <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0s' }} d="M512.24 1564.06C530 1574.9 574.581 1611.12 592.507 1625.08L748.821 1746.89L889.945 1855.92C909.669 1871.18 947.692 1898.97 964.116 1915.04C949.944 1919.73 938.55 1924.51 924.907 1930.19C897.435 1942.41 870.983 1952.59 842.648 1963.53C733.978 1881.03 627.579 1794.6 518.336 1713.03C518.41 1664.72 513.29 1613.16 512.24 1564.06Z" />
-              <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0.1s' }} d="M471.978 1334.04C482.356 1339.12 540.027 1385.34 552.6 1395.05L699.421 1508.05C730.927 1532.41 765.217 1560.36 797.867 1583.28C800.833 1633.78 804.26 1684.26 808.15 1734.72C787.56 1719.87 768.809 1704.02 747.979 1689.09L479.055 1480.76C436.791 1448.15 392.158 1414.75 351.195 1381.37C391.357 1365.08 431.715 1350.04 471.978 1334.04Z" />
-              <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0.2s' }} d="M353.922 1442.17C392.245 1469.88 432.089 1502.9 470.268 1531.85L470.143 1865.03C451.092 1877.87 429.783 1895.69 412.204 1909.99C392.058 1925.6 372.897 1941.23 352.425 1956.73C354.905 1833.16 352.906 1703.41 352.765 1579.4L352.243 1494.39C352.151 1482.47 351.251 1452.54 353.922 1442.17Z" />
-              <path className="nav-logo-part" fill="#FFFFFF" style={{ animationDelay: '0.3s' }} d="M962.201 1345.4C965.042 1349.45 963.332 1456.16 963.284 1468.26C962.418 1596.83 962.857 1725.41 964.6 1853.97L908.732 1810.89C889.138 1795.08 867.859 1779.14 847.742 1763.69L847.723 1433.45C885.626 1403.89 923.786 1374.54 962.201 1345.4Z" />
+              <path className="nav-logo-part" fill={textColor} style={{ animationDelay: '0s' }} d="M512.24 1564.06C530 1574.9 574.581 1611.12 592.507 1625.08L748.821 1746.89L889.945 1855.92C909.669 1871.18 947.692 1898.97 964.116 1915.04C949.944 1919.73 938.55 1924.51 924.907 1930.19C897.435 1942.41 870.983 1952.59 842.648 1963.53C733.978 1881.03 627.579 1794.6 518.336 1713.03C518.41 1664.72 513.29 1613.16 512.24 1564.06Z" />
+              <path className="nav-logo-part" fill={textColor} style={{ animationDelay: '0.1s' }} d="M471.978 1334.04C482.356 1339.12 540.027 1385.34 552.6 1395.05L699.421 1508.05C730.927 1532.41 765.217 1560.36 797.867 1583.28C800.833 1633.78 804.26 1684.26 808.15 1734.72C787.56 1719.87 768.809 1704.02 747.979 1689.09L479.055 1480.76C436.791 1448.15 392.158 1414.75 351.195 1381.37C391.357 1365.08 431.715 1350.04 471.978 1334.04Z" />
+              <path className="nav-logo-part" fill={textColor} style={{ animationDelay: '0.2s' }} d="M353.922 1442.17C392.245 1469.88 432.089 1502.9 470.268 1531.85L470.143 1865.03C451.092 1877.87 429.783 1895.69 412.204 1909.99C392.058 1925.6 372.897 1941.23 352.425 1956.73C354.905 1833.16 352.906 1703.41 352.765 1579.4L352.243 1494.39C352.151 1482.47 351.251 1452.54 353.922 1442.17Z" />
+              <path className="nav-logo-part" fill={textColor} style={{ animationDelay: '0.3s' }} d="M962.201 1345.4C965.042 1349.45 963.332 1456.16 963.284 1468.26C962.418 1596.83 962.857 1725.41 964.6 1853.97L908.732 1810.89C889.138 1795.08 867.859 1779.14 847.742 1763.69L847.723 1433.45C885.626 1403.89 923.786 1374.54 962.201 1345.4Z" />
             </svg>
             <svg className="nav-logo-wordmark absolute left-0 top-1/2 -translate-y-1/2" style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg" height="29" viewBox="250 1300 3550 700" fill="none">
-              <path className="nav-wordmark-n" fill="#FFFFFF" d="M512.24 1564.06C530 1574.9 574.581 1611.12 592.507 1625.08L748.821 1746.89L889.945 1855.92C909.669 1871.18 947.692 1898.97 964.116 1915.04C949.944 1919.73 938.55 1924.51 924.907 1930.19C897.435 1942.41 870.983 1952.59 842.648 1963.53C733.978 1881.03 627.579 1794.6 518.336 1713.03C518.41 1664.72 513.29 1613.16 512.24 1564.06Z" />
-              <path className="nav-wordmark-n" fill="#FFFFFF" d="M471.978 1334.04C482.356 1339.12 540.027 1385.34 552.6 1395.05L699.421 1508.05C730.927 1532.41 765.217 1560.36 797.867 1583.28C800.833 1633.78 804.26 1684.26 808.15 1734.72C787.56 1719.87 768.809 1704.02 747.979 1689.09L479.055 1480.76C436.791 1448.15 392.158 1414.75 351.195 1381.37C391.357 1365.08 431.715 1350.04 471.978 1334.04Z" />
-              <path className="nav-wordmark-n" fill="#FFFFFF" d="M353.922 1442.17C392.245 1469.88 432.089 1502.9 470.268 1531.85L470.143 1865.03C451.092 1877.87 429.783 1895.69 412.204 1909.99C392.058 1925.6 372.897 1941.23 352.425 1956.73C354.905 1833.16 352.906 1703.41 352.765 1579.4L352.243 1494.39C352.151 1482.47 351.251 1452.54 353.922 1442.17Z" />
-              <path className="nav-wordmark-n" fill="#FFFFFF" d="M962.201 1345.4C965.042 1349.45 963.332 1456.16 963.284 1468.26C962.418 1596.83 962.857 1725.41 964.6 1853.97L908.732 1810.89C889.138 1795.08 867.859 1779.14 847.742 1763.69L847.723 1433.45C885.626 1403.89 923.786 1374.54 962.201 1345.4Z" />
+              <path className="nav-wordmark-n" fill={textColor} d="M512.24 1564.06C530 1574.9 574.581 1611.12 592.507 1625.08L748.821 1746.89L889.945 1855.92C909.669 1871.18 947.692 1898.97 964.116 1915.04C949.944 1919.73 938.55 1924.51 924.907 1930.19C897.435 1942.41 870.983 1952.59 842.648 1963.53C733.978 1881.03 627.579 1794.6 518.336 1713.03C518.41 1664.72 513.29 1613.16 512.24 1564.06Z" />
+              <path className="nav-wordmark-n" fill={textColor} d="M471.978 1334.04C482.356 1339.12 540.027 1385.34 552.6 1395.05L699.421 1508.05C730.927 1532.41 765.217 1560.36 797.867 1583.28C800.833 1633.78 804.26 1684.26 808.15 1734.72C787.56 1719.87 768.809 1704.02 747.979 1689.09L479.055 1480.76C436.791 1448.15 392.158 1414.75 351.195 1381.37C391.357 1365.08 431.715 1350.04 471.978 1334.04Z" />
+              <path className="nav-wordmark-n" fill={textColor} d="M353.922 1442.17C392.245 1469.88 432.089 1502.9 470.268 1531.85L470.143 1865.03C451.092 1877.87 429.783 1895.69 412.204 1909.99C392.058 1925.6 372.897 1941.23 352.425 1956.73C354.905 1833.16 352.906 1703.41 352.765 1579.4L352.243 1494.39C352.151 1482.47 351.251 1452.54 353.922 1442.17Z" />
+              <path className="nav-wordmark-n" fill={textColor} d="M962.201 1345.4C965.042 1349.45 963.332 1456.16 963.284 1468.26C962.418 1596.83 962.857 1725.41 964.6 1853.97L908.732 1810.89C889.138 1795.08 867.859 1779.14 847.742 1763.69L847.723 1433.45C885.626 1403.89 923.786 1374.54 962.201 1345.4Z" />
               <path className="nav-wordmark-rest" d="M1274.05 1345.03L1401.39 1344.98C1418.62 1391 1448.48 1453.32 1468.91 1500.28L1617.22 1838.88C1634.27 1878.26 1651.96 1916.46 1668.19 1956.16C1625.97 1940.56 1576.21 1918.85 1534.4 1901.22C1526.04 1897.52 1518.71 1893.59 1510.72 1889.42C1499.41 1864.66 1488.29 1839.84 1477.36 1814.97L1230.09 1815.42C1248.75 1776.96 1262.98 1737.15 1281.7 1698.12C1330.46 1698.44 1379.22 1698.41 1427.98 1698.02C1408.99 1658.92 1391.7 1614.16 1374.31 1574.3C1340.3 1498.04 1306.88 1421.62 1274.05 1345.03Z" />
               <path className="nav-wordmark-rest" d="M1254.67 1385.26C1258.63 1388.25 1312.98 1515.02 1319.26 1529.02C1302.82 1559.69 1281.21 1616.39 1267.01 1649.74L1164.06 1889.78C1137.05 1904.77 1080.73 1925.02 1048.72 1939.34C1035.07 1945.51 1018.79 1951.09 1004.36 1956.34C1018.25 1929.12 1031.91 1895.13 1044.01 1867.01L1097.75 1743.73L1254.67 1385.26Z" />
               <path className="nav-wordmark-rest" d="M1545.24 1344.49C1564.74 1349.33 1595.47 1364.17 1614.3 1372.16C1643.96 1384.74 1675.16 1397.08 1703.89 1410.76C1728.8 1464.46 1754.03 1528.71 1777.19 1583.73L1871.29 1802.6C1891.07 1848.92 1915.05 1910.39 1937.93 1954.69L1809.49 1955C1718.64 1753.32 1636.63 1546.14 1545.24 1344.49Z" />
@@ -182,8 +185,8 @@ const NavBar = () => {
               {navItems.map((item, index) => (
                 <a
                   key={index}
-                  href={item === 'Recommendation Letter' ? '/recommendation' : `#${item.toLowerCase()}`}
-                  className="nav-hover-btn"
+                  href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
+                  className={isLight ? "nav-hover-btn nav-hover-btn-dark" : "nav-hover-btn"}
                 >
                   {item}
                 </a>
@@ -205,6 +208,7 @@ const NavBar = () => {
                   key={bar}
                   className={clsx("indicator-line", {
                     active: isIndicatorActive,
+                    "indicator-line-dark": isLight,
                   })}
                   style={{
                     animationDelay: `${bar * 0.1}s`,

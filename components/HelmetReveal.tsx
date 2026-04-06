@@ -270,8 +270,7 @@ const contourFrag = /* glsl */ `
     uv.x *= uAspect;
     float t = uTime * 0.06;
     float n = snoise(uv * 1.5 + vec2(t, t * 0.7))
-            + snoise(uv * 3.0 + vec2(-t * 0.5, t * 0.3)) * 0.5
-            + snoise(uv * 5.0 + vec2(t * 0.3, -t * 0.6)) * 0.25;
+            + snoise(uv * 3.0 + vec2(-t * 0.5, t * 0.3)) * 0.5;
     float contourSpacing = 0.18;
     float contour = abs(fract(n / contourSpacing) - 0.5) * 2.0;
     float fw = fwidth(n / contourSpacing);
@@ -290,6 +289,26 @@ const contourFrag = /* glsl */ `
     gl_FragColor = vec4(color, 1.0);
   }
 `;
+
+// ─── GPU Tier Detection ─────────────────────────────────────────────────────
+
+function detectGPUTier(): 'low' | 'high' {
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if (!gl) return 'low';
+    const ext = (gl as WebGLRenderingContext).getExtension('WEBGL_debug_renderer_info');
+    if (ext) {
+      const gpu = (gl as WebGLRenderingContext).getParameter(ext.UNMASKED_RENDERER_WEBGL).toLowerCase();
+      if (gpu.includes('intel') || gpu.includes('swiftshader') || gpu.includes('llvmpipe') || gpu.includes('software')) {
+        return 'low';
+      }
+    }
+    return 'high';
+  } catch {
+    return 'low';
+  }
+}
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -337,9 +356,14 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
     let cw = container.clientWidth;
     let ch = container.clientHeight;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const gpuTier = detectGPUTier();
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: false,
+      powerPreference: 'default',
+    });
     renderer.setSize(cw, ch);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, gpuTier === 'low' ? 1 : 1.5));
     container.appendChild(renderer.domElement);
 
     // ── Mouse tracking ──────────────────────────────────────────────────────
@@ -359,8 +383,8 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
     container.addEventListener('pointermove', onPointerMove);
 
     // ── Fluid Simulation Setup ──────────────────────────────────────────────
-    const SIM_RES = 512;
-    const DYE_RES = 1024;
+    const SIM_RES = gpuTier === 'low' ? 256 : 384;
+    const DYE_RES = gpuTier === 'low' ? 512 : 768;
 
     const fboOpts: THREE.RenderTargetOptions = {
       minFilter: THREE.LinearFilter,
@@ -461,7 +485,7 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       renderer.render(simScene, simCam);
     }
 
-    function splatSingle(x: number, y: number, dx: number, dy: number) {
+    function splatSingle(x: number, y: number, dx: number, dy: number, dyeRadius = 0.004) {
       // Splat velocity
       splatMat.uniforms.uTarget.value = velocity.read.texture;
       splatMat.uniforms.point.value.set(x, y);
@@ -473,7 +497,7 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       // Splat dye — lower intensity so gradients are visible
       splatMat.uniforms.uTarget.value = dye.read.texture;
       splatMat.uniforms.color.value.set(0.35, 0.35, 0.35);
-      splatMat.uniforms.radius.value = 0.004;
+      splatMat.uniforms.radius.value = dyeRadius;
       blit(splatMat, dye.write);
       dye.swap();
     }
@@ -507,7 +531,8 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
 
       // Pressure solve (Jacobi iterations)
       pressureMat.uniforms.uDivergence.value = divergenceFBO.texture;
-      for (let i = 0; i < 32; i++) {
+      const PRESSURE_ITERS = gpuTier === 'low' ? 12 : 20;
+      for (let i = 0; i < PRESSURE_ITERS; i++) {
         pressureMat.uniforms.uPressure.value = pressure.read.texture;
         blit(pressureMat, pressure.write);
         pressure.swap();
@@ -572,7 +597,7 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
     });
 
     const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(planeW, planeH, 64, 64),
+      new THREE.PlaneGeometry(planeW, planeH, 1, 1),
       compositeMat,
     );
     plane.position.y = -planeH * 0.2;
@@ -600,8 +625,8 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
     const bgCam = new THREE.Camera();
 
     // ── Auto brush strokes state ──────────────────────────────────────────────
-    let autoTimer = 0;
-    const AUTO_INTERVAL = 5.0;
+    let autoTimer = 2.0;
+    const AUTO_INTERVAL = 3.0;
 
     // Stroke definitions: 3 per set — face, neck, chest
     // y coords: face ~0.40-0.48, neck ~0.28-0.33, chest ~0.15-0.22
@@ -678,12 +703,12 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
             const cos = Math.cos(stroke.angle);
             const sin = Math.sin(stroke.angle);
             // Walk along the stroke direction
-            const stepLen = 0.015;
+            const stepLen = 0.02;
             const px = stroke.x + cos * stepLen * sp * stroke.len;
             const py = stroke.y + sin * stepLen * sp * stroke.len;
             const vx = cos * 0.006;
             const vy = sin * 0.006;
-            splatSingle(px, py, vx, vy);
+            splatSingle(px, py, vx, vy, 0.007);
           } else if (burstTime < strokeEnd) {
             allDone = false;
           }
@@ -714,6 +739,14 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
     }
     animate();
 
+    // ── Pre-paint initial reveal (3 subtle splats to hint at skeleton) ──────
+    setTimeout(() => {
+      if (disposed) return;
+      splatSingle(0.48, 0.42, 0.003, -0.002, 0.006);
+      splatSingle(0.50, 0.30, -0.002, 0.003, 0.006);
+      splatSingle(0.46, 0.20, 0.002, -0.001, 0.006);
+    }, 100);
+
     // ── Resize ───────────────────────────────────────────────────────────────
     const handleResize = () => {
       cw = container.clientWidth;
@@ -728,7 +761,7 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       const newH = 2 * Math.tan(fovRad / 2) * mainCam.position.z;
       const newW = newH * imgAspect;
       plane.geometry.dispose();
-      plane.geometry = new THREE.PlaneGeometry(newW, newH, 64, 64);
+      plane.geometry = new THREE.PlaneGeometry(newW, newH, 1, 1);
       plane.position.y = -newH * 0.2;
     };
     window.addEventListener('resize', handleResize);

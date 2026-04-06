@@ -115,7 +115,7 @@ export const BentoCard = ({ src = null, riveSrc = null, title, description, isCo
           return (
             <Tag
               {...tagProps}
-              className="group relative flex w-fit cursor-pointer items-center gap-2 overflow-hidden rounded-full border border-white/20 bg-black/50 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-all duration-300 hover:bg-yellow-300 hover:text-black hover:border-yellow-300"
+              className="group relative flex w-fit cursor-pointer items-center gap-2 overflow-hidden rounded-full border border-white/30 bg-black/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-all duration-300 hover:bg-yellow-300 hover:text-black hover:border-yellow-300"
             >
               <TiLocationArrow className="relative z-20 transition-transform duration-300 group-hover:rotate-45" />
               <p className="relative z-20">{link ? 'visit project' : ribbon?.startsWith('Complete') ? 'contact for more info' : ribbon === 'Discontinued' ? 'no longer available' : 'coming soon'}</p>
@@ -246,25 +246,25 @@ const Features = () => {
   }, { scope: sectionRef });
 
   return (
-  <section id="projects" className="bg-black pb-52" ref={sectionRef}>
+  <section id="projects" className="bg-[#f8f8f6] pb-52" ref={sectionRef}>
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
         <div className="relative overflow-hidden inline-block">
           <span className="ln-block absolute -inset-1 bg-yellow-300" />
-          <p className="font-circular-web text-lg text-white">
+          <p className="font-circular-web text-lg text-[#181816]">
             What I&apos;m Building
           </p>
         </div>
         <div className="relative overflow-hidden mt-1 max-w-md">
           <span className="ln-block absolute -inset-1 bg-yellow-300" />
-          <p className="font-circular-web text-lg text-white opacity-50">
+          <p className="font-circular-web text-lg text-[#8a8a7e]">
             A collection of projects spanning medical AI, ML infrastructure,
             edtech, and industrial intelligence. Each one solving a different hard problem.
           </p>
         </div>
       </div>
 
-      <BentoTilt className="bento-card-anim border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
+      <BentoTilt className="bento-card-anim border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh] bg-black">
         <BentoCard
           riveSrc="/rive/hero_section.riv"
           title={
@@ -282,7 +282,7 @@ const Features = () => {
       </BentoTilt>
 
       <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2 bg-black">
           <BentoCard
             title={
               <img
@@ -299,7 +299,7 @@ const Features = () => {
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0 bg-black">
           <BentoCard
             title={
               <img
@@ -316,7 +316,7 @@ const Features = () => {
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0 bg-black">
           <BentoCard
             src="/videos/feature-4.mp4"
             videoClassName="translate-x-[10%]"
@@ -343,7 +343,7 @@ const Features = () => {
           </div>
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_2">
+        <BentoTilt className="bento-card-anim bento-tilt_2 bg-black">
           <BentoCard
             src="/videos/feature-5.mp4"
             videoClassName="translate-x-[10%]"
@@ -363,7 +363,7 @@ const Features = () => {
 
       {/* Second project grid */}
       <div className="mt-7 grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2 bg-black">
           <BentoCard
             src="/videos/trovex.mp4"
             videoClassName="!object-contain scale-[1.3]"
@@ -380,7 +380,7 @@ const Features = () => {
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0 bg-black">
           <BentoCard
             title={
               <img
@@ -399,7 +399,7 @@ const Features = () => {
           </BentoCard>
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0">
+        <BentoTilt className="bento-card-anim bento-tilt_1 me-14 md:col-span-1 md:me-0 bg-black">
           <BentoCard
             src="/videos/histia.mp4"
             videoClassName="!left-auto !top-auto !right-4 !bottom-4 !w-[65%] !h-[65%] !object-contain"
@@ -416,7 +416,7 @@ const Features = () => {
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_2">
+        <BentoTilt className="bento-card-anim bento-tilt_2 bg-black">
           <BentoCard
             src="/videos/topographify.mp4"
             title={

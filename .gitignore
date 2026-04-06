@@ -40,3 +40,5 @@ codepens.txt
 cp1.html
 cp3.html
 tsconfig.tsbuildinfo
+data/subscribers.json
+data/likes.json

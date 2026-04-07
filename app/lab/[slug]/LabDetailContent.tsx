@@ -263,7 +263,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
                 className="absolute inset-0 w-full h-full"
                 style={{ border: 'none', background: 'transparent' }}
                 title={experiment.title}
-                allowtransparency="true"
+                allowTransparency
                 onLoad={(e) => {
                   (e.target as HTMLIFrameElement).contentWindow?.postMessage({ theme: 'dark' }, '*')
                 }}
@@ -345,7 +345,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
                     style={{ border: 'none', background: 'transparent' }}
                     title={exp.title}
                     loading="lazy"
-                    allowtransparency="true"
+                    allowTransparency
                     onLoad={(e) => {
                       (e.target as HTMLIFrameElement).contentWindow?.postMessage({ theme: 'dark' }, '*')
                     }}
@@ -388,7 +388,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
             className="absolute inset-0 w-full h-full"
             style={{ border: 'none', background: 'transparent' }}
             title={experiment.title}
-            allowtransparency="true"
+            allowTransparency
             onLoad={(e) => {
               (e.target as HTMLIFrameElement).contentWindow?.postMessage({ theme: 'dark' }, '*')
             }}

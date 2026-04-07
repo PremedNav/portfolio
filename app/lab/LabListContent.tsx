@@ -276,7 +276,7 @@ function LazyIframe({ src, title }: { src: string; title: string }) {
           style={{ border: 'none', background: 'transparent' }}
           title={title}
           loading="lazy"
-          allowtransparency="true"
+          allowTransparency
           onLoad={(e) => {
             (e.target as HTMLIFrameElement).contentWindow?.postMessage({ theme: 'dark' }, '*')
           }}

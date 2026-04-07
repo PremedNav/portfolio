@@ -14,8 +14,8 @@ export default function Home() {
       <NavBar variant="light" />
       <Hero />
       <Features />
-      <BlogPreview />
       <Lab />
+      <BlogPreview />
       <Contact />
       <Footer />
     </main>

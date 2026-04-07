@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Galaxy Simulation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#020204}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Galaxy N-Body Simulation
+ * Direct gravitational N-body with softening
+ * Inspired by https://github.com/beltoforion/Galaxy-Renderer (MIT)
+ * and various N-body simulation repos
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+
+var NUM = 800;
+var stars = [];
+var G = 0.5;
+var SOFTENING = 5;
+var DT = 0.3;
+
+// Create two colliding disk galaxies
+function init() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+
+    stars = [];
+
+    // Galaxy 1: rotating disk
+    createGalaxy(W * 0.35, H * 0.45, NUM / 2, 120, 0.8, 200);
+    // Galaxy 2: rotating disk (opposite direction)
+    createGalaxy(W * 0.65, H * 0.55, NUM / 2, 100, -0.7, 160);
+
+    ctx.fillStyle = '#020204';
+    ctx.fillRect(0, 0, W, H);
+}
+
+function createGalaxy(cx, cy, count, radius, spin, hue) {
+    // Central massive body
+    stars.push({
+        x: cx, y: cy,
+        vx: spin * 0.5, vy: -spin * 0.3,
+        mass: 500,
+        hue: hue,
+        brightness: 1.0,
+        size: 3
+    });
+
+    for (var i = 0; i < count - 1; i++) {
+        // Distribute stars in disk with exponential falloff
+        var angle = Math.random() * Math.PI * 2;
+        var r = (Math.random() * 0.7 + 0.3) * radius * Math.sqrt(Math.random());
+
+        var x = cx + Math.cos(angle) * r;
+        var y = cy + Math.sin(angle) * r;
+
+        // Orbital velocity (perpendicular to radius)
+        var speed = spin * Math.sqrt(r / radius);
+        var vx = -Math.sin(angle) * speed + (Math.random() - 0.5) * 0.3;
+        var vy = Math.cos(angle) * speed + (Math.random() - 0.5) * 0.3;
+
+        stars.push({
+            x: x, y: y,
+            vx: vx, vy: vy,
+            mass: 1,
+            hue: hue + (Math.random() - 0.5) * 40,
+            brightness: 0.3 + Math.random() * 0.7,
+            size: 0.5 + Math.random() * 1.5
+        });
+    }
+}
+
+function step() {
+    // Compute forces
+    for (var i = 0; i < stars.length; i++) {
+        var a = stars[i];
+        var fx = 0, fy = 0;
+
+        for (var j = 0; j < stars.length; j++) {
+            if (i === j) continue;
+            var b = stars[j];
+
+            var dx = b.x - a.x;
+            var dy = b.y - a.y;
+            var distSq = dx * dx + dy * dy + SOFTENING * SOFTENING;
+            var dist = Math.sqrt(distSq);
+            var force = G * b.mass / distSq;
+
+            fx += force * dx / dist;
+            fy += force * dy / dist;
+        }
+
+        a.vx += fx * DT;
+        a.vy += fy * DT;
+    }
+
+    // Update positions
+    for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        s.x += s.vx * DT;
+        s.y += s.vy * DT;
+    }
+}
+
+function render() {
+    // Slow fade for trails
+    ctx.fillStyle = 'rgba(2,2,4,0.12)';
+    ctx.fillRect(0, 0, W, H);
+
+    for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        if (s.x < -200 || s.x > W + 200 || s.y < -200 || s.y > H + 200) continue;
+
+        var speed = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+        var alpha = Math.min(0.9, s.brightness * (0.3 + speed * 0.1));
+        var lightness = 50 + Math.min(30, speed * 5);
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'hsla(' + s.hue + ',60%,' + lightness + '%,' + alpha + ')';
+        ctx.fill();
+    }
+
+    // Glow for massive bodies
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < stars.length; i++) {
+        var s = stars[i];
+        if (s.mass < 100) continue;
+        var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 20);
+        grad.addColorStop(0, 'hsla(' + s.hue + ',80%,80%,0.3)');
+        grad.addColorStop(1, 'hsla(' + s.hue + ',80%,80%,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 20, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    step();
+    render();
+}
+
+init();
+window.addEventListener('resize', init);
+
+// Click to add mass
+canvas.addEventListener('click', function(e) {
+    stars.push({
+        x: e.clientX, y: e.clientY,
+        vx: 0, vy: 0,
+        mass: 200,
+        hue: Math.random() * 360,
+        brightness: 1.0,
+        size: 3
+    });
+});
+
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    for (var i = 0; i < e.touches.length; i++) {
+        stars.push({
+            x: e.touches[i].clientX, y: e.touches[i].clientY,
+            vx: 0, vy: 0,
+            mass: 200,
+            hue: Math.random() * 360,
+            brightness: 1.0,
+            size: 3
+        });
+    }
+}, {passive:false});
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

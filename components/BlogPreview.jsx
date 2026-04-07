@@ -172,6 +172,25 @@ const BlogPreview = () => {
           ))}
         </div>
 
+        {/* View more — stretched card */}
+        <div className="bp-card px-5 mt-4 md:mt-5">
+          <Link href="/blog" className="group block">
+            <div className="relative rounded-2xl border border-dashed border-[#c8c8bc] overflow-hidden px-6 py-5 flex items-center justify-between transition-all duration-300 hover:border-[#181816]/30 hover:bg-[#f0f0ec]">
+              <div className="flex items-center gap-3">
+                <span className="font-circular-web text-[15px] text-[#181816]">
+                  Read all posts
+                </span>
+                <span className="font-circular-web text-[13px] text-[#8a8a7e]">
+                  — deep dives, breakdowns, and things I've learned
+                </span>
+              </div>
+              <div className="flex items-center justify-center w-8 h-8 rounded-full border border-[#c8c8bc] transition-all duration-300 group-hover:bg-[#181816] group-hover:border-[#181816]">
+                <ArrowIcon size={12} className="text-[#8a8a7e] transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5" />
+              </div>
+            </div>
+          </Link>
+        </div>
+
       </div>
     </section>
   );

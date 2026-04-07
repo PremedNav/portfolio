@@ -1,0 +1,189 @@
+---
+title: "Topological Data Analysis: How Shape Theory Is Changing Medicine"
+subtitle: "Persistent homology, Betti numbers, and why the shape of data matters more than its coordinates."
+date: "2026-01-05"
+readTime: "8 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Medical data is high-dimensional. A single gene expression profile might have 20,000 features. A histology image, when tiled and embedded, lives in a space with hundreds of dimensions. An fMRI scan produces time series across thousands of voxels. Traditional statistical methods, PCA, clustering, regression, handle this data by projecting it into lower dimensions or partitioning it into groups. These methods work well when the data has a simple structure. But biological data rarely does.</P>
+  <P>The problem is that <Highlight>PCA finds linear directions of maximum variance, not shape</Highlight>. Clustering assumes data comes in blobs. Neither captures the loops, branches, voids, and connected components that naturally arise in biological systems. A tumor with a necrotic core surrounded by a ring of proliferating cells has topological structure (a loop) that k-means clustering will never detect. This is where topology enters.</P>
+
+  <Figure
+    src="/img/blog/topology-abstract.jpg"
+    alt="Abstract geometric forms representing topological surfaces"
+    caption="Abstract geometric forms — topology studies the properties that survive continuous deformation"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="What Topology Brings to Data">
+  <P>Topology is the study of properties that survive continuous deformation. You can stretch, bend, and twist a shape, but as long as you do not tear it or glue parts together, its topological properties remain unchanged. A coffee mug and a donut are topologically identical (both have one hole). A sphere and a cube are identical (neither has holes). This level of abstraction sounds impractical, but it turns out to be <Highlight>exactly what you want for noisy, high-dimensional data</Highlight>.</P>
+  <P>Coordinates are fragile. Rotate a point cloud, and the coordinates change entirely. Scale it, and they change again. Add noise, and they change unpredictably. But the <B>shape</B> of the point cloud, its connected components, loops, and voids, is robust to all of these transformations. Topological data analysis (TDA) extracts these shape features and uses them as input to downstream analysis.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Coordinate-free.</B> Topological features depend on the relationships between points, not their absolute positions. This makes TDA naturally invariant to rotation, translation, and many forms of noise.</ConnectedItem>
+    <ConnectedItem><B>Multi-scale.</B> TDA examines data at every scale simultaneously, from local neighborhoods to global structure. This reveals features that exist only at specific resolutions, which single-scale methods miss entirely.</ConnectedItem>
+    <ConnectedItem><B>Interpretable.</B> A loop in the persistence diagram corresponds to an actual loop in the data. Unlike the latent dimensions of PCA, topological features have geometric meaning that domain experts can interrogate.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Persistent Homology">
+  <P>The central technique in TDA is <B>persistent homology</B>. The idea is elegant. Start with a set of data points. Grow a ball of radius <Eq c="r" /> around each point. As <Eq c="r" /> increases from zero, the balls overlap and form increasingly complex shapes. At small <Eq c="r" />, you have many disconnected components. As <Eq c="r" /> grows, components merge. Eventually loops form. Then loops fill in. Then higher-dimensional voids appear and disappear.</P>
+  <P>Persistent homology tracks these events. Each topological feature (a connected component, a loop, a void) has a <B>birth time</B> (the radius at which it appears) and a <B>death time</B> (the radius at which it disappears). Features that persist across a wide range of radii are considered <Highlight>real structure</Highlight>. Features that appear and vanish quickly are likely noise.</P>
+  <P>The output is a <B>persistence diagram</B>: a scatter plot where each point represents a topological feature, with its birth on the x-axis and death on the y-axis. Points far from the diagonal are long-lived features (signal). Points near the diagonal are short-lived features (noise). This single visualization summarizes the multi-scale topological structure of an entire dataset.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Step 1: Build a filtration.</B> Construct a nested sequence of simplicial complexes (generalizations of triangulations) at increasing scale parameters. Common choices are the Vietoris-Rips complex (connect points within distance <Eq c="r" />) and the alpha complex (based on Delaunay triangulation).</ConnectedItem>
+    <ConnectedItem><B>Step 2: Compute homology at each scale.</B> At each value of <Eq c="r" />, compute the homology groups, which count the topological features in each dimension: connected components (<Eq c="H_0" />), loops (<Eq c="H_1" />), voids (<Eq c="H_2" />), and so on.</ConnectedItem>
+    <ConnectedItem><B>Step 3: Track persistence.</B> As <Eq c="r" /> increases, features are born and die. Record each birth-death pair. The collection of these pairs is the persistence diagram.</ConnectedItem>
+    <ConnectedItem><B>Step 4: Vectorize for machine learning.</B> Persistence diagrams can be converted into fixed-length vectors (persistence images, persistence landscapes) for use as features in standard ML pipelines.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The key insight">Persistent homology converts the question &ldquo;what is the shape of this data?&rdquo; into a computable, stable, multi-scale summary. The persistence diagram is a topological fingerprint of the dataset.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Betti Numbers">
+  <P>The <B>Betti numbers</B> are the simplest topological invariants, and understanding them is essential for reading persistence diagrams.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B><Eq c="\beta_0" /> (beta-zero): connected components.</B> How many separate pieces does the space have? A dataset with three distinct clusters has <Eq c="\beta_0 = 3" />. As the filtration radius grows, components merge and <Eq c="\beta_0" /> decreases toward 1.</ConnectedItem>
+    <ConnectedItem><B><Eq c="\beta_1" /> (beta-one): loops.</B> How many independent loops exist? A torus has <Eq c="\beta_1 = 2" /> (two independent loops around its surface). In a cell arrangement, a ring of cells surrounding a necrotic core produces a persistent <Eq c="\beta_1" /> feature.</ConnectedItem>
+    <ConnectedItem><B><Eq c="\beta_2" /> (beta-two): voids.</B> How many enclosed cavities exist? A hollow sphere has <Eq c="\beta_2 = 1" />. In molecular data, voids can correspond to binding pockets, cavities where drug molecules can dock.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The power of persistent homology is that it computes these Betti numbers not at a single scale but <Highlight>across all scales simultaneously</Highlight>, revealing which topological features are robust and which are artifacts of a particular resolution.</P>
+</Section>
+
+<Divider />
+
+<Section name="Applications in Medicine">
+  <P>This is where abstract mathematics meets clinical impact. TDA has found applications across multiple areas of medicine, often revealing structure that conventional methods miss.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Tumor classification from histology.</B> The spatial arrangement of cells in a tissue biopsy carries diagnostic information. In breast cancer, the topological features of cell nuclei arrangements (persistent <Eq c="\beta_0" /> for cluster structure, persistent <Eq c="\beta_1" /> for ring patterns) have been shown to distinguish between cancer grades with accuracy competitive with deep learning, while providing interpretable features that pathologists can validate against known morphological criteria.</ConnectedItem>
+    <ConnectedItem><B>Drug discovery and molecular shape.</B> A molecule&apos;s biological activity depends on its three-dimensional shape, particularly the topology of its binding surfaces. Persistent homology of molecular point clouds captures shape similarity in a way that is invariant to rigid transformation, enabling more robust virtual screening than traditional molecular fingerprints. Binding pocket voids (<Eq c="\beta_2" /> features) directly correspond to druggable sites.</ConnectedItem>
+    <ConnectedItem><B>Brain connectivity analysis.</B> Functional MRI produces correlation matrices between brain regions, which define weighted graphs. Persistent homology of these graphs reveals connectivity patterns, loops in functional networks, that distinguish healthy subjects from patients with neurological disorders. The filtration naturally handles the threshold-selection problem that plagues traditional graph-based brain analysis.</ConnectedItem>
+    <ConnectedItem><B>Genomics and gene expression.</B> Gene expression data from single-cell RNA sequencing has complex structure: branching trajectories of cell differentiation, loops in cell-cycle dynamics. TDA captures these topological signatures, enabling the identification of cell states and transition pathways that clustering algorithms flatten into discrete groups.</ConnectedItem>
+  </ConnectedList>
+
+  <Figure
+    src="/img/blog/neural-connectivity.jpg"
+    alt="Neural connectivity visualization showing topological network structures in the brain"
+    caption="Topological analysis of brain connectivity data — persistent homology reveals network structures invisible to traditional graph thresholding methods"
+    source="Photo on Unsplash"
+  />
+
+  <Callout label="Why this matters personally">I build medical AI systems. The standard pipeline is: collect data, extract features, train a classifier. TDA offers a fundamentally different kind of feature, one that captures the shape of biological processes rather than just their statistical summaries. When I look at a persistence diagram of tumor histology data, I see mathematics making contact with medicine in a way that neither discipline could achieve alone.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="TDA vs Traditional Dimensionality Reduction">
+  <H3>Comparing Methods for High-Dimensional Medical Data</H3>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Method</TH>
+          <TH>What it captures</TH>
+          <TH>Strengths</TH>
+          <TH last>Limitations</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>PCA</TD>
+          <TD>Linear variance directions</TD>
+          <TD>Fast, well-understood, deterministic</TD>
+          <TD last>Misses nonlinear structure, no shape information</TD>
+        </TR>
+        <TR>
+          <TD first bold>t-SNE</TD>
+          <TD>Local neighborhood structure</TD>
+          <TD>Excellent visualization for clusters</TD>
+          <TD last>Non-deterministic, distorts global geometry, no persistence</TD>
+        </TR>
+        <TR>
+          <TD first bold>UMAP</TD>
+          <TD>Local and some global structure</TD>
+          <TD>Fast, preserves more global structure than t-SNE</TD>
+          <TD last>Hyperparameter-sensitive, topological claims are approximate</TD>
+        </TR>
+        <TR last>
+          <TD first bold>TDA (Persistent Homology)</TD>
+          <TD>Multi-scale topological features</TD>
+          <TD>Coordinate-free, stable, interpretable, rigorous</TD>
+          <TD last>Computationally expensive for large datasets, requires vectorization for ML</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>These methods are not competitors; they are complementary. PCA and UMAP are excellent for visualization and preprocessing. TDA adds a layer of shape analysis that the others fundamentally cannot provide. The most effective pipelines I have seen use UMAP for initial exploration and TDA for <Highlight>feature extraction that feeds into predictive models</Highlight>.</P>
+</Section>
+
+<Divider />
+
+<Section name="Getting Started">
+  <P>The TDA ecosystem in Python has matured significantly. Three libraries cover most use cases: <IC>Ripser</IC> for fast persistent homology computation, <IC>GUDHI</IC> for a broader range of topological tools, and <IC>scikit-tda</IC> for integration with scikit-learn pipelines.</P>
+  <P>Here is a minimal example computing persistent homology of a point cloud using Ripser:</P>
+
+```python
+import numpy as np
+from ripser import ripser
+from persim import plot_dgms
+
+# Generate a noisy circle (a dataset with a known topological feature: one loop)
+n_points = 200
+theta = np.random.uniform(0, 2 * np.pi, n_points)
+noise = np.random.normal(0, 0.1, (n_points, 2))
+circle = np.column_stack([np.cos(theta), np.sin(theta)]) + noise
+
+# Compute persistent homology up to dimension 1
+result = ripser(circle, maxdim=1)
+
+# result['dgms'][0] contains H0 (connected components) birth-death pairs
+# result['dgms'][1] contains H1 (loops) birth-death pairs
+h0 = result['dgms'][0]
+h1 = result['dgms'][1]
+
+print(f"H0 features (connected components): {len(h0)}")
+print(f"H1 features (loops): {len(h1)}")
+
+# The longest-lived H1 feature corresponds to the circle
+if len(h1) > 0:
+    persistence = h1[:, 1] - h1[:, 0]
+    most_persistent = h1[np.argmax(persistence)]
+    print(f"Most persistent loop: birth={most_persistent[0]:.3f}, "
+          f"death={most_persistent[1]:.3f}, "
+          f"persistence={np.max(persistence):.3f}")
+
+# Visualize the persistence diagram
+plot_dgms(result['dgms'], show=True)
+```
+
+  <P>In this example, the point cloud is sampled from a circle with Gaussian noise. Ripser computes the persistence diagram in milliseconds. The <Eq c="H_1" /> diagram will show one prominent point far from the diagonal (the real loop) and many short-lived points near the diagonal (noise artifacts). This separation between signal and noise is <Highlight>exactly what makes persistent homology useful for real data</Highlight> where the ground truth is unknown.</P>
+
+  <Callout label="Practical advice">Start with synthetic data where you know the topology. A noisy circle should produce one persistent <Eq c="H_1" /> feature. A noisy figure-eight should produce two. Build intuition with known shapes before applying TDA to complex medical datasets where the topological ground truth is what you are trying to discover.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Topological data analysis is not a replacement for the statistical and machine learning tools we already use. It is a <B>new lens</B>, one that reveals structure invisible to methods that depend on coordinates, distances, and linear projections. For medical data, where the geometry of cell arrangements, molecular surfaces, and brain networks carries diagnostic information, this lens is particularly powerful.</P>
+  <P>What draws me to TDA is the same thing that draws me to both mathematics and medicine: the conviction that <Highlight>structure matters</Highlight>. A tumor is not just a collection of cells with abnormal gene expression values. It is an organized structure with topological properties, loops of proliferation, voids of necrosis, connected components of invasion, that carry information about prognosis and treatment response. TDA gives us the mathematical language to read that structure directly.</P>
+  <P>The field is young. The computational tools are maturing. The medical applications are being validated. For anyone who sits at the intersection of mathematics, computer science, and biology, this is one of the most fertile areas of research I know. The shape of data is not a metaphor. It is a measurable, computable, clinically relevant quantity, and we are only beginning to learn how to use it.</P>
+
+  <Callout label="The bridge">Abstract mathematics built to study coffee mugs and donuts is now classifying tumors and mapping brain networks. That is not a coincidence. It is a reminder that the most powerful tools in applied science often come from the most abstract corners of pure mathematics.</Callout>
+</Section>

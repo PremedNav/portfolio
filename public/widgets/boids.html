@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Boids Flocking</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Boids — Craig Reynolds' flocking algorithm (1986)
+ * Separation + Alignment + Cohesion
+ * With spatial grid for O(n) neighbor lookups
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H, dpr;
+var boids = [];
+var mouse = { x: -9999, y: -9999, active: false };
+
+// Flocking parameters
+var VISUAL_RANGE = 75;
+var SEPARATION_DIST = 28;
+var SEPARATION_FACTOR = 0.05;
+var ALIGNMENT_FACTOR = 0.045;
+var COHESION_FACTOR = 0.005;
+var MAX_SPEED = 3.5;
+var MIN_SPEED = 1.5;
+var MARGIN_RATIO = 0.12;
+var TURN_FACTOR = 0.25;
+var MOUSE_RANGE = 250;
+var MOUSE_FACTOR = 0.35;
+
+// Spatial grid for fast neighbor lookup
+var CELL_SIZE = VISUAL_RANGE;
+var grid = {};
+
+function gridKey(cx, cy) { return cx + ',' + cy; }
+
+function buildGrid() {
+  grid = {};
+  for (var i = 0; i < boids.length; i++) {
+    var b = boids[i];
+    var key = gridKey(Math.floor(b.x / CELL_SIZE), Math.floor(b.y / CELL_SIZE));
+    if (!grid[key]) grid[key] = [];
+    grid[key].push(i);
+  }
+}
+
+function getNeighborIndices(b) {
+  var cx = Math.floor(b.x / CELL_SIZE);
+  var cy = Math.floor(b.y / CELL_SIZE);
+  var result = [];
+  for (var dx = -1; dx <= 1; dx++) {
+    for (var dy = -1; dy <= 1; dy++) {
+      var cell = grid[gridKey(cx + dx, cy + dy)];
+      if (cell) {
+        for (var k = 0; k < cell.length; k++) result.push(cell[k]);
+      }
+    }
+  }
+  return result;
+}
+
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = canvas.clientWidth;
+  H = canvas.clientHeight;
+  if (W < 1) W = window.innerWidth || 300;
+  if (H < 1) H = window.innerHeight || 300;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function init() {
+  resize();
+  var area = W * H;
+  var numBoids = Math.min(400, Math.max(80, Math.floor(area / 2500)));
+  boids = [];
+  for (var i = 0; i < numBoids; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
+    boids.push({
+      x: W * 0.1 + Math.random() * W * 0.8,
+      y: H * 0.1 + Math.random() * H * 0.8,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      hue: 200 + Math.random() * 40
+    });
+  }
+}
+
+function update() {
+  buildGrid();
+  var margin = Math.max(30, Math.min(W, H) * MARGIN_RATIO);
+  var vrSq = VISUAL_RANGE * VISUAL_RANGE;
+  var sepSq = SEPARATION_DIST * SEPARATION_DIST;
+  var num = boids.length;
+
+  for (var i = 0; i < num; i++) {
+    var b = boids[i];
+    var sx = 0, sy = 0;
+    var ax = 0, ay = 0, ac = 0;
+    var cx = 0, cy = 0, cc = 0;
+
+    var neighbors = getNeighborIndices(b);
+    for (var n = 0; n < neighbors.length; n++) {
+      var j = neighbors[n];
+      if (i === j) continue;
+      var o = boids[j];
+      var dx = o.x - b.x;
+      var dy = o.y - b.y;
+      var distSq = dx * dx + dy * dy;
+
+      if (distSq < vrSq && distSq > 0) {
+        cx += o.x; cy += o.y; cc++;
+        ax += o.vx; ay += o.vy; ac++;
+
+        if (distSq < sepSq) {
+          var dist = Math.sqrt(distSq);
+          sx -= dx / dist;
+          sy -= dy / dist;
+        }
+      }
+    }
+
+    if (cc > 0) {
+      b.vx += (cx / cc - b.x) * COHESION_FACTOR;
+      b.vy += (cy / cc - b.y) * COHESION_FACTOR;
+    }
+    if (ac > 0) {
+      b.vx += (ax / ac - b.vx) * ALIGNMENT_FACTOR;
+      b.vy += (ay / ac - b.vy) * ALIGNMENT_FACTOR;
+    }
+    b.vx += sx * SEPARATION_FACTOR;
+    b.vy += sy * SEPARATION_FACTOR;
+
+    // Mouse avoidance
+    if (mouse.active) {
+      var mdx = b.x - mouse.x;
+      var mdy = b.y - mouse.y;
+      var md2 = mdx * mdx + mdy * mdy;
+      if (md2 < MOUSE_RANGE * MOUSE_RANGE && md2 > 0) {
+        var mdist = Math.sqrt(md2);
+        var strength = (MOUSE_RANGE - mdist) / MOUSE_RANGE;
+        b.vx += (mdx / mdist) * MOUSE_FACTOR * strength;
+        b.vy += (mdy / mdist) * MOUSE_FACTOR * strength;
+      }
+    }
+
+    // Gradual boundary steering (proportional to how deep into margin)
+    if (b.x < margin) b.vx += TURN_FACTOR * (1.0 - b.x / margin);
+    if (b.x > W - margin) b.vx -= TURN_FACTOR * (1.0 - (W - b.x) / margin);
+    if (b.y < margin) b.vy += TURN_FACTOR * (1.0 - b.y / margin);
+    if (b.y > H - margin) b.vy -= TURN_FACTOR * (1.0 - (H - b.y) / margin);
+
+    // Speed limits
+    var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    if (spd > MAX_SPEED) {
+      b.vx = (b.vx / spd) * MAX_SPEED;
+      b.vy = (b.vy / spd) * MAX_SPEED;
+      spd = MAX_SPEED;
+    } else if (spd < MIN_SPEED && spd > 0.001) {
+      b.vx = (b.vx / spd) * MIN_SPEED;
+      b.vy = (b.vy / spd) * MIN_SPEED;
+      spd = MIN_SPEED;
+    } else if (spd <= 0.001) {
+      // Unstick: give a random nudge
+      var ra = Math.random() * Math.PI * 2;
+      b.vx = Math.cos(ra) * MIN_SPEED;
+      b.vy = Math.sin(ra) * MIN_SPEED;
+      spd = MIN_SPEED;
+    }
+
+    b.x += b.vx;
+    b.y += b.vy;
+
+    // Wrap-around fallback (prevents boids escaping to infinity)
+    if (b.x < -30) b.x = W + 10;
+    if (b.x > W + 30) b.x = -10;
+    if (b.y < -30) b.y = H + 10;
+    if (b.y > H + 30) b.y = -10;
+
+    b.hue = 200 + (spd / MAX_SPEED) * 60;
+  }
+}
+
+function render() {
+  ctx.fillStyle = 'rgba(5,5,8,0.15)';
+  ctx.fillRect(0, 0, W, H);
+
+  for (var i = 0; i < boids.length; i++) {
+    var b = boids[i];
+    var angle = Math.atan2(b.vy, b.vx);
+    var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    var size = 4 + spd * 0.8;
+    var alpha = 0.4 + (spd / MAX_SPEED) * 0.5;
+
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(angle);
+
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(-size * 0.5, -size * 0.35);
+    ctx.lineTo(-size * 0.3, 0);
+    ctx.lineTo(-size * 0.5, size * 0.35);
+    ctx.closePath();
+
+    ctx.fillStyle = 'hsla(' + Math.round(b.hue) + ',70%,60%,' + alpha.toFixed(2) + ')';
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function frame() {
+  update();
+  render();
+  requestAnimationFrame(frame);
+}
+
+init();
+
+window.addEventListener('resize', function() {
+  var oldW = W, oldH = H;
+  resize();
+  // Scale existing boid positions to new dimensions
+  if (oldW > 0 && oldH > 0) {
+    var scaleX = W / oldW, scaleY = H / oldH;
+    for (var i = 0; i < boids.length; i++) {
+      boids[i].x *= scaleX;
+      boids[i].y *= scaleY;
+    }
+  }
+});
+
+canvas.addEventListener('mousemove', function(e) {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.active = true;
+});
+canvas.addEventListener('mouseleave', function() { mouse.active = false; });
+
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+  mouse.active = true;
+}, {passive:false});
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+}, {passive:false});
+canvas.addEventListener('touchend', function() { mouse.active = false; });
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

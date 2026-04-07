@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ECG Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0e0a}
+body{touch-action:none;font-family:'SF Mono','Cascadia Code','Fira Code',monospace}
+canvas{display:block;width:100%;height:100%}
+#ui{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;z-index:100;
+  background:rgba(12,12,12,.82);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  padding:4px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 8px 32px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.04) inset}
+.tb{font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  background:transparent;border:1px solid transparent;
+  color:rgba(255,255,255,.45);padding:7px 11px;border-radius:10px;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;outline:none}
+.tb:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.tb:active{transform:scale(.96)}
+.tb.sel{background:rgba(0,210,100,.12);border-color:rgba(0,210,100,.25);color:rgba(0,210,100,.9)}
+.sep{width:1px;height:16px;background:rgba(255,255,255,.06);flex-shrink:0;margin:0 2px}
+#vitals{position:fixed;top:16px;right:20px;z-index:10;text-align:right}
+#vitals div{font-size:11px;color:rgba(0,200,80,.4);line-height:1.6;letter-spacing:.05em}
+#vitals .val{font-size:28px;font-weight:700;color:rgba(0,220,80,.85);line-height:1.1}
+#vitals .label{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:rgba(0,200,80,.3)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vitals">
+  <div class="label">HR bpm</div>
+  <div class="val" id="hr">72</div>
+  <div style="margin-top:12px" class="label">Rhythm</div>
+  <div id="rname" style="font-size:12px;color:rgba(0,200,80,.6)">Normal Sinus</div>
+</div>
+<div id="ui">
+  <button class="tb sel" data-r="nsr">Normal Sinus</button>
+  <button class="tb" data-r="afib">AFib</button>
+  <button class="tb" data-r="vtach">VTach</button>
+  <button class="tb" data-r="vfib">VFib</button>
+  <button class="tb" data-r="block2">2° Block</button>
+  <span class="sep"></span>
+  <button class="tb" data-r="brady">Brady</button>
+  <button class="tb" data-r="tachy">Tachy</button>
+</div>
+<script>
+(function(){
+'use strict';
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+var traceX = 0;
+var traceSpeed = 2.5;
+var rhythm = 'nsr';
+var heartRate = 72;
+var t = 0;
+var buffer = [];
+var BUFFER_LEN;
+
+// ECG waveform generation
+function pWave(phase) {
+    if (phase < 0 || phase > 0.08) return 0;
+    var x = phase / 0.08;
+    return 0.15 * Math.sin(x * Math.PI);
+}
+
+function qrsComplex(phase) {
+    if (phase < 0 || phase > 0.08) return 0;
+    var x = phase / 0.08;
+    if (x < 0.2) return -0.1 * (x / 0.2); // Q
+    if (x < 0.5) return -0.1 + 1.2 * ((x - 0.2) / 0.3); // R upstroke
+    if (x < 0.7) return 1.1 - 1.5 * ((x - 0.5) / 0.2); // R downstroke + S
+    return -0.4 + 0.4 * ((x - 0.7) / 0.3); // S return
+}
+
+function tWave(phase) {
+    if (phase < 0 || phase > 0.16) return 0;
+    var x = phase / 0.16;
+    return 0.25 * Math.sin(x * Math.PI);
+}
+
+function normalBeat(phase) {
+    // phase 0 to 1 represents one cardiac cycle
+    var cycleDuration = 60 / heartRate;
+    var absTime = phase * cycleDuration;
+
+    var v = 0;
+    v += pWave(absTime - 0.0);           // P wave at start
+    v += qrsComplex(absTime - 0.12);     // QRS after PR interval
+    v += tWave(absTime - 0.28);          // T wave
+    return v;
+}
+
+function afibBeat(phase) {
+    // Irregular rhythm, no P waves, irregular R-R
+    var cycleDuration = 60 / heartRate;
+    var absTime = phase * cycleDuration;
+
+    var v = 0;
+    // Fibrillatory baseline
+    v += 0.03 * Math.sin(absTime * 80) + 0.02 * Math.sin(absTime * 130);
+    v += qrsComplex(absTime - 0.05);
+    v += tWave(absTime - 0.2) * 0.7;
+    return v;
+}
+
+function vtachBeat(phase) {
+    var cycleDuration = 60 / heartRate;
+    var absTime = phase * cycleDuration;
+    // Wide QRS, no P waves, fast
+    var x = absTime / cycleDuration;
+    return 0.8 * Math.sin(x * Math.PI * 2) * Math.exp(-((x - 0.3) * (x - 0.3)) / 0.02);
+}
+
+function vfibValue(time) {
+    // Chaotic, no organized rhythm
+    return 0.3 * Math.sin(time * 25) * Math.sin(time * 37) + 0.15 * Math.sin(time * 63);
+}
+
+function block2Beat(phase, beatNum) {
+    // 2nd degree type I (Wenckebach): progressively longer PR then dropped beat
+    var cycleDuration = 60 / heartRate;
+    var absTime = phase * cycleDuration;
+    var group = beatNum % 4;
+
+    var v = 0;
+    var prDelay = 0.12 + group * 0.04; // lengthening PR
+
+    v += pWave(absTime - 0.0);
+
+    if (group < 3) { // conduct the beat
+        v += qrsComplex(absTime - prDelay);
+        v += tWave(absTime - prDelay - 0.08 + 0.28);
+    }
+    // group === 3: dropped QRS (only P wave visible)
+
+    return v;
+}
+
+// State
+var beatPhase = 0;
+var beatNum = 0;
+var currentRR = 60 / heartRate;
+var nextRR = 60 / heartRate;
+
+function getNextRR() {
+    if (rhythm === 'afib') {
+        return (60 / heartRate) * (0.6 + Math.random() * 0.8);
+    }
+    return 60 / heartRate;
+}
+
+function sample() {
+    var dt = 1 / 60; // assume ~60fps
+
+    if (rhythm === 'vfib') {
+        t += dt;
+        return vfibValue(t);
+    }
+
+    beatPhase += dt;
+    if (beatPhase >= currentRR) {
+        beatPhase -= currentRR;
+        beatNum++;
+        currentRR = getNextRR();
+    }
+
+    var phase = beatPhase / currentRR;
+
+    switch(rhythm) {
+        case 'nsr': case 'brady': case 'tachy': return normalBeat(phase);
+        case 'afib': return afibBeat(phase);
+        case 'vtach': return vtachBeat(phase);
+        case 'block2': return block2Beat(phase, beatNum);
+        default: return normalBeat(phase);
+    }
+}
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    BUFFER_LEN = Math.ceil(W / traceSpeed) + 10;
+    buffer = new Array(BUFFER_LEN).fill(0);
+    traceX = 0;
+}
+
+function setRhythm(r) {
+    rhythm = r;
+    beatPhase = 0;
+    beatNum = 0;
+    t = 0;
+
+    switch(r) {
+        case 'nsr': heartRate = 72; break;
+        case 'brady': heartRate = 45; break;
+        case 'tachy': heartRate = 150; break;
+        case 'afib': heartRate = 110; break;
+        case 'vtach': heartRate = 180; break;
+        case 'vfib': heartRate = 0; break;
+        case 'block2': heartRate = 75; break;
+    }
+
+    currentRR = getNextRR();
+    document.getElementById('hr').textContent = heartRate || '--';
+
+    var names = {nsr:'Normal Sinus',afib:'Atrial Fibrillation',vtach:'Ventricular Tachycardia',
+                 vfib:'Ventricular Fibrillation',block2:'2\u00B0 AV Block (Wenckebach)',brady:'Sinus Bradycardia',tachy:'Sinus Tachycardia'};
+    document.getElementById('rname').textContent = names[r] || r;
+}
+
+function render() {
+    // Sweep style: draw new data at traceX, black band ahead
+    var val = sample();
+    var idx = Math.floor(traceX / traceSpeed) % BUFFER_LEN;
+    buffer[idx] = val;
+
+    // Clear canvas with dark green-black
+    ctx.fillStyle = '#0a0e0a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw grid (subtle)
+    ctx.strokeStyle = 'rgba(0,80,40,0.12)';
+    ctx.lineWidth = 1;
+    var gridSize = 25;
+    ctx.beginPath();
+    for (var gx = 0; gx < W; gx += gridSize) {
+        ctx.moveTo(gx + 0.5, 0);
+        ctx.lineTo(gx + 0.5, H);
+    }
+    for (var gy = 0; gy < H; gy += gridSize) {
+        ctx.moveTo(0, gy + 0.5);
+        ctx.lineTo(W, gy + 0.5);
+    }
+    ctx.stroke();
+
+    // Draw thicker grid every 5
+    ctx.strokeStyle = 'rgba(0,80,40,0.2)';
+    ctx.beginPath();
+    for (var gx = 0; gx < W; gx += gridSize * 5) {
+        ctx.moveTo(gx + 0.5, 0);
+        ctx.lineTo(gx + 0.5, H);
+    }
+    for (var gy = 0; gy < H; gy += gridSize * 5) {
+        ctx.moveTo(0, gy + 0.5);
+        ctx.lineTo(W, gy + 0.5);
+    }
+    ctx.stroke();
+
+    // Draw trace
+    var baseY = H * 0.5;
+    var amp = H * 0.3;
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#00dd55';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#00ff66';
+    ctx.shadowBlur = 8;
+
+    var started = false;
+    for (var px = 0; px < W; px++) {
+        var bi = Math.floor(px / traceSpeed) % BUFFER_LEN;
+        // Don't draw ahead of the sweep
+        var dist = (px - traceX + W) % W;
+        if (dist < 30 && dist > 0) continue; // gap at sweep head
+
+        var y = baseY - buffer[bi] * amp;
+        if (!started) { ctx.moveTo(px, y); started = true; }
+        else ctx.lineTo(px, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Bright dot at current position
+    var curVal = buffer[Math.floor(traceX / traceSpeed) % BUFFER_LEN];
+    ctx.beginPath();
+    ctx.arc(traceX, baseY - curVal * amp, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#00ff66';
+    ctx.fill();
+
+    traceX = (traceX + traceSpeed) % W;
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    render();
+}
+
+resize();
+window.addEventListener('resize', resize);
+setRhythm('nsr');
+requestAnimationFrame(frame);
+
+// Toolbar
+var buttons = document.querySelectorAll('#ui .tb[data-r]');
+buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        setRhythm(btn.dataset.r);
+        buffer.fill(0);
+        traceX = 0;
+    });
+});
+
+var uiEl = document.getElementById('ui');
+uiEl.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+uiEl.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

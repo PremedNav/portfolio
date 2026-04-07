@@ -1,0 +1,260 @@
+---
+title: "LLM Cost Optimization: Token Efficiency, Caching, and Prompt Design"
+subtitle: "Practical strategies for reducing LLM inference costs without sacrificing output quality."
+date: "2026-03-15"
+readTime: "7 min"
+category: "Tips"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="The Cost Problem Nobody Talks About">
+  <P>Every demo looks cheap. The playground is essentially free. Then you ship the feature and the invoice arrives. Running LLM inference at production scale is <Highlight>surprisingly expensive</Highlight>, and the cost structure is unlike anything most engineering teams have dealt with before.</P>
+  <P>The problem is not that individual requests are costly — it is that the cost is multiplicative. A verbose prompt, an uncontrolled output length, a naive retry strategy, and zero caching can easily turn a $500/month feature into a $15,000/month one. When I was running Trovex at scale, cost optimization was not an afterthought. It was a <B>core architectural concern</B> from day one. The techniques in this post came from real production systems, not theoretical exercises.</P>
+
+  <Figure
+    src="/img/blog/data-dashboard.jpg"
+    alt="Analytics dashboard displaying cost metrics and usage data"
+    caption="Cost monitoring dashboards are essential — tracking token usage, cache hit rates, and per-endpoint spend in real time"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Understanding the Cost Model">
+  <P>LLM pricing has two components: <B>input tokens</B> and <B>output tokens</B>. Output tokens are typically 3-4x more expensive than input tokens. This single fact should reshape how you think about prompt design.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Model Tier</TH>
+          <TH>Input Cost (per 1M tokens)</TH>
+          <TH>Output Cost (per 1M tokens)</TH>
+          <TH last>Typical Use Case</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Frontier (GPT-4o, Claude Opus)</TD>
+          <TD>$2.50 - $15.00</TD>
+          <TD>$10.00 - $75.00</TD>
+          <TD last>Complex reasoning, code generation, analysis</TD>
+        </TR>
+        <TR>
+          <TD first bold>Mid-tier (GPT-4o-mini, Claude Sonnet)</TD>
+          <TD>$0.15 - $3.00</TD>
+          <TD>$0.60 - $15.00</TD>
+          <TD last>Most production tasks, classification, extraction</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Small (Gemini Flash, Haiku)</TD>
+          <TD>$0.01 - $0.25</TD>
+          <TD>$0.04 - $1.25</TD>
+          <TD last>Routing, formatting, simple transformations</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>The implication is direct: <Highlight>controlling output length is more impactful than reducing prompt length</Highlight>. A prompt that is 200 tokens longer but produces outputs 500 tokens shorter will be cheaper overall. This is counterintuitive, and it is one of the first things teams get wrong.</P>
+</Section>
+
+<Divider />
+
+<Section name="Prompt Compression Techniques">
+  <P>Most prompts contain significant redundancy. Compressing them without losing effectiveness is the lowest-effort, highest-impact optimization available.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Remove redundant context.</B> If your system prompt restates information that is already in the user message, you are paying for it twice. Audit your prompts line by line. Every sentence should convey information the model cannot infer from other parts of the prompt.</ConnectedItem>
+    <ConnectedItem><B>Use references instead of full text.</B> Instead of pasting an entire document into context, extract the relevant sections first. A retrieval step that selects the top 3 relevant paragraphs from a 50-page document can reduce input tokens by <Highlight>90%</Highlight> while maintaining answer quality.</ConnectedItem>
+    <ConnectedItem><B>Abbreviate few-shot examples.</B> Few-shot examples are powerful but expensive. Test whether shorter examples work just as well. Often a two-line example is as effective as a ten-line one — the model needs the pattern, not the prose.</ConnectedItem>
+    <ConnectedItem><B>Strip formatting tokens.</B> Markdown headers, bullet points, and excessive whitespace all consume tokens. For system prompts that are never shown to users, plain text with minimal formatting is cheaper and equally effective.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Semantic Caching">
+  <P>The most effective cost optimization is not making the API call at all. Semantic caching stores responses for queries that are <Highlight>semantically similar</Highlight> to previous ones, not just exact matches. This is transformative for applications with repetitive query patterns.</P>
+  <P>The architecture is straightforward: embed the incoming query, search your cache for vectors above a similarity threshold, and return the cached response if found. The subtlety is in the threshold — too high and you miss valid cache hits, too low and you return stale or incorrect responses.</P>
+
+```python
+import hashlib
+import numpy as np
+from openai import OpenAI
+
+client = OpenAI()
+
+class SemanticCache:
+    def __init__(self, threshold=0.92):
+        self.threshold = threshold
+        self.cache = {}  # {hash: (embedding, response, timestamp)}
+
+    def _embed(self, text):
+        resp = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=text
+        )
+        return np.array(resp.data[0].embedding)
+
+    def _cosine_sim(self, a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+    def get(self, query):
+        query_emb = self._embed(query)
+        best_score, best_response = 0, None
+
+        for key, (emb, response, ts) in self.cache.items():
+            score = self._cosine_sim(query_emb, emb)
+            if score > best_score:
+                best_score, best_response = score, response
+
+        if best_score >= self.threshold:
+            return best_response
+        return None
+
+    def set(self, query, response):
+        emb = self._embed(query)
+        key = hashlib.sha256(query.encode()).hexdigest()
+        self.cache[key] = (emb, response, time.time())
+```
+
+  <P>In production, replace the in-memory dictionary with Redis or a vector database like Pinecone or Qdrant. Add a TTL-based invalidation strategy — cached responses for factual queries should expire faster than cached responses for stable tasks like classification or formatting.</P>
+
+  <Callout label="Key takeaway">Semantic caching with a 0.92 similarity threshold typically achieves 30-60% cache hit rates on production workloads. At scale, this translates directly to a 30-60% reduction in API costs.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Model Routing">
+  <P>Not every request needs a frontier model. <Highlight>Model routing</Highlight> is the practice of classifying incoming requests by complexity and sending them to the cheapest model capable of handling them correctly.</P>
+  <P>The implementation pattern is a lightweight classifier — often a small model itself — that evaluates the query and routes it. Simple classification tasks, formatting operations, and data extraction go to a small model. Multi-step reasoning, creative generation, and ambiguous queries go to a large model.</P>
+
+```python
+def route_request(query, context):
+    # Use a small, fast model to classify complexity
+    routing_response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{
+            "role": "system",
+            "content": "Classify this query as SIMPLE or COMPLEX. "
+                       "SIMPLE: factual lookup, formatting, extraction. "
+                       "COMPLEX: reasoning, analysis, ambiguous intent."
+        }, {
+            "role": "user",
+            "content": query
+        }],
+        max_tokens=10
+    )
+
+    complexity = routing_response.choices[0].message.content.strip()
+
+    target_model = "gpt-4o-mini" if "SIMPLE" in complexity else "gpt-4o"
+
+    return client.chat.completions.create(
+        model=target_model,
+        messages=[{"role": "user", "content": query}]
+    )
+```
+
+  <P>When we implemented routing in Trovex, approximately <B>65% of queries</B> were classified as simple and handled by a smaller model. The quality difference was negligible for those queries, but the cost reduction was substantial — roughly a <Highlight>4x decrease</Highlight> in average cost per request.</P>
+
+  <Figure
+    src="/img/blog/neural-network.jpg"
+    alt="Visualization of a neural network architecture with interconnected layers"
+    caption="Model architecture choices directly impact cost — routing queries to the right model size is one of the highest-leverage optimizations available"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Output Token Control">
+  <P>Uncontrolled output is the single largest source of cost overruns. Models will generate verbose, rambling responses unless explicitly constrained. Three techniques address this.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Set max_tokens aggressively.</B> If you know the answer should be a single sentence, set <IC>max_tokens=100</IC>. If it should be a JSON object with three fields, set <IC>max_tokens=200</IC>. Leaving max_tokens at the default is leaving money on the table. Measure your actual output lengths and set the limit to the 95th percentile plus a small buffer.</ConnectedItem>
+    <ConnectedItem><B>Use structured outputs.</B> JSON mode and function calling force the model to produce compact, parseable responses. A structured output with defined fields is almost always shorter than the equivalent free-text response. This saves tokens and eliminates parsing failures simultaneously.</ConnectedItem>
+    <ConnectedItem><B>Design prompts that request brevity.</B> Adding <IC>Be concise. Respond in 2-3 sentences maximum.</IC> to a system prompt measurably reduces output length. This sounds obvious, but the effect is significant — typical output length reductions of 40-60% with no quality loss on factual tasks.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Why this matters">A production system generating 1M responses per month at an average of 800 output tokens instead of 300 is overspending by roughly 2.5x on the most expensive component of the API call. This adds up to thousands of dollars monthly.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Batching and Fine-Tuning Tradeoffs">
+  <P><B>Batching</B> is underutilized. Most LLM API providers offer batch endpoints that process requests asynchronously at a 50% discount. If your use case tolerates latency — background processing, overnight analysis, non-real-time classification — batching is free money. Structure your pipeline to accumulate requests and submit them in bulk.</P>
+  <P><B>Fine-tuning vs. prompting</B> is a cost decision, not just a quality decision. A fine-tuned small model that handles your specific task can replace a prompted frontier model at a fraction of the cost. The break-even point depends on your volume. In practice, if you are spending more than <Highlight>$2,000/month on a single prompt pattern</Highlight>, it is worth evaluating whether a fine-tuned model can handle it. The upfront cost of fine-tuning is fixed; the per-request savings compound indefinitely.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Strategy</TH>
+          <TH>Typical Cost Reduction</TH>
+          <TH>Implementation Effort</TH>
+          <TH last>Best For</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Prompt compression</TD>
+          <TD>15-30%</TD>
+          <TD>Low (hours)</TD>
+          <TD last>Every project, start here</TD>
+        </TR>
+        <TR>
+          <TD first bold>Semantic caching</TD>
+          <TD>30-60%</TD>
+          <TD>Medium (days)</TD>
+          <TD last>Repetitive query patterns</TD>
+        </TR>
+        <TR>
+          <TD first bold>Model routing</TD>
+          <TD>40-70%</TD>
+          <TD>Medium (days)</TD>
+          <TD last>Mixed-complexity workloads</TD>
+        </TR>
+        <TR>
+          <TD first bold>Output control</TD>
+          <TD>20-50%</TD>
+          <TD>Low (hours)</TD>
+          <TD last>Verbose output patterns</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Fine-tuning</TD>
+          <TD>60-90%</TD>
+          <TD>High (weeks)</TD>
+          <TD last>High-volume, stable task patterns</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+</Section>
+
+<Divider />
+
+<Section name="Putting It Together: A Real Example">
+  <P>Here is what a cost optimization pass looks like in practice. On Trovex, we had a query-answering pipeline that was costing approximately <B>$8,200/month</B> at our traffic level. After applying the techniques in this post systematically, we reduced that to roughly <B>$1,900/month</B> — a <Highlight>77% reduction</Highlight> — with no measurable decrease in answer quality as measured by our eval suite.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Prompt audit:</B> removed 340 redundant tokens from the system prompt, switched from 5 few-shot examples to 2. Savings: ~18%.</ConnectedItem>
+    <ConnectedItem><B>Semantic caching:</B> deployed with a 0.93 threshold. Cache hit rate stabilized at 42%. Savings: ~42% of remaining volume.</ConnectedItem>
+    <ConnectedItem><B>Model routing:</B> routed simple factual lookups (about 55% of queries) to a smaller model. Savings: ~35% on routed queries.</ConnectedItem>
+    <ConnectedItem><B>Output control:</B> set <IC>max_tokens=400</IC> (down from default) and added structured output for the response schema. Average output dropped from 620 tokens to 280. Savings: ~30% on output costs.</ConnectedItem>
+  </ConnectedList>
+
+  <P>Each technique was validated independently against our eval suite before combining them. This is critical — optimizations that degrade quality are not optimizations, they are bugs.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>LLM cost optimization is not optional at production scale. It is a <Highlight>core engineering discipline</Highlight> that sits alongside reliability and latency as a system quality. The techniques are not complex — prompt compression, caching, routing, output control, and strategic fine-tuning — but they require measurement, systematic application, and continuous evaluation.</P>
+  <P>Start by instrumenting your current costs per endpoint. Measure input tokens, output tokens, and cache hit rates. Then apply the cheapest interventions first: prompt compression and output control cost hours of engineering time and deliver immediate savings. Layer in caching and routing as your volume justifies the infrastructure investment. The goal is not the lowest possible cost — it is the <B>best quality per dollar spent</B>.</P>
+
+  <Callout label="Key takeaway">Measure before you optimize. Instrument token usage per endpoint, track cost per request, and let the data tell you where the biggest savings are. The highest-impact optimization is almost never where you expect it.</Callout>
+</Section>

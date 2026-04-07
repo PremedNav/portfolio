@@ -72,6 +72,7 @@ export const BentoCard = ({ src = null, riveSrc = null, title, description, isCo
           muted
           autoPlay
           playsInline
+          preload="none"
           className={`absolute left-0 top-0 size-full object-cover object-center ${videoClassName || ''}`}
         />
       )}

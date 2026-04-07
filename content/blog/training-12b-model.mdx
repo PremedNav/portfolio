@@ -1,0 +1,168 @@
+---
+title: "Training a 12-Billion Parameter Model: Architecture Decisions and Tradeoffs"
+subtitle: "The architectural choices, training infrastructure, and hard-won lessons from training a large language model."
+date: "2026-03-05"
+readTime: "12 min"
+category: "Case Studies"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>When I started building Clover, the question everyone asked was the same: why train your own model? Fair question. The open-source ecosystem is rich. But the honest answer is that I wanted to understand every layer of the stack, from tokenizer to RLHF, and the only way to do that is to <Highlight>actually train the thing</Highlight>.</P>
+  <P>Clover is a 12-billion parameter autoregressive language model. Not 7B, not 70B. The choice of scale was deliberate, and this post walks through every major decision, the infrastructure that made it possible, and the failures that taught me more than the successes.</P>
+
+  <Figure
+    src="/img/blog/gpu-cluster.jpg"
+    alt="High-performance GPU cluster used for large language model training"
+    caption="Training a 12-billion parameter model requires serious GPU infrastructure — every architectural decision is shaped by the hardware constraints"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Why 12 Billion Parameters">
+  <P>The parameter count was not arbitrary. 7B models are well-explored territory. They train fast, fit on a single high-end GPU for inference, and the community has established strong baselines. But in practice, <Highlight>7B models hit a ceiling on multi-step reasoning and code generation</Highlight> that I could not accept for my target use cases.</P>
+  <P>70B and above require distributed inference, which constrains deployment. The economics stop making sense for a solo researcher without a dedicated cluster budget.</P>
+  <P>12B occupies a sweet spot. It fits within a single <IC>A100 80GB</IC> for inference at half precision. It shows measurable gains over 7B on benchmarks that matter for my applications, reasoning chains, tool use, and structured output. And it trains on a modest multi-GPU setup without requiring full-scale model parallelism.</P>
+
+  <Callout label="The tradeoff in plain terms">At 12B, you get roughly 80% of the reasoning capability of a 30B model while remaining deployable on a single GPU. That margin is where Clover lives.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Architecture Decisions">
+  <P>Clover is a <B>decoder-only transformer</B>, following the lineage of GPT and LLaMA. The encoder-decoder pattern (T5-style) has its merits for sequence-to-sequence tasks, but for general-purpose generation, decoder-only has become the dominant paradigm for good reason: it simplifies the training pipeline, scales more predictably, and the community tooling is better.</P>
+  <P>Within that frame, four architectural choices defined the model.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Rotary Position Embeddings (RoPE).</B> Absolute position embeddings degrade at context lengths the model has not seen during training. RoPE encodes relative position directly into the attention computation, which gives Clover a natural ability to extrapolate beyond its training context. In practice, this means an 8K training context can generalize to 16K at inference with minimal quality loss.</ConnectedItem>
+    <ConnectedItem><B>Grouped Query Attention (GQA).</B> Standard multi-head attention allocates separate key and value heads for each query head. GQA shares key-value heads across groups. Clover uses 32 query heads and 8 key-value heads. This cuts the KV-cache memory by <IC>4x</IC> during inference, which directly translates to higher batch sizes and lower latency in production.</ConnectedItem>
+    <ConnectedItem><B>SwiGLU activation.</B> The feed-forward blocks use <IC>SwiGLU</IC> instead of standard ReLU or GELU. SwiGLU is a gated activation that multiplies the output of a Swish activation with a linear gate. It requires a third weight matrix in the FFN, but the empirical gains on loss-per-FLOP are consistent across scales. Clover&apos;s FFN hidden dimension is <IC>14,336</IC> with a model dimension of <IC>5,120</IC>.</ConnectedItem>
+    <ConnectedItem><B>RMSNorm over LayerNorm.</B> Pre-normalization with RMSNorm removes the mean-centering step from LayerNorm. The computational savings are small per layer but compound across 40 transformer blocks. More importantly, RMSNorm produces more stable gradients during the early phase of training.</ConnectedItem>
+  </ConnectedList>
+
+```python
+# Clover architecture config
+model_config = {
+    "hidden_size": 5120,
+    "intermediate_size": 14336,
+    "num_attention_heads": 32,
+    "num_key_value_heads": 8,       # GQA: 4 query heads per KV head
+    "num_hidden_layers": 40,
+    "max_position_embeddings": 8192,
+    "rope_theta": 500000.0,
+    "rms_norm_eps": 1e-5,
+    "vocab_size": 64000,
+    "activation": "silu",            # SwiGLU uses SiLU internally
+    "tie_word_embeddings": False,
+}
+```
+</Section>
+
+<Divider />
+
+<Section name="Training Infrastructure">
+  <P>Clover was trained on a cluster of <IC>8x A100 80GB</IC> GPUs connected via NVLink. Not a massive setup by industry standards, but enough to make 12B work with the right parallelism strategy.</P>
+  <P>The training stack was built on <B>PyTorch FSDP</B> (Fully Sharded Data Parallelism). FSDP shards the model parameters, gradients, and optimizer states across all GPUs, only gathering them when needed for the forward and backward passes. This brought the per-GPU memory footprint from an impossible 90GB down to roughly <IC>62GB</IC> at peak.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Mixed precision (BF16).</B> All matrix multiplications run in <IC>bfloat16</IC>. The key advantage of BF16 over FP16 is the wider dynamic range, which eliminates the need for loss scaling in almost all cases. Accumulations happen in FP32 for numerical stability.</ConnectedItem>
+    <ConnectedItem><B>Gradient checkpointing.</B> With 40 layers and a sequence length of 8192, storing all activations would exceed memory. Gradient checkpointing recomputes activations during the backward pass instead of storing them. The tradeoff is roughly 30% more compute for a 60% reduction in activation memory.</ConnectedItem>
+    <ConnectedItem><B>Flash Attention 2.</B> Standard attention is quadratic in sequence length. Flash Attention fuses the attention computation into a single kernel that is IO-aware, reducing memory from <IC>O(n^2)</IC> to <IC>O(n)</IC> and providing a 2-3x wallclock speedup on 8K sequences.</ConnectedItem>
+  </ConnectedList>
+
+```yaml
+# Training launch config (torchrun)
+training:
+  gpus: 8
+  strategy: fsdp
+  mixed_precision: bf16
+  gradient_checkpointing: true
+  micro_batch_size: 2
+  gradient_accumulation_steps: 16
+  effective_batch_size: 256  # 2 * 16 * 8 GPUs
+  sequence_length: 8192
+  flash_attention: true
+  max_steps: 150000
+```
+
+  <P>The effective batch size was 256 sequences of 8,192 tokens each, roughly <IC>2 million tokens per step</IC>. At an average throughput of 1,400 tokens/second/GPU, each step took about 180 seconds. The full training run consumed approximately 1.2 trillion tokens over six weeks.</P>
+
+  <Figure
+    src="/img/blog/server-rack.jpg"
+    alt="GPU server rack hardware used for large-scale model training"
+    caption="The compute cluster behind Clover — eight A100 GPUs connected via NVLink, running continuously for six weeks"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Data Pipeline">
+  <P>Data quality determines model quality. This is the part that does not get enough attention in most training write-ups, because <Highlight>it is unglamorous and time-consuming</Highlight>. I spent more time on the data pipeline than on the model architecture.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Deduplication.</B> Near-duplicate documents inflate the dataset without improving model capability. I used MinHash LSH deduplication with a Jaccard threshold of 0.8, applied at the paragraph level rather than the document level. This caught boilerplate text that exact-match dedup misses.</ConnectedItem>
+    <ConnectedItem><B>Quality filtering.</B> A lightweight classifier trained on a hand-labeled subset of 50,000 documents scored every document on coherence, information density, and formatting. Documents below the threshold were removed. This cut the raw corpus by approximately 40%.</ConnectedItem>
+    <ConnectedItem><B>Domain mixing.</B> The training mixture was not static. Clover used a form of curriculum learning: the first 60% of training was dominated by web text and books, while the final 40% upweighted code, scientific papers, and instruction-formatted data. Shifting the distribution late in training biases the model toward the capabilities you care about most at inference time.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Hard-won lesson">A 5% increase in data quality consistently outperformed a 20% increase in data quantity. Filtering aggressively and deduplicating thoroughly will do more for your model than adding another terabyte of scraped web text.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="The Training Run">
+  <P>The loss curve was smooth for the first 40,000 steps. Then it was not. Around step 42,000, loss spiked sharply and failed to recover for nearly 2,000 steps. This is a <Highlight>loss spike</Highlight>, and it is terrifying the first time you see one.</P>
+  <P>The cause, in Clover&apos;s case, was a batch of pathologically long documents that contained repeated token sequences. The gradient norms exceeded the clipping threshold by an order of magnitude. The fix was twofold: I reduced the gradient clipping threshold from <IC>1.0</IC> to <IC>0.5</IC> and added a data quality gate that rejected any batch with more than 15% repeated n-grams.</P>
+  <P>Learning rate scheduling followed a cosine decay with warmup. Warmup ran for 2,000 steps to a peak learning rate of <IC>3e-4</IC>, then decayed to <IC>3e-5</IC> over the remaining steps. The warmup phase is critical for FSDP training because the sharded optimizer states need time to synchronize before aggressive updates begin.</P>
+
+```python
+# Learning rate schedule
+def get_lr(step, warmup=2000, max_lr=3e-4, min_lr=3e-5, total_steps=150000):
+    if step < warmup:
+        return max_lr * step / warmup
+    progress = (step - warmup) / (total_steps - warmup)
+    return min_lr + 0.5 * (max_lr - min_lr) * (1 + math.cos(math.pi * progress))
+```
+
+  <P>Checkpointing happened every 1,000 steps. I kept the last 5 checkpoints and every 10,000-step checkpoint permanently. Disk is cheap. Losing a week of training to a hardware fault is not.</P>
+</Section>
+
+<Divider />
+
+<Section name="Alignment: DPO Over RLHF">
+  <P>After pretraining, the base model generates coherent text but has no sense of instruction following. Alignment fixes this. The two dominant approaches are <B>RLHF</B> (Reinforcement Learning from Human Feedback) and <B>DPO</B> (Direct Preference Optimization).</P>
+  <P>I chose DPO. The reason is operational simplicity. RLHF requires training a separate reward model, maintaining a PPO training loop with a reference model, and tuning a KL penalty coefficient that is notoriously sensitive. DPO collapses this into a single supervised loss over preference pairs.</P>
+
+```python
+# DPO loss (simplified)
+def dpo_loss(policy_chosen_logps, policy_rejected_logps,
+             ref_chosen_logps, ref_rejected_logps, beta=0.1):
+    chosen_rewards = beta * (policy_chosen_logps - ref_chosen_logps)
+    rejected_rewards = beta * (policy_rejected_logps - ref_rejected_logps)
+    return -F.logsigmoid(chosen_rewards - rejected_rewards).mean()
+```
+
+  <P>The preference dataset contained approximately 80,000 pairs. Each pair consisted of a prompt, a preferred response, and a rejected response. I generated candidates using the base model at different temperatures, then ranked them using a combination of human review and GPT-4 as a judge. In practice, <Highlight>the quality of preference data matters far more than the quantity</Highlight>. Poorly constructed pairs teach the model nothing or, worse, teach it the wrong thing.</P>
+
+  <Callout label="Key takeaway">DPO achieves 90% of RLHF&apos;s alignment quality with 30% of the engineering complexity. For a solo researcher or small team, it is the correct default choice.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Deployment and Inference">
+  <P>The aligned model needed to serve requests at reasonable latency. I deployed Clover using <IC>vLLM</IC>, which implements PagedAttention for efficient KV-cache management. With GQA and BF16, the model fits on a single <IC>A100 80GB</IC> and serves requests with a time-to-first-token of under 200ms for typical prompt lengths.</P>
+  <P>Quantization was the final optimization. GPTQ 4-bit quantization reduced the model size from <IC>24GB</IC> to <IC>7GB</IC> with negligible degradation on my target benchmarks. This made it possible to run Clover on consumer hardware with a <IC>RTX 4090</IC>, which opened up local deployment scenarios I had not originally planned for.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Training Clover took six weeks of compute and six months of preparation. The architecture decisions, RoPE, GQA, SwiGLU, RMSNorm, were not novel individually. The value was in <Highlight>understanding how they interact</Highlight> at the 12B scale and making informed tradeoffs between capability, memory, and deployment constraints.</P>
+  <P>The hardest parts were not the ones I expected. Data quality consumed more time than model architecture. Loss spikes were more stressful than hyperparameter tuning. And alignment, which I initially treated as an afterthought, turned out to be the difference between a model that generates text and a model that is actually useful.</P>
+
+  <Callout label="If you take one thing away">The model architecture is the easy part. The data pipeline, training stability, and alignment process are where large language model projects succeed or fail. Start there.</Callout>
+</Section>

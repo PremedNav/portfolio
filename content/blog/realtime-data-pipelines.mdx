@@ -1,0 +1,198 @@
+---
+title: "Building Real-Time Data Pipelines: From Research to Production"
+subtitle: "Lessons learned building real-time data pipelines that bridge research prototypes and production systems."
+date: "2026-01-20"
+readTime: "7 min"
+category: "Product"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Every data-intensive project I have built -- <A>Histia</A>, <A>Trovex</A>, <A>Aethon</A> -- hit the same wall: <Highlight>the thing that works in a Jupyter notebook does not work in production</Highlight>. The model is fine. The processing logic is fine. What breaks is everything between the data source and the model, and everything between the model output and the user.</P>
+  <P>This is the research-to-production gap. Not a skills gap. An <B>architecture gap</B>. Research prototypes process data in batches, synchronously, with a human watching. Production systems process data continuously, asynchronously, with no one watching except dashboards you also have to build. This post covers the patterns, tooling decisions, and lessons from building pipelines that actually run.</P>
+
+  <Figure
+    src="/img/blog/data-center.jpg"
+    alt="Server racks in a modern data center"
+    caption="The infrastructure powering real-time data pipelines — reliability starts with the physical layer"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Why Notebooks Do Not Scale">
+  <P>The Jupyter notebook has a structural problem: <Highlight>it encourages a linear, stateful programming model that is the opposite of what production requires</Highlight>. You load data into memory, transform it in-place, pass it to a model, inspect the output. One process, one machine, one execution context. Production pipelines need four properties that notebooks actively work against:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Stateless.</B> Each step should be a pure function. Notebooks accumulate state across cells, making execution order matter and bugs invisible.</ConnectedItem>
+    <ConnectedItem><B>Distributed.</B> When data exceeds one machine, you need horizontal scaling. Notebooks run on one kernel.</ConnectedItem>
+    <ConnectedItem><B>Fault-tolerant.</B> When a step fails at 3 AM, retry, dead-letter the record, keep processing. Notebooks crash and wait for a human.</ConnectedItem>
+    <ConnectedItem><B>Observable.</B> You need latency percentiles, throughput metrics, and error rates at every stage. Notebooks give you <IC>print()</IC>.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The transition from notebook to production is not refactoring. It is a redesign. Accepting that early saves months of debugging distributed systems that never needed to be distributed.</P>
+</Section>
+
+<Divider />
+
+<Section name="Pipeline Architecture Patterns">
+  <P>Two foundational architectures dominate, and choosing between them is the first real decision you make.</P>
+  <P><B>Lambda architecture</B> runs two parallel pipelines: a batch layer for accuracy and a speed layer for low latency. A serving layer merges outputs. The cost is operational complexity -- two codepaths that must produce consistent outputs, and in practice they drift apart.</P>
+  <P><B>Kappa architecture</B> eliminates the batch layer. Everything is a stream. Historical reprocessing means replaying the event log. Simpler to reason about, but requires your streaming infrastructure to handle both real-time and historical scale.</P>
+
+  <Callout label="Key takeaway">Start with Kappa if your data volume is under 1TB and your processing logic is the same for historical and real-time data. Move to Lambda when you need different processing semantics for batch and stream, or when reprocessing the full event log becomes prohibitively slow.</Callout>
+
+  <P>For Trovex, I use Kappa. Document ingestion, search queries, and relevance feedback all flow through the same streaming pipeline. Reindexing means replaying the document stream. This works because processing logic is identical regardless of whether a document arrived 5 seconds or 5 months ago.</P>
+</Section>
+
+<Divider />
+
+<Section name="Message Queues and Streaming">
+  <P>The message broker is the backbone. Two options dominate: <IC>Kafka</IC> and <IC>Redis Streams</IC>. The choice is about which failure modes you accept.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Dimension</TH>
+          <TH>Kafka</TH>
+          <TH last>Redis Streams</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Throughput</TD>
+          <TD>Millions of messages/sec with partitioning</TD>
+          <TD last>Hundreds of thousands/sec, single-threaded</TD>
+        </TR>
+        <TR>
+          <TD first bold>Durability</TD>
+          <TD>Replicated to disk across brokers</TD>
+          <TD last>In-memory with optional AOF persistence</TD>
+        </TR>
+        <TR>
+          <TD first bold>Replay</TD>
+          <TD>Full log retention, replay from any offset</TD>
+          <TD last>Capped streams, limited retention window</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Best for</TD>
+          <TD>High-volume event sourcing, multi-consumer</TD>
+          <TD last>Low-latency lightweight queuing, prototyping</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>For Histia, Redis Streams handles the task queue (image IDs to process) while actual image data moves through object storage references. <Highlight>Never put large payloads on the message bus.</Highlight> Pass references and let consumers fetch from storage.</P>
+</Section>
+
+<Divider />
+
+<Section name="Data Validation and Schema Enforcement">
+  <P>Data pipelines fail silently. A malformed record flows through every stage, produces garbage, and you discover it days later when a user reports wrong results. The fix is <B>validation at the boundary</B>: every record validated on entry, every transformation output validated before it moves downstream.</P>
+
+```python
+from pydantic import BaseModel, validator
+from datetime import datetime
+
+class DocumentEvent(BaseModel):
+    doc_id: str
+    content: str
+    source: str
+    timestamp: datetime
+    embedding: list[float] | None = None
+
+    @validator("content")
+    def content_not_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Document content cannot be empty")
+        return v
+
+    @validator("embedding")
+    def embedding_dimensions(cls, v):
+        if v is not None and len(v) != 768:
+            raise ValueError(f"Expected 768-dim, got {len(v)}")
+        return v
+```
+
+  <P><IC>Pydantic</IC> handles record-level validation. For aggregate data quality, <IC>Great Expectations</IC> runs suite-level checks: column distributions, null rates, referential integrity on micro-batches within the stream, catching drift before it propagates.</P>
+
+  <Callout label="Why this matters">Schema enforcement is not just about catching bugs. It is about trust. When downstream consumers know that every record has passed validation, they skip defensive null-checking and focus on business logic. The pipeline becomes a contract, not a hope.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Monitoring, Observability, and Failure Handling">
+  <P>Pipeline monitoring is different from application monitoring. Application monitoring asks: is the server up? Pipeline monitoring asks: <Highlight>is the data flowing correctly?</Highlight></P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Latency percentiles, not averages.</B> A pipeline with 100ms average latency might have a p99 of 5 seconds. Track <IC>p50</IC>, <IC>p95</IC>, and <IC>p99</IC> at every stage. Alert on p99 because that is where problems surface first.</ConnectedItem>
+    <ConnectedItem><B>Dead letter queues.</B> When a record fails, route it to a DLQ instead of dropping or blocking. Review DLQ contents daily. It is the most honest debugging tool you have: it shows exactly what your pipeline cannot handle.</ConnectedItem>
+    <ConnectedItem><B>Data drift detection.</B> Monitor statistical distributions of key fields. If embedding vectors shift in mean or variance, something changed upstream. Alert on distribution shift, not just schema violations.</ConnectedItem>
+    <ConnectedItem><B>Consumer lag.</B> In Kafka, track offset lag per consumer group. Rising lag means consumers are falling behind producers. This is the earliest scaling signal and the easiest to automate.</ConnectedItem>
+  </ConnectedList>
+
+  <P>In practice, I use <IC>Prometheus</IC> for metrics, <IC>Grafana</IC> for dashboards, and a Python script polling consumer lag and DLQ depth every 30 seconds. <Highlight>The first version of monitoring should take an afternoon, not a sprint.</Highlight></P>
+
+  <Figure
+    src="/img/blog/streaming-metrics.jpg"
+    alt="Real-time streaming metrics and monitoring dashboard for data pipelines"
+    caption="Monitoring and observability in production pipelines — dashboards transform raw metrics into actionable insight"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="ML Pipeline-Specific Challenges">
+  <P>ML pipelines add three concerns on top of standard data engineering.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Feature stores.</B> A dual interface: offline store for batch training (BigQuery, Parquet on S3) and online store for real-time inference (Redis, DynamoDB). Same feature definitions serve both. Without this, you compute features differently at training vs. inference, producing <Highlight>training-serving skew</Highlight> -- the most insidious ML bug because it passes evaluation and fails silently in production.</ConnectedItem>
+    <ConnectedItem><B>Model serving.</B> Version management, canary deployments, graceful fallback. In Histia, a new model gets 5% of traffic while the previous version handles 95%. If error rate exceeds a threshold, traffic routes back automatically. Basic production safety when output informs clinical decisions.</ConnectedItem>
+    <ConnectedItem><B>A/B testing.</B> Harder than UI testing because feedback loops are longer and metrics noisier. For Trovex, validating a search relevance improvement takes weeks of user data. The infrastructure maintains parallel versions, splits traffic deterministically by user, and logs every prediction with its model version.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Scaling and Lessons Learned">
+  <P>The first scaling problem is not throughput. It is <B>backpressure</B>: producers generating data faster than consumers process it. The pattern is watermark-based: a <IC>high watermark</IC> triggers throttling, a <IC>low watermark</IC> resumes flow. Kafka handles this natively. For custom pipelines:</P>
+
+```python
+class BackpressureQueue:
+    def __init__(self, high_watermark=10000, low_watermark=2000):
+        self.queue, self.high, self.low = [], high_watermark, low_watermark
+        self.paused = False
+
+    async def put(self, item):
+        self.queue.append(item)
+        if len(self.queue) >= self.high and not self.paused:
+            self.paused = True
+            await self.signal_producers("pause")
+
+    async def get(self):
+        item = self.queue.pop(0)
+        if len(self.queue) <= self.low and self.paused:
+            self.paused = False
+            await self.signal_producers("resume")
+        return item
+```
+
+  <P>For horizontal scaling, the key constraint is <B>ordering</B>. If events from the same user must be sequential, partition by user ID and scale by adding partitions and consumers together. If ordering does not matter, round-robin for simpler scaling. After building pipelines across Histia, Trovex, Aethon, and Clover, the lessons converge:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Start with a batch script.</B> Before building streaming infrastructure, write a Python script that processes data end-to-end in a for loop. Get the logic right. Validate outputs. Only then decompose into pipeline stages.</ConnectedItem>
+    <ConnectedItem><B>Add complexity only when metrics justify it.</B> Do not add Kafka until you have measured your current solution cannot handle the load. Every component you add is a component to monitor, debug, and maintain at 3 AM.</ConnectedItem>
+    <ConnectedItem><B>Make every stage independently testable.</B> Each stage should be a function you can call with test input and verify the output. If you cannot unit test a stage, it is doing too many things.</ConnectedItem>
+    <ConnectedItem><B>Log structured, trace everything.</B> Every record gets a trace ID. Every stage logs trace ID, processing time, and status as structured JSON. When something breaks, you <IC>grep</IC> by trace ID and see the full lifecycle across every stage.</ConnectedItem>
+    <ConnectedItem><B>Design for replay from day one.</B> Your pipeline will produce wrong outputs. The question is whether you can reprocess without manual intervention. Idempotent stages plus a replayable message broker means recovery is a one-line command, not a weekend.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Key takeaway">The best pipeline architecture is the simplest one that meets your requirements today, with clear extension points for tomorrow. Overengineering is just as costly as underengineering, and harder to diagnose because the symptoms look like operational complexity rather than technical failure.</Callout>
+
+  <P>Real-time data pipelines are not glamorous. They do not demo well. But they are the difference between a research prototype that impresses in a meeting and a production system that serves users reliably. Every project I have built that actually <Highlight>works in production</Highlight> got there because the pipeline was right, not because the model was right. The model is the easy part. The pipeline is the system.</P>
+</Section>

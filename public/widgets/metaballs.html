@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Metaballs</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Metaballs — WebGL fragment shader isosurface rendering
+ * Inspired by various Shadertoy metaball implementations
+ * and https://github.com/edankwan/hyper-mix
+ */
+
+var canvas = document.getElementById('c');
+var gl = canvas.getContext('webgl', {alpha:false,depth:false,stencil:false,antialias:false})
+       || canvas.getContext('experimental-webgl', {alpha:false,depth:false,stencil:false,antialias:false});
+
+var NUM_BALLS = 12;
+
+var vertSrc = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+var fragSrc = `
+precision highp float;
+uniform vec2 uRes;
+uniform float uTime;
+uniform vec3 uBalls[` + NUM_BALLS + `];
+uniform vec2 uMouse;
+uniform float uMouseActive;
+
+vec3 palette(float t) {
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(1.0, 0.7, 0.4);
+    vec3 d = vec3(0.0, 0.15, 0.20);
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / uRes;
+    vec2 aspect = vec2(uRes.x / uRes.y, 1.0);
+    vec2 p = uv * aspect;
+
+    float sum = 0.0;
+    for (int i = 0; i < ` + NUM_BALLS + `; i++) {
+        vec2 bp = uBalls[i].xy * aspect;
+        float r = uBalls[i].z;
+        float d = length(p - bp);
+        sum += r * r / (d * d + 0.001);
+    }
+
+    // Mouse blob
+    if (uMouseActive > 0.5) {
+        vec2 mp = uMouse * aspect;
+        float d = length(p - mp);
+        sum += 0.02 / (d * d + 0.001);
+    }
+
+    // Coloring
+    vec3 col = vec3(0.0);
+    if (sum > 6.0) {
+        float t = (sum - 6.0) * 0.1;
+        col = palette(t + uTime * 0.1) * (0.6 + 0.4 * smoothstep(6.0, 12.0, sum));
+    } else if (sum > 4.5) {
+        // Edge glow
+        float edge = smoothstep(4.5, 6.0, sum);
+        col = palette(uTime * 0.05) * edge * 0.3;
+    }
+
+    gl_FragColor = vec4(col, 1.0);
+}`;
+
+function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+}
+
+var prog = gl.createProgram();
+gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vertSrc));
+gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fragSrc));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+var buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,-1,1,1,1,1,-1]), gl.STATIC_DRAW);
+var ibuf = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuf);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+var aLoc = gl.getAttribLocation(prog, 'a');
+gl.enableVertexAttribArray(aLoc);
+gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
+
+var uRes = gl.getUniformLocation(prog, 'uRes');
+var uTime = gl.getUniformLocation(prog, 'uTime');
+var uBalls = gl.getUniformLocation(prog, 'uBalls');
+var uMouse = gl.getUniformLocation(prog, 'uMouse');
+var uMouseActive = gl.getUniformLocation(prog, 'uMouseActive');
+
+// Ball state: center (normalized 0-1) + radius + velocity
+var balls = [];
+for (var i = 0; i < NUM_BALLS; i++) {
+    balls.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.05 + Math.random() * 0.08,
+        vx: (Math.random() - 0.5) * 0.004,
+        vy: (Math.random() - 0.5) * 0.004
+    });
+}
+
+var mouseX = 0.5, mouseY = 0.5, mouseActive = 0;
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resize();
+window.addEventListener('resize', resize);
+
+canvas.addEventListener('mousemove', function(e) {
+    mouseX = e.clientX / canvas.clientWidth;
+    mouseY = 1.0 - e.clientY / canvas.clientHeight;
+    mouseActive = 1;
+});
+canvas.addEventListener('mouseleave', function() { mouseActive = 0; });
+
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    mouseX = e.touches[0].clientX / canvas.clientWidth;
+    mouseY = 1.0 - e.touches[0].clientY / canvas.clientHeight;
+    mouseActive = 1;
+}, {passive:false});
+canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    mouseX = e.touches[0].clientX / canvas.clientWidth;
+    mouseY = 1.0 - e.touches[0].clientY / canvas.clientHeight;
+}, {passive:false});
+canvas.addEventListener('touchend', function() { mouseActive = 0; });
+
+var startTime = Date.now();
+
+function frame() {
+    requestAnimationFrame(frame);
+
+    var t = (Date.now() - startTime) / 1000;
+
+    // Update balls
+    var data = new Float32Array(NUM_BALLS * 3);
+    for (var i = 0; i < NUM_BALLS; i++) {
+        var b = balls[i];
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Bounce
+        if (b.x < 0 || b.x > 1) b.vx *= -1;
+        if (b.y < 0 || b.y > 1) b.vy *= -1;
+        b.x = Math.max(0, Math.min(1, b.x));
+        b.y = Math.max(0, Math.min(1, b.y));
+
+        data[i * 3] = b.x;
+        data[i * 3 + 1] = b.y;
+        data[i * 3 + 2] = b.r;
+    }
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uTime, t);
+    gl.uniform3fv(uBalls, data);
+    gl.uniform2f(uMouse, mouseX, mouseY);
+    gl.uniform1f(uMouseActive, mouseActive);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+}
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

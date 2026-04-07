@@ -8,7 +8,7 @@ import { TiLocationArrow } from "react-icons/ti";
 
 import Button from "./Button";
 
-const navItems = ["Projects", "Blog", "Contact", "Recommendation Letter"];
+const navItems = ["Projects", "Lab", "Blog", "Contact", "Recommendation Letter"];
 
 const NavBar = ({ variant = 'dark' }) => {
   const isLight = variant === 'light'
@@ -185,7 +185,7 @@ const NavBar = ({ variant = 'dark' }) => {
               {navItems.map((item, index) => (
                 <a
                   key={index}
-                  href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
+                  href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : item === 'Lab' ? '/#lab' : `#${item.toLowerCase()}`}
                   className={isLight ? "nav-hover-btn nav-hover-btn-dark" : "nav-hover-btn"}
                 >
                   {item}

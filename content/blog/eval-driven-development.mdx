@@ -1,0 +1,229 @@
+---
+title: "What Is Eval-Driven Development? How to Ship AI Features Without Guessing"
+subtitle: "A systematic approach to building AI features with confidence using evaluation-driven development."
+date: "2026-03-10"
+readTime: "7 min"
+category: "Tutorials"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="The Problem With Testing AI">
+  <P>Traditional software testing is built on a simple premise: given input X, the output should be Y. You write an assertion, it passes or fails, and you move on. This premise <Highlight>breaks completely</Highlight> with LLM-powered features.</P>
+  <P>When the output is natural language, there is no single correct answer. A summarization feature might produce ten different valid summaries for the same input. A classification model might express the same label in different words. You cannot <IC>assertEquals</IC> on prose. And yet, shipping AI features without any quality measurement is how teams end up with products that work in demos and fail in production.</P>
+  <P>This is the problem that eval-driven development solves. When I was building Clover and iterating on Trovex&apos;s search quality, the shift from ad hoc testing to systematic evals was the single biggest improvement in our development velocity. Not because we wrote fewer bugs, but because we <B>found them before users did</B>.</P>
+
+  <Figure
+    src="/img/blog/whiteboard-planning.jpg"
+    alt="Whiteboard with diagrams and notes for planning evaluation strategies"
+    caption="Planning an eval strategy before writing a single prompt — defining success criteria, golden datasets, and scoring rubrics upfront"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="What Eval-Driven Development Is">
+  <P>Eval-driven development (EDD) is a methodology where you <Highlight>write evaluations before you write prompts</Highlight>, in the same way test-driven development prescribes writing tests before code. The eval suite defines what success looks like. The prompt is the implementation that tries to satisfy it.</P>
+  <P>The workflow is concrete:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Define the task specification.</B> What exactly should this AI feature do? What inputs will it receive? What does a good output look like? What does a bad output look like? Write this down before touching a prompt.</ConnectedItem>
+    <ConnectedItem><B>Build a golden dataset.</B> Collect 50-200 representative input-output pairs that cover the expected distribution of real-world usage. Include edge cases, adversarial inputs, and ambiguous queries. This dataset is the ground truth your system is measured against.</ConnectedItem>
+    <ConnectedItem><B>Implement automated scoring.</B> Define metrics and scoring functions that can evaluate model outputs programmatically. Some dimensions are easy to automate (format compliance, length constraints, JSON validity). Others require LLM-as-judge or human review.</ConnectedItem>
+    <ConnectedItem><B>Write the prompt.</B> Now — and only now — write the prompt. Run it against the eval suite. Iterate until metrics meet your threshold. Every prompt change is validated against the full eval suite before it ships.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The key insight is that the eval suite is the <B>specification</B>, not the prompt. The prompt is an implementation detail that can change freely as long as the evals pass. This is the same principle that makes TDD effective for traditional software — the tests define the contract, the code is free to vary.</P>
+</Section>
+
+<Divider />
+
+<Section name="Designing Eval Suites">
+  <P>The quality of your eval suite determines the quality of your AI feature. A weak eval suite gives you false confidence. A strong one catches regressions before they reach production.</P>
+
+  <H3>Golden Datasets</H3>
+  <P>A golden dataset is a curated set of inputs paired with expected outputs or output characteristics. The hard part is not collecting the data — it is ensuring the dataset is <Highlight>representative of production traffic</Highlight>. Sample real user queries if you have them. If you are building a new feature, invest time in generating realistic test cases that cover the full distribution: common queries, rare queries, malformed queries, and adversarial inputs.</P>
+
+  <H3>Automated Scoring with LLM-as-Judge</H3>
+  <P>For dimensions that resist simple programmatic checks — factual accuracy, helpfulness, coherence — use a separate LLM as an evaluator. The judge model receives the input, the expected output (or criteria), and the actual output, then scores on a defined rubric.</P>
+
+```python
+def llm_judge(query, expected, actual, criteria):
+    """Use an LLM to score output quality on specific criteria."""
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{
+            "role": "system",
+            "content": (
+                "You are an evaluation judge. Score the ACTUAL output "
+                "against the EXPECTED output on the given criteria. "
+                "Return a JSON object with 'score' (1-5) and 'reasoning'."
+            )
+        }, {
+            "role": "user",
+            "content": f"Query: {query}\n"
+                       f"Expected: {expected}\n"
+                       f"Actual: {actual}\n"
+                       f"Criteria: {criteria}"
+        }],
+        response_format={"type": "json_object"},
+        max_tokens=200
+    )
+    return json.loads(response.choices[0].message.content)
+```
+
+  <P>The reliability of LLM-as-judge scales with the specificity of the rubric. Vague criteria like <IC>is this response good?</IC> produce inconsistent scores. Specific criteria like <IC>does the response contain the three key facts from the reference answer?</IC> produce scores that correlate well with human judgment.</P>
+
+  <H3>Human-in-the-Loop for Edge Cases</H3>
+  <P>Automated scoring handles the bulk of evaluation, but certain failure modes — subtle hallucinations, tone mismatches, culturally inappropriate responses — still require human review. In practice, reserve human evaluation for the <Highlight>10-15% of cases</Highlight> where automated metrics are ambiguous or where the stakes of a false positive are high.</P>
+</Section>
+
+<Divider />
+
+<Section name="Metrics That Matter">
+  <P>Not all metrics are equally useful. The metrics you track should map directly to user-facing quality and business viability.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Metric</TH>
+          <TH>What It Measures</TH>
+          <TH>How to Compute</TH>
+          <TH last>Target Range</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Task completion rate</TD>
+          <TD>Does the output actually solve the user&apos;s problem?</TD>
+          <TD>LLM-as-judge or human review on golden dataset</TD>
+          <TD last>90%+ for production readiness</TD>
+        </TR>
+        <TR>
+          <TD first bold>Factual accuracy</TD>
+          <TD>Are claims in the output verifiably true?</TD>
+          <TD>Cross-reference against source documents</TD>
+          <TD last>95%+ for knowledge-grounded tasks</TD>
+        </TR>
+        <TR>
+          <TD first bold>Format compliance</TD>
+          <TD>Does the output match the required schema?</TD>
+          <TD>Programmatic validation (JSON parse, regex)</TD>
+          <TD last>99%+ (non-negotiable for structured outputs)</TD>
+        </TR>
+        <TR>
+          <TD first bold>Latency (p95)</TD>
+          <TD>How long does the end-to-end request take?</TD>
+          <TD>Time from request to complete response</TD>
+          <TD last>Depends on UX context, typically under 3s</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Cost per request</TD>
+          <TD>How much does each inference cost?</TD>
+          <TD>Total tokens * price per token</TD>
+          <TD last>Depends on business model and margins</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <Callout label="Key takeaway">Track task completion rate as your primary metric. All other metrics are secondary — a fast, cheap response that does not solve the user&apos;s problem has negative value.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="CI/CD Integration">
+  <P>Evals are only useful if they run automatically. The goal is to make it <Highlight>impossible to deploy a prompt regression</Highlight>.</P>
+  <P>The integration pattern mirrors traditional CI/CD. On every pull request that modifies a prompt, system message, or model configuration, the CI pipeline runs the full eval suite against the golden dataset. If any metric drops below the defined threshold, the build fails and the deploy is blocked.</P>
+
+```python
+# eval_runner.py — runs in CI on every prompt change
+import json
+import sys
+
+def run_eval_suite(prompt_version, golden_dataset_path, thresholds):
+    dataset = json.load(open(golden_dataset_path))
+    results = {
+        "task_completion": [],
+        "format_compliance": [],
+        "factual_accuracy": [],
+        "latency_ms": [],
+        "cost_usd": []
+    }
+
+    for case in dataset:
+        output, latency, cost = run_inference(prompt_version, case["input"])
+        results["task_completion"].append(
+            llm_judge(case["input"], case["expected"], output, "task_completion")
+        )
+        results["format_compliance"].append(validate_format(output, case["schema"]))
+        results["latency_ms"].append(latency)
+        results["cost_usd"].append(cost)
+
+    # Compute aggregates and check thresholds
+    scores = {
+        "task_completion": avg(results["task_completion"]),
+        "format_compliance": avg(results["format_compliance"]),
+        "latency_p95": percentile(results["latency_ms"], 95),
+        "avg_cost": avg(results["cost_usd"])
+    }
+
+    passed = all(scores[k] >= thresholds[k] for k in thresholds)
+
+    print(json.dumps(scores, indent=2))
+    sys.exit(0 if passed else 1)
+```
+
+  <P>This gives you a clear signal on every change: either the new prompt is at least as good as the previous one, or it is not. No ambiguity. No guessing. No deploying and hoping.</P>
+
+  <Figure
+    src="/img/blog/programming-laptop.jpg"
+    alt="Laptop showing code for an evaluation pipeline implementation"
+    caption="Implementing the eval pipeline — automated scoring, CI integration, and threshold checks that block regressions before they ship"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Eval Pyramid">
+  <P>Like the traditional testing pyramid, evals should be structured in layers with different coverage, cost, and speed characteristics.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Unit evals (base layer).</B> Fast, cheap, and numerous. These test individual prompt behaviors in isolation: does the model follow the format instructions? Does it respect length constraints? Does it refuse out-of-scope queries? Run these on every commit. Hundreds of test cases, seconds to execute using cached or mocked responses where appropriate.</ConnectedItem>
+    <ConnectedItem><B>Integration evals (middle layer).</B> Test the full pipeline end-to-end: retrieval, prompt assembly, model inference, and post-processing. These catch failures that only appear when components interact — like a retrieval step returning irrelevant context that causes the model to hallucinate. Run these on every PR. Dozens of test cases, minutes to execute against live models.</ConnectedItem>
+    <ConnectedItem><B>Human evals (top layer).</B> Periodic, expensive, and essential. A human evaluator reviews a sample of production outputs against a rubric. These catch the failures that automated metrics miss: subtle tone issues, culturally inappropriate responses, technically correct but unhelpful answers. Run these weekly or on major prompt changes. Small sample size, hours to execute.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Why this matters">The pyramid structure ensures you catch most regressions cheaply and quickly at the base layer, while reserving expensive human evaluation for the nuanced failures that only humans can detect. Inverting this pyramid — relying primarily on human review — does not scale.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Tools and Frameworks">
+  <P>You do not need to build everything from scratch. Several frameworks have matured to the point where they are genuinely useful in production.</P>
+  <P><B>Promptfoo</B> is an open-source eval framework that supports custom assertions, multiple model providers, and CI integration out of the box. It handles the mechanical parts — running prompts against test cases, computing metrics, generating reports — so you can focus on designing the eval criteria. For most teams, this is the right starting point.</P>
+  <P><B>Braintrust</B> provides a managed platform for logging, evaluating, and comparing prompt variants. The key advantage is the tracking layer: you can see exactly how each prompt version performed over time and correlate metric changes with specific prompt edits. This is valuable once your eval suite is mature enough that you are optimizing rather than building.</P>
+  <P>For cases where existing tools do not fit — unusual scoring criteria, proprietary data constraints, complex multi-model pipelines — a <Highlight>custom eval harness</Highlight> of a few hundred lines of Python is often simpler than adapting a general-purpose framework. The eval runner script above is a minimal example. In practice, you add structured logging, parallel execution, and a comparison mode that shows diffs between prompt versions.</P>
+</Section>
+
+<Divider />
+
+<Section name="When EDD Is Overkill vs. Essential">
+  <P>EDD is not always the right approach. The cost of building and maintaining an eval suite is real, and some use cases do not justify it.</P>
+
+  <P><B>EDD is essential when:</B> the AI feature faces real users, errors have consequences (financial, medical, legal), the prompt is iterated on frequently, or multiple team members edit prompts. In these cases, shipping without evals is shipping without seatbelts. You will eventually regret it.</P>
+  <P><B>EDD is overkill when:</B> you are prototyping, the feature is internal-only with a forgiving audience, the prompt is simple and stable, or you are exploring whether the feature is even viable. In these cases, a few manual spot checks are sufficient. Do not build a testing infrastructure for a feature that might not survive the week.</P>
+  <P>The inflection point is usually <Highlight>the moment the feature moves from prototype to production</Highlight>. That is when you stop testing by feel and start testing by measurement.</P>
+
+  <Callout label="Key takeaway">Eval-driven development is TDD for the AI era. Write evals first, treat the prompt as an implementation detail, automate everything, and never deploy a regression. The teams that adopt this methodology ship faster and break less — not because they write better prompts, but because they know exactly when a prompt is good enough.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>The shift from ad hoc prompting to eval-driven development is the difference between <Highlight>building AI features that happen to work</Highlight> and building AI features that are <Highlight>engineered to work</Highlight>. The tooling exists. The methodology is proven. The only barrier is the discipline to write the eval before the prompt.</P>
+  <P>Start small. Pick one AI feature in your product. Build a golden dataset of 50 cases. Implement three metrics: task completion, format compliance, and latency. Wire it into CI. Then never ship a prompt change without running it. Within a week, you will wonder how you ever shipped AI features without this.</P>
+</Section>

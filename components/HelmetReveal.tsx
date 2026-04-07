@@ -320,13 +320,13 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
   useEffect(() => {
     const mat = contourMatRef.current;
     if (!mat) return;
-    const lightBg = new THREE.Vector3(0.941, 0.929, 0.902);
-    const lightLine = new THREE.Vector3(0.78, 0.76, 0.73);
+    const lightBg = new THREE.Vector3(0.973, 0.973, 0.965);     // #f8f8f6 — blog bg
+    const lightLine = new THREE.Vector3(0.910, 0.906, 0.894);   // subtle contour lines
     const darkBg = new THREE.Vector3(0.11, 0.122, 0.149);
     const darkLine = new THREE.Vector3(0.22, 0.24, 0.28);
-    // Ink colors: dark mode → white brush, light mode → dark brush
-    const lightInkBg = new THREE.Vector3(0.03, 0.03, 0.05);
-    const lightInkLine = new THREE.Vector3(0.1, 0.1, 0.14);
+    // Ink colors: dark mode → white brush, light mode → warm subtle brush
+    const lightInkBg = new THREE.Vector3(0.82, 0.812, 0.796);   // warm muted cream
+    const lightInkLine = new THREE.Vector3(0.75, 0.741, 0.725); // visible but blog-themed
     const darkInkBg = new THREE.Vector3(0.92, 0.91, 0.88);
     const darkInkLine = new THREE.Vector3(0.98, 0.97, 0.95);
     const targetBg = dark ? darkBg : lightBg;
@@ -612,10 +612,10 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       uniforms: {
         uTime: { value: 0 },
         uAspect: { value: cw / ch },
-        uBgColor: { value: new THREE.Vector3(0.11, 0.122, 0.149) },
-        uLineColor: { value: new THREE.Vector3(0.22, 0.24, 0.28) },
-        uInkBg: { value: new THREE.Vector3(0.92, 0.91, 0.88) },
-        uInkLine: { value: new THREE.Vector3(0.98, 0.97, 0.95) },
+        uBgColor: { value: new THREE.Vector3(0.11, 0.122, 0.149) },        // dark initial
+        uLineColor: { value: new THREE.Vector3(0.22, 0.24, 0.28) },      // dark lines
+        uInkBg: { value: new THREE.Vector3(0.92, 0.91, 0.88) },          // dark mode ink
+        uInkLine: { value: new THREE.Vector3(0.98, 0.97, 0.95) },        // dark mode ink lines
         uFluidMask: { value: dye.read.texture },
       },
     });

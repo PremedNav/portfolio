@@ -1,0 +1,158 @@
+---
+title: "Phage Therapy and Computational Biology: Where Lab Meets Code"
+subtitle: "Exploring the intersection of phage therapy research and computational biology methods."
+date: "2026-01-28"
+readTime: "9 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Antibiotic resistance is not a future problem. It is a present emergency. The CDC estimates that antimicrobial-resistant infections kill over 35,000 people annually in the United States alone. Globally, the WHO projects that by 2050, drug-resistant pathogens could cause <Highlight>10 million deaths per year</Highlight>, surpassing cancer. We are entering the post-antibiotic era, and the pharmaceutical pipeline for new antibiotics has been drying up because the economics do not work. Developing a new antibiotic takes over a billion dollars and ten years, and bacteria evolve resistance within months of deployment.</P>
+  <P>Phage therapy, using bacteriophages to kill specific bacterial pathogens, is one of the most promising alternatives. Phages are viruses that infect and lyse bacteria with extraordinary specificity. A phage that kills <IC>Pseudomonas aeruginosa</IC> will leave <IC>E. coli</IC> untouched. This specificity is both the greatest advantage and the greatest challenge: <B>matching the right phage to the right pathogen</B> is a combinatorial problem that computational biology is uniquely positioned to solve.</P>
+  <P>This is a field where being a pre-med student who codes is not a novelty. It is a genuine advantage. Understanding both the biological mechanisms and the computational methods required to accelerate them is exactly the interdisciplinary profile this work demands.</P>
+
+  <Figure
+    src="/img/blog/bacteria-microscope.jpg"
+    alt="Microscope view of bacteria, the targets of bacteriophage therapy"
+    caption="Bacteriophages attach to specific receptor proteins on bacterial surfaces, making the phage-host matching problem a computational challenge of extraordinary specificity."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="What Makes Phage Therapy Different">
+  <P>Unlike broad-spectrum antibiotics that indiscriminately kill both pathogenic and beneficial bacteria, phages operate with <Highlight>surgical precision</Highlight>. Each phage recognizes specific receptor proteins on the bacterial surface, injects its genetic material, hijacks the replication machinery, and produces dozens of new phage particles that burst the cell open. This lytic cycle repeats until the target population is eliminated.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Narrow host range.</B> A single phage typically infects only a few strains within a species. Phage therapy preserves the patient&apos;s microbiome, unlike antibiotics that cause collateral damage to commensal bacteria. The tradeoff is that you need to identify the pathogen precisely before selecting a phage.</ConnectedItem>
+    <ConnectedItem><B>Self-amplifying at the infection site.</B> Phages replicate where the bacteria are. The therapeutic agent concentrates itself exactly where it is needed, unlike antibiotics that distribute systemically and require dosing to maintain minimum inhibitory concentrations.</ConnectedItem>
+    <ConnectedItem><B>Co-evolutionary dynamics.</B> Bacteria can evolve resistance to phages, but phages co-evolve with their hosts. This arms race has been running for three billion years. In practice, phage-resistant mutants often lose virulence factors or antibiotic resistance genes, a phenomenon called <Highlight>phage-antibiotic synergy</Highlight>.</ConnectedItem>
+    <ConnectedItem><B>Regulatory complexity.</B> Each phage preparation is specific to a patient&apos;s pathogen. Traditional drug approval frameworks do not map onto personalized phage cocktails. This regulatory gap is one of the biggest barriers to widespread clinical adoption.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Predicting Host Specificity With Machine Learning">
+  <P>The central computational challenge is <B>host range prediction</B>: given a phage genome and a bacterial genome, can we predict whether the phage will successfully infect and lyse the bacterium? Solving this computationally means matching patients to therapeutic phages in hours instead of the days required for traditional plaque assays.</P>
+
+  <H3>The Biology Behind Specificity</H3>
+  <P>Phage-host specificity is primarily determined by the interaction between phage <IC>receptor binding proteins</IC> (RBPs) on the tail fiber and specific receptors on the bacterial outer membrane. The RBP is the lock-and-key mechanism. Computationally, host range prediction reduces to predicting protein-protein or protein-carbohydrate binding affinity. In practice, the problem is harder because bacterial surface receptors are modified by phase-variable genes that stochastically switch expression, and bacterial populations are not genetically homogeneous. Predicting host range requires modeling <Highlight>population-level susceptibility</Highlight>, not just single-genome interactions.</P>
+
+  <H3>Sequence-Based Models</H3>
+  <P>The most tractable approach uses sequence features. The input is a representation of the phage RBP and the bacterial receptor, and the output is a probabilistic prediction of infection.</P>
+
+```python
+import torch
+import torch.nn as nn
+
+class PhageHostPredictor(nn.Module):
+    """Dual-encoder for phage-host interaction prediction."""
+    def __init__(self, vocab_size=21, embed_dim=128, hidden_dim=256):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.phage_encoder = nn.LSTM(
+            embed_dim, hidden_dim, num_layers=2,
+            batch_first=True, bidirectional=True
+        )
+        self.host_encoder = nn.LSTM(
+            embed_dim, hidden_dim, num_layers=2,
+            batch_first=True, bidirectional=True
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(hidden_dim * 4, 512), nn.ReLU(), nn.Dropout(0.3),
+            nn.Linear(512, 128), nn.ReLU(), nn.Linear(128, 1), nn.Sigmoid()
+        )
+
+    def forward(self, phage_seq, host_seq):
+        _, (ph, _) = self.phage_encoder(self.embedding(phage_seq))
+        _, (hh, _) = self.host_encoder(self.embedding(host_seq))
+        phage_repr = torch.cat([ph[-2], ph[-1]], dim=-1)
+        host_repr = torch.cat([hh[-2], hh[-1]], dim=-1)
+        return self.classifier(torch.cat([phage_repr, host_repr], dim=-1))
+```
+
+  <P>This dual-encoder processes phage and host sequences through independent BiLSTM encoders before combining their representations. The separation allows <B>modular learning</B>: the phage encoder identifies RBP structural features while the host encoder identifies receptor accessibility features. More recent work replaces LSTMs with protein language model embeddings from <IC>ESM-2</IC> or <IC>ProtTrans</IC>, capturing evolutionary relationships that raw sequence models miss.</P>
+
+  <Callout label="Key takeaway">Sequence-based models currently achieve 75-85% accuracy on well-characterized phage-host pairs. Useful for narrowing candidates, but not yet reliable enough for clinical decisions without experimental confirmation.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Structure-Based Approaches: AlphaFold Meets Phage Biology">
+  <P>The real leap forward has come from <B>protein structure prediction</B>. AlphaFold can predict three-dimensional structures of phage tail fiber proteins with remarkable accuracy. Host specificity is determined by the physical shape of the RBP-receptor interface, and shape is encoded in structure, not sequence.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>RBP identification.</B> Given a phage genome, identify the receptor binding protein gene using <IC>HHblits</IC> and <IC>MMseqs2</IC> homology search. For novel phages without close homologs, gene synteny analysis within the tail morphogenesis cluster provides a fallback signal.</ConnectedItem>
+    <ConnectedItem><B>Structure prediction.</B> Run <IC>AlphaFold-Multimer</IC> on the RBP sequence. Tail fibers form trimeric structures, so multimer predictions are more informative than monomer. The C-terminal domain is typically the receptor-binding region.</ConnectedItem>
+    <ConnectedItem><B>Docking simulation.</B> Tools like <IC>HADDOCK</IC> or <IC>ClusPro</IC> simulate the RBP-receptor interaction. The binding energy estimate narrows the candidate space dramatically, though this step is computationally expensive.</ConnectedItem>
+    <ConnectedItem><B>Experimental validation.</B> Top-ranked pairs are tested in vitro using plaque assays. The computational pipeline does not replace wet-lab work. It <Highlight>prioritizes which experiments to run</Highlight>.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The bottleneck is data, not compute. Structural databases of phage RBPs are sparse compared to bacterial protein databases. Every experimentally validated structure expands training data for next-generation models. This is why the <Highlight>wet-lab-to-dry-lab feedback loop</Highlight> defines modern computational phage biology.</P>
+
+  <Figure
+    src="/img/blog/dna-strand.jpg"
+    alt="Visualization of a DNA double helix strand used in genomic sequencing"
+    caption="Genomic sequencing of both phage and host organisms is the starting point for computational host-range prediction, enabling sequence-based and structure-based matching approaches."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Feedback Loop in Clinical Practice">
+  <P>The most productive phage therapy groups operate a tight iteration cycle. A patient presents with multi-drug-resistant <IC>Klebsiella pneumoniae</IC>. The clinical team isolates the pathogen and sequences its genome. The computational pipeline identifies candidate phages from a curated bank, ranks them by predicted lytic activity, and the top five are tested in plaque assays. Typically two or three show activity and are combined into a cocktail.</P>
+  <P>The entire process takes <B>48 to 72 hours</B> in well-equipped centers. Without computational pre-screening, testing every phage in the bank would take weeks. The models do not need to be perfect. They need to reduce the search space from thousands of candidates to a manageable handful.</P>
+
+  <Callout label="Why this matters">Every clinical case generates phage-host interaction data that improves the predictive models for the next case. The system gets smarter with every patient treated. This virtuous cycle is where the field is heading.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Current Clinical Landscape">
+  <P>Phage therapy is not hypothetical. It is in active clinical use.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Program</TH>
+          <TH>Approach</TH>
+          <TH last>Status</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>IPATH (UC San Diego)</TD>
+          <TD>Compassionate use for MDR infections</TD>
+          <TD last>Active, 100+ patients treated</TD>
+        </TR>
+        <TR>
+          <TD first bold>Eliava Institute (Georgia)</TD>
+          <TD>Dedicated clinical phage therapy center</TD>
+          <TD last>Continuous operation since 1923</TD>
+        </TR>
+        <TR last>
+          <TD first bold>FDA Phase I/II Trials</TD>
+          <TD>Standardized cocktails for UTI, wound infections</TD>
+          <TD last>Multiple trials ongoing in the US</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>The FDA has granted emergency IND authorization for phage therapy in dozens of life-threatening cases where all antibiotics failed. Each successful case builds the evidence base for broader regulatory approval. The computational challenge is not just scientific but logistical: building systems that match patients to phages <Highlight>fast enough to matter clinically</Highlight>.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Phage therapy sits at the intersection of microbiology, genomics, structural biology, machine learning, and clinical medicine. The people building computational infrastructure need to understand <B>why a plaque assay works</B>, not just how to train a classifier. The people running clinical trials need to understand what models can and cannot predict. The field needs builders who speak both languages.</P>
+  <P>The hard part is not any single technique. It is the integration: pipelines that take a pathogen genome as input and produce ranked candidate phages as output, fast enough to matter clinically, accurate enough to trust experimentally, and interpretable enough that microbiologists understand the reasoning. That integration problem is where the field&apos;s future lives, and the intersection of biology and code is <Highlight>not crowded</Highlight>.</P>
+
+  <Callout label="Get involved">The AMR crisis is one of the most important public health challenges of our generation. If you are a student with both biology and programming skills, computational phage biology is a field where you can make a real contribution. The tools are open source, the data increasingly public, and the problems urgent.</Callout>
+</Section>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Lorenz Attractor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Lorenz Strange Attractor
+ * Inspired by implementations from:
+ * https://github.com/daybarr/lorenz-webgl
+ * https://github.com/uncompiled/lorenz-attractor
+ * σ=10, ρ=28, β=8/3
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+
+// Lorenz parameters
+var sigma = 10;
+var rho = 28;
+var beta = 8 / 3;
+var dt = 0.003;
+
+// Particles — multiple streams with different starting points for visual density
+var NUM_PARTICLES = 4000;
+var particles = [];
+var trails = [];
+var trailLen = 80;
+
+function initParticles() {
+    particles = [];
+    trails = [];
+    for (var i = 0; i < NUM_PARTICLES; i++) {
+        var p = {
+            x: (Math.random() - 0.5) * 0.1 + 0.1,
+            y: (Math.random() - 0.5) * 0.1 + 0.1,
+            z: (Math.random() - 0.5) * 0.1 + 25,
+            hue: (i / NUM_PARTICLES) * 360
+        };
+        particles.push(p);
+        trails.push([]);
+    }
+}
+
+function stepLorenz(p) {
+    var dx = sigma * (p.y - p.x);
+    var dy = p.x * (rho - p.z) - p.y;
+    var dz = p.x * p.y - beta * p.z;
+    p.x += dx * dt;
+    p.y += dy * dt;
+    p.z += dz * dt;
+}
+
+// Camera
+var camRotX = -0.5;
+var camRotY = 0;
+var camDist = 70;
+var autoRotate = true;
+var autoRotSpeed = 0.15;
+
+// Mouse / touch drag
+var dragging = false;
+var dragX = 0, dragY = 0;
+var dragStartRotX = 0, dragStartRotY = 0;
+
+canvas.addEventListener('mousedown', function(e) {
+    dragging = true;
+    dragX = e.clientX;
+    dragY = e.clientY;
+    dragStartRotX = camRotX;
+    dragStartRotY = camRotY;
+    autoRotate = false;
+});
+
+window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    camRotY = dragStartRotY + (e.clientX - dragX) * 0.005;
+    camRotX = dragStartRotX + (e.clientY - dragY) * 0.005;
+    camRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camRotX));
+});
+
+window.addEventListener('mouseup', function() {
+    dragging = false;
+    // Resume auto-rotate after 3 seconds
+    setTimeout(function() { if (!dragging) autoRotate = true; }, 3000);
+});
+
+canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+        e.preventDefault();
+        dragging = true;
+        dragX = e.touches[0].clientX;
+        dragY = e.touches[0].clientY;
+        dragStartRotX = camRotX;
+        dragStartRotY = camRotY;
+        autoRotate = false;
+    }
+}, {passive:false});
+
+canvas.addEventListener('touchmove', function(e) {
+    if (!dragging || e.touches.length !== 1) return;
+    e.preventDefault();
+    camRotY = dragStartRotY + (e.touches[0].clientX - dragX) * 0.005;
+    camRotX = dragStartRotX + (e.touches[0].clientY - dragY) * 0.005;
+    camRotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camRotX));
+}, {passive:false});
+
+canvas.addEventListener('touchend', function() {
+    dragging = false;
+    setTimeout(function() { if (!dragging) autoRotate = true; }, 3000);
+});
+
+// Zoom
+canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    camDist = Math.max(30, Math.min(150, camDist + e.deltaY * 0.05));
+}, {passive:false});
+
+// 3D projection
+function project(x, y, z) {
+    // Center the attractor (it orbits around 0,0,~25)
+    z -= 25;
+
+    // Rotate around Y axis
+    var cosY = Math.cos(camRotY);
+    var sinY = Math.sin(camRotY);
+    var rx = x * cosY - z * sinY;
+    var rz = x * sinY + z * cosY;
+
+    // Rotate around X axis
+    var cosX = Math.cos(camRotX);
+    var sinX = Math.sin(camRotX);
+    var ry = y * cosX - rz * sinX;
+    var rz2 = y * sinX + rz * cosX;
+
+    // Perspective
+    var fov = 400;
+    var depth = rz2 + camDist;
+    if (depth < 1) depth = 1;
+    var scale = fov / depth;
+
+    return {
+        sx: rx * scale + canvas.width / 2,
+        sy: -ry * scale + canvas.height / 2,
+        depth: depth,
+        scale: scale
+    };
+}
+
+// Resize
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Initialize
+initParticles();
+
+// Warm up the system — run a bunch of steps so particles are on the attractor
+for (var w = 0; w < 500; w++) {
+    for (var i = 0; i < NUM_PARTICLES; i++) {
+        stepLorenz(particles[i]);
+    }
+}
+
+// Main loop
+var lastTime = 0;
+
+function frame(timestamp) {
+    requestAnimationFrame(frame);
+
+    var elapsed = timestamp - lastTime;
+    lastTime = timestamp;
+    if (elapsed > 100) elapsed = 16;
+
+    // Auto-rotate camera
+    if (autoRotate) {
+        camRotY += autoRotSpeed * elapsed * 0.001;
+    }
+
+    // Step particles multiple times per frame for smoother trails
+    var steps = 3;
+    for (var s = 0; s < steps; s++) {
+        for (var i = 0; i < NUM_PARTICLES; i++) {
+            stepLorenz(particles[i]);
+
+            // Store trail point
+            var trail = trails[i];
+            trail.push({ x: particles[i].x, y: particles[i].y, z: particles[i].z });
+            if (trail.length > trailLen) trail.shift();
+        }
+    }
+
+    // Render
+    ctx.fillStyle = 'rgba(5,5,8,0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw trails (sample a subset for performance)
+    var drawEvery = Math.max(1, Math.floor(NUM_PARTICLES / 800));
+
+    for (var i = 0; i < NUM_PARTICLES; i += drawEvery) {
+        var trail = trails[i];
+        if (trail.length < 2) continue;
+
+        var hue = particles[i].hue;
+
+        ctx.beginPath();
+        var first = project(trail[0].x, trail[0].y, trail[0].z);
+        ctx.moveTo(first.sx, first.sy);
+
+        for (var j = 1; j < trail.length; j++) {
+            var pt = project(trail[j].x, trail[j].y, trail[j].z);
+            ctx.lineTo(pt.sx, pt.sy);
+        }
+
+        // Color based on depth of last point + hue
+        var last = project(trail[trail.length - 1].x, trail[trail.length - 1].y, trail[trail.length - 1].z);
+        var alpha = Math.min(0.7, 0.15 + last.scale * 0.03);
+        var lightness = 40 + Math.min(30, last.scale * 2);
+
+        ctx.strokeStyle = 'hsla(' + hue + ',80%,' + lightness + '%,' + alpha + ')';
+        ctx.lineWidth = Math.max(0.3, last.scale * 0.08);
+        ctx.stroke();
+    }
+
+    // Draw bright head particles
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < NUM_PARTICLES; i += drawEvery * 2) {
+        var p = particles[i];
+        var pt = project(p.x, p.y, p.z);
+        var r = Math.max(0.8, pt.scale * 0.12);
+        var hue = particles[i].hue;
+
+        ctx.beginPath();
+        ctx.arc(pt.sx, pt.sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = 'hsla(' + hue + ',100%,70%,0.6)';
+        ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+requestAnimationFrame(frame);
+
+// Widget communication
+window.addEventListener('message', function(e) {
+    if (e.data && e.data.theme) { /* always dark */ }
+});
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

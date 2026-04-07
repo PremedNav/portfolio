@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Double Pendulum</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Double Pendulum — Chaotic motion visualization
+ * Multiple pendulums with slightly different initial conditions
+ * to demonstrate sensitive dependence (butterfly effect)
+ * Inspired by https://github.com/CodingTrain/website (MIT)
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H, cx, cy;
+
+var NUM = 12;
+var pendulums = [];
+var trailCanvas, trailCtx;
+
+var g = 1.0;
+var L1 = 120;
+var L2 = 120;
+
+function Pendulum(a1, a2, hue) {
+    this.a1 = a1;
+    this.a2 = a2;
+    this.v1 = 0;
+    this.v2 = 0;
+    this.m1 = 10;
+    this.m2 = 10;
+    this.hue = hue;
+    this.px2 = 0;
+    this.py2 = 0;
+    this.first = true;
+}
+
+function init() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W / 2;
+    cy = H * 0.3;
+
+    // Trail canvas
+    trailCanvas = document.createElement('canvas');
+    trailCanvas.width = W;
+    trailCanvas.height = H;
+    trailCtx = trailCanvas.getContext('2d');
+
+    pendulums = [];
+    for (var i = 0; i < NUM; i++) {
+        // Slightly different starting angles
+        var offset = (i - NUM / 2) * 0.0005;
+        pendulums.push(new Pendulum(
+            Math.PI / 2 + offset,
+            Math.PI / 2 + offset * 0.5,
+            (i / NUM) * 360
+        ));
+    }
+}
+
+function stepPendulum(p) {
+    var a1 = p.a1, a2 = p.a2, v1 = p.v1, v2 = p.v2;
+    var m1 = p.m1, m2 = p.m2;
+
+    // Equations of motion for double pendulum
+    var num1 = -g * (2 * m1 + m2) * Math.sin(a1);
+    var num2 = -m2 * g * Math.sin(a1 - 2 * a2);
+    var num3 = -2 * Math.sin(a1 - a2) * m2;
+    var num4 = v2 * v2 * L2 + v1 * v1 * L1 * Math.cos(a1 - a2);
+    var den = L1 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+    var acc1 = (num1 + num2 + num3 * num4) / den;
+
+    num1 = 2 * Math.sin(a1 - a2);
+    num2 = v1 * v1 * L1 * (m1 + m2);
+    num3 = g * (m1 + m2) * Math.cos(a1);
+    num4 = v2 * v2 * L2 * m2 * Math.cos(a1 - a2);
+    den = L2 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+    var acc2 = (num1 * (num2 + num3 + num4)) / den;
+
+    p.v1 += acc1;
+    p.v2 += acc2;
+    p.a1 += p.v1;
+    p.a2 += p.v2;
+
+    // Slight damping
+    p.v1 *= 0.9999;
+    p.v2 *= 0.9999;
+}
+
+function getPositions(p) {
+    var x1 = cx + L1 * Math.sin(p.a1);
+    var y1 = cy + L1 * Math.cos(p.a1);
+    var x2 = x1 + L2 * Math.sin(p.a2);
+    var y2 = y1 + L2 * Math.cos(p.a2);
+    return { x1: x1, y1: y1, x2: x2, y2: y2 };
+}
+
+function render() {
+    // Fade trail canvas slowly
+    trailCtx.fillStyle = 'rgba(5,5,8,0.008)';
+    trailCtx.fillRect(0, 0, W, H);
+
+    // Draw trails
+    for (var i = 0; i < NUM; i++) {
+        var p = pendulums[i];
+        var pos = getPositions(p);
+
+        if (!p.first) {
+            trailCtx.beginPath();
+            trailCtx.moveTo(p.px2, p.py2);
+            trailCtx.lineTo(pos.x2, pos.y2);
+            trailCtx.strokeStyle = 'hsla(' + p.hue + ',80%,55%,0.5)';
+            trailCtx.lineWidth = 1.2;
+            trailCtx.stroke();
+        }
+
+        p.px2 = pos.x2;
+        p.py2 = pos.y2;
+        p.first = false;
+    }
+
+    // Composite
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(trailCanvas, 0, 0);
+
+    // Draw the actual pendulum (just the first one for clarity)
+    var main = pendulums[0];
+    var mp = getPositions(main);
+
+    // Rods
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(mp.x1, mp.y1);
+    ctx.lineTo(mp.x2, mp.y2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Pivot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+
+    // Masses
+    ctx.beginPath();
+    ctx.arc(mp.x1, mp.y1, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(mp.x2, mp.y2, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'hsla(' + main.hue + ',80%,60%,0.8)';
+    ctx.fill();
+
+    // Glow on tip
+    ctx.beginPath();
+    ctx.arc(mp.x2, mp.y2, 12, 0, Math.PI * 2);
+    ctx.fillStyle = 'hsla(' + main.hue + ',80%,60%,0.15)';
+    ctx.fill();
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    var steps = 3;
+    for (var s = 0; s < steps; s++) {
+        for (var i = 0; i < NUM; i++) {
+            stepPendulum(pendulums[i]);
+        }
+    }
+    render();
+}
+
+init();
+window.addEventListener('resize', init);
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

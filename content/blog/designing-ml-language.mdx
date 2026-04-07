@@ -1,0 +1,234 @@
+---
+title: "Designing a Programming Language for Machine Learning From Scratch"
+subtitle: "The design decisions, type system, and runtime architecture behind a purpose-built ML language."
+date: "2026-02-15"
+readTime: "11 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Every machine learning engineer has had the same experience: you write a model in Python, the shapes do not match, and you do not find out until 45 minutes into a training run. The error message says <IC>RuntimeError: mat1 and mat2 shapes cannot be multiplied (128x512 and 256x1024)</IC>. You stare at it. You trace backward through six function calls. You fix it, run again, and hit a different shape mismatch three layers deeper.</P>
+  <P>This is the problem that motivated Synthr. Not Python&apos;s syntax. Not its speed. Its <Highlight>fundamental inability to reason about tensor shapes at compile time</Highlight>. Synthr is a programming language designed from the ground up for machine learning, with a type system that catches shape errors before any code runs, automatic differentiation as a first-class primitive, and a compiler that generates GPU-native code.</P>
+
+  <Figure
+    src="/img/blog/syntax-highlighting.jpg"
+    alt="IDE with syntax-highlighted code showing a programming language's type system"
+    caption="Designing a language from scratch — every syntax decision reflects a tradeoff between familiarity for ML researchers and expressiveness for the type system"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Why Existing Languages Fall Short">
+  <P>The critique of Python for ML is well-worn, but most discussions focus on the wrong problems. Speed is solvable with compilation. The GIL is solvable with multiprocessing. The real problems are structural.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>No static shape reasoning.</B> In Python, a tensor is an opaque blob at the type level. <IC>torch.Tensor</IC> tells you nothing about its rank, dimensions, or dtype. Shape mismatches are caught at runtime, which means they are caught late and expensively. NumPy and PyTorch have made heroic efforts with runtime checks, but the information simply is not available at the type level.</ConnectedItem>
+    <ConnectedItem><B>Automatic differentiation is bolted on.</B> Autograd in PyTorch is a runtime tape. It records operations as they execute and replays them backward. This works, but it means the compiler cannot see the full computation graph ahead of time. Optimizations like operator fusion, memory planning, and gradient checkpointing scheduling must be done by the framework, not the compiler.</ConnectedItem>
+    <ConnectedItem><B>GPU execution is a foreign function call.</B> Python dispatches to CUDA kernels through C++ bindings. The language has no concept of a GPU, a kernel, or a memory space. This impedance mismatch means that every performance-critical optimization requires dropping out of Python into a different language entirely.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The core thesis">A language designed for ML should make tensors, automatic differentiation, and GPU execution first-class citizens of the type system and compiler, not library features grafted onto a general-purpose language.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Language Design Goals">
+  <P>Synthr was designed around five non-negotiable goals. Every syntax decision, type system feature, and compiler optimization traces back to one of these.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>First-class tensors with shape types.</B> Tensor shapes are part of the type. A <IC>Tensor[Float32, 128, 784]</IC> is a different type from a <IC>Tensor[Float32, 128, 512]</IC>. Shape mismatches are compile-time errors.</ConnectedItem>
+    <ConnectedItem><B>Built-in automatic differentiation.</B> The <IC>grad</IC> keyword is a language primitive, not a library function. The compiler sees the full computation graph and can optimize the backward pass at compile time.</ConnectedItem>
+    <ConnectedItem><B>GPU-native execution.</B> Synthr code compiles to GPU kernels directly. There is no host language dispatching to device code. The compiler decides what runs on the GPU and what runs on the CPU based on the computation graph.</ConnectedItem>
+    <ConnectedItem><B>Python-like readability.</B> ML researchers should be able to read Synthr code without a learning curve. Indentation-sensitive syntax, familiar function definitions, and minimal ceremony.</ConnectedItem>
+    <ConnectedItem><B>Rust-like safety.</B> Ownership semantics for GPU memory, no null references, exhaustive pattern matching. The language should prevent classes of bugs that waste GPU hours.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="The Type System">
+  <P>The type system is the heart of Synthr, and the part that required the most design iteration. The key innovation is <B>dependent types for tensor shapes</B>.</P>
+  <P>In a standard type system, types are fixed at compile time: <IC>int</IC>, <IC>float</IC>, <IC>String</IC>. In a dependent type system, types can depend on values. This lets you express constraints like &ldquo;this tensor has the same batch dimension as that tensor&rdquo; directly in the type signature.</P>
+
+```
+// Synthr: A linear layer with shape-checked types
+fn linear[B: Nat, In: Nat, Out: Nat](
+    x: Tensor[Float32, B, In],
+    w: Tensor[Float32, In, Out],
+    b: Tensor[Float32, Out]
+) -> Tensor[Float32, B, Out]:
+    return x @ w + b
+```
+
+  <P>The type parameters <IC>B</IC>, <IC>In</IC>, and <IC>Out</IC> are <B>natural number type variables</B>. When you call <IC>linear</IC>, the compiler unifies these variables with the actual tensor shapes and verifies that all constraints are satisfied. If you pass a weight matrix with the wrong dimensions, the error appears at compile time with a clear message about which dimension does not match.</P>
+  <P>This extends to more complex patterns. Here is a multi-head attention implementation:</P>
+
+```
+// Synthr: Multi-head attention with compile-time shape checking
+fn multi_head_attention[B: Nat, Seq: Nat, D: Nat, H: Nat](
+    q: Tensor[Float32, B, Seq, D],
+    k: Tensor[Float32, B, Seq, D],
+    v: Tensor[Float32, B, Seq, D],
+    num_heads: Static[H],
+) -> Tensor[Float32, B, Seq, D]
+where D % H == 0:
+    let head_dim = D / H
+    let q_heads = reshape[B, Seq, H, head_dim](q)
+    let k_heads = reshape[B, Seq, H, head_dim](k)
+    let v_heads = reshape[B, Seq, H, head_dim](v)
+
+    let scores = einsum("bshd,bthd->bsht", q_heads, k_heads)
+    let weights = softmax(scores / sqrt(head_dim), axis=-1)
+    let output = einsum("bsht,bthd->bshd", weights, v_heads)
+
+    return reshape[B, Seq, D](output)
+```
+
+  <P>The <IC>where D % H == 0</IC> clause is a <B>type-level constraint</B>. The compiler proves at compile time that the model dimension is evenly divisible by the number of heads. If it is not, the program does not compile. In PyTorch, this would be a runtime assertion that might not trigger until you change a hyperparameter three months later.</P>
+
+  <Callout label="Why this matters in practice">A single shape mismatch caught at compile time saves an average of 20-60 minutes of debugging time. Over a research project with hundreds of experiments, this compounds into days of saved effort.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Automatic Differentiation as a Primitive">
+  <P>In Synthr, <IC>grad</IC> is a keyword, not a function call. The compiler performs source-to-source transformation to generate the backward pass at compile time.</P>
+
+```
+// Synthr: Automatic differentiation
+fn mse_loss(pred: Tensor[Float32, B, D], target: Tensor[Float32, B, D]) -> Scalar[Float32]:
+    return mean((pred - target) ** 2)
+
+fn train_step(model: &mut Linear, x: Tensor[Float32, B, In], y: Tensor[Float32, B, Out]):
+    let loss, grads = grad(mse_loss, wrt=model.params)(model(x), y)
+    model.params -= 0.01 * grads
+```
+
+  <P>The <IC>grad</IC> keyword tells the compiler to differentiate <IC>mse_loss</IC> with respect to <IC>model.params</IC>. Because the compiler sees the full computation graph statically, it can perform optimizations that a runtime tape cannot.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Operator fusion.</B> Adjacent operations that would be separate kernel launches in PyTorch can be fused into a single kernel. The compiler identifies fusible subgraphs and generates combined kernels automatically.</ConnectedItem>
+    <ConnectedItem><B>Memory planning.</B> The compiler knows the lifetime of every intermediate tensor in both the forward and backward passes. It allocates a single memory pool and reuses buffers, reducing peak memory usage by 20-40% compared to eager-mode autograd.</ConnectedItem>
+    <ConnectedItem><B>Gradient checkpointing scheduling.</B> Instead of requiring the user to manually wrap layers in checkpoint calls, the compiler analyzes the memory-compute tradeoff for each layer and inserts checkpointing automatically based on a target memory budget.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Compiler Architecture">
+  <P>Synthr compiles through four stages, from source to executable GPU code.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Parsing and type checking.</B> A recursive descent parser produces a typed AST. The type checker performs bidirectional type inference with shape unification. Type errors are reported with source-mapped diagnostics that show the exact shape mismatch.</ConnectedItem>
+    <ConnectedItem><B>High-level IR (Synthr IR).</B> The typed AST is lowered to a graph-based intermediate representation where nodes are tensor operations. This IR is where autodiff transformation, operator fusion, and memory planning happen.</ConnectedItem>
+    <ConnectedItem><B>Low-level IR (LLVM IR).</B> The optimized Synthr IR is lowered to LLVM IR for CPU code and PTX (via NVPTX) for GPU kernels. LLVM handles register allocation, instruction scheduling, and target-specific optimizations.</ConnectedItem>
+    <ConnectedItem><B>JIT compilation.</B> For interactive use (notebooks, REPL), Synthr supports JIT compilation. Functions are compiled on first call and cached. The JIT maintains the same type checking and optimization pipeline as ahead-of-time compilation, so you never sacrifice safety for interactivity.</ConnectedItem>
+  </ConnectedList>
+
+```
+// Compilation pipeline (pseudocode)
+source.sn -> [Parser] -> Untyped AST
+          -> [Type Checker + Shape Inference] -> Typed AST
+          -> [Lowering] -> Synthr IR (graph-based)
+          -> [Autodiff Transform] -> Synthr IR with backward graph
+          -> [Fusion + Memory Planning] -> Optimized Synthr IR
+          -> [LLVM Codegen] -> LLVM IR / PTX
+          -> [LLVM Backend] -> Native binary + GPU kernels
+```
+
+  <P>The LLVM backend was the pragmatic choice. Writing a production-quality code generator from scratch would have taken years. LLVM gives Synthr access to decades of optimization passes for free. The tradeoff is compile time. A full model compilation takes 3-8 seconds, which is acceptable for training scripts but noticeable in a REPL. The JIT mitigates this by caching compiled functions across sessions.</P>
+
+  <Figure
+    src="/img/blog/compiler-architecture.jpg"
+    alt="System architecture diagram representing the compiler pipeline stages"
+    caption="The Synthr compiler pipeline in action — from source code through type checking, IR optimization, and LLVM code generation to GPU-native binaries"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Comparison to Existing Approaches">
+  <P>Synthr is not the first attempt to improve ML tooling. It is worth positioning it against the alternatives.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Tool</TH>
+          <TH>Shape checking</TH>
+          <TH>Autodiff</TH>
+          <TH>GPU native</TH>
+          <TH last>Tradeoff</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>PyTorch</TD>
+          <TD>Runtime only</TD>
+          <TD>Runtime tape</TD>
+          <TD>Via C++ dispatch</TD>
+          <TD last>Maximum flexibility, minimum static guarantees</TD>
+        </TR>
+        <TR>
+          <TD first bold>JAX</TD>
+          <TD>Runtime only</TD>
+          <TD>Tracing-based</TD>
+          <TD>Via XLA</TD>
+          <TD last>Functional purity enables optimization, but no shape types</TD>
+        </TR>
+        <TR>
+          <TD first bold>Julia</TD>
+          <TD>Parametric types (partial)</TD>
+          <TD>Library (Zygote)</TD>
+          <TD>Via CUDA.jl</TD>
+          <TD last>Multiple dispatch is powerful but not shape-specialized</TD>
+        </TR>
+        <TR>
+          <TD first bold>Mojo</TD>
+          <TD>Planned</TD>
+          <TD>Via MAX</TD>
+          <TD>Native</TD>
+          <TD last>Systems-level performance, but ML semantics are secondary</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Synthr</TD>
+          <TD>Compile-time (dependent types)</TD>
+          <TD>Compiler primitive</TD>
+          <TD>Native (LLVM/PTX)</TD>
+          <TD last>Full static guarantees, but smaller ecosystem</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>The honest weakness of Synthr is ecosystem maturity. PyTorch has thousands of pretrained models, community libraries, and production tooling. Synthr has none of that. The bet is that <Highlight>the safety and performance guarantees will justify the ecosystem cost</Highlight> for teams where GPU hours are expensive and debugging shape errors is a recurring time sink.</P>
+</Section>
+
+<Divider />
+
+<Section name="What I Learned About Language Design">
+  <P>Designing a programming language taught me things that building applications never could.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Error messages are a user interface.</B> The most important feature of a compiler is not the code it generates. It is the error messages it produces when something goes wrong. I spent more time on Synthr&apos;s diagnostic system than on the code generator. A shape mismatch error that says <IC>expected Tensor[Float32, 128, 512] but got Tensor[Float32, 128, 256] in argument 2 of linear()</IC> saves ten minutes of debugging. A generic <IC>type error</IC> saves nothing.</ConnectedItem>
+    <ConnectedItem><B>Syntax is politics.</B> Every syntax decision is a tradeoff between familiarity and expressiveness. I chose Python-like indentation over braces because the target audience (ML researchers) reads Python fluently. I chose Rust-like ownership for GPU memory because explicit resource management prevents an entire class of memory leaks. Every choice alienated someone. That is unavoidable.</ConnectedItem>
+    <ConnectedItem><B>The type system is the language.</B> In Synthr, the type system does most of the interesting work. Shape inference, autodiff eligibility checking, memory lifetime analysis, all of these live in the type checker. The runtime is almost boring by comparison. This inverts the typical language design experience, where the runtime is complex and the type system is simple.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The deepest lesson">A programming language is an argument about how people should think about a problem domain. Synthr argues that tensor shapes are types, differentiation is compilation, and GPU execution is not special. Whether that argument is right is something only adoption can answer.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Synthr is not finished. The compiler works. The type system catches real bugs. The generated code runs on GPUs. But the ecosystem is nascent, the standard library is thin, and the language needs years of use before the rough edges are smoothed.</P>
+  <P>What I am most confident about is the <Highlight>core design bet</Highlight>: that a language which treats tensor shapes as types and automatic differentiation as a compiler feature will produce better ML code than one that treats both as runtime concerns. The evidence so far, in compile-time bug catches, in generated code performance, and in the clarity of Synthr programs, supports that bet.</P>
+  <P>Building a programming language is the most humbling project I have undertaken. Every design decision has consequences that ripple through the entire system. Every shortcut in the compiler becomes a limitation that users hit months later. It has made me a better engineer in every other domain, because it forced me to think about <Highlight>systems at every level of abstraction simultaneously</Highlight>.</P>
+
+  <Callout label="Get involved">Synthr is an ongoing research project. If you are interested in programming language design, type systems, or ML compilers, I would love to hear from you.</Callout>
+</Section>

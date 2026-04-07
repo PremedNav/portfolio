@@ -1,0 +1,267 @@
+---
+title: "Cantor's Diagonal Argument: Why Some Infinities Are Bigger Than Others"
+subtitle: "The proof that shattered 19th-century mathematics — and why the real numbers cannot be listed."
+date: "2026-03-01"
+readTime: "10 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>In 1891, Georg Cantor published a short paper that contained one of the most elegant and devastating proofs in the history of mathematics. In just a few pages, he demonstrated that <Highlight>the set of real numbers is strictly larger than the set of natural numbers</Highlight>, that infinity comes in different sizes, and that there is no way to list all real numbers in a sequence, no matter how clever your enumeration. The idea was so radical, so offensive to the mathematical establishment of his time, that it made Cantor genuine enemies. Leopold Kronecker called him a &ldquo;corrupter of youth.&rdquo; Henri Poincare described his work as a &ldquo;disease&rdquo; from which mathematics would one day recover. The hostility, combined with bouts of depression, contributed to Cantor spending the final years of his life in a sanatorium.</P>
+  <P>They were wrong, and he was right. Cantor&apos;s diagonal argument is now a cornerstone of modern mathematics, and the hierarchy of infinities he discovered underpins set theory, logic, topology, and theoretical computer science. It is also one of the most beautiful proofs I have ever encountered. The first time I saw it, as a sophomore working through a discrete math textbook, I felt the floor shift under my understanding of what &ldquo;infinite&rdquo; means. I want to walk you through it carefully, from the foundations to the furthest implications, because this proof changes how you think.</P>
+
+  <Figure
+    src="/img/blog/cantor-infinity.jpg"
+    alt="Abstract visualization of infinite sets and mathematical structures"
+    caption="Infinity is not one thing — Cantor showed it is a vast, stratified hierarchy of ever-larger magnitudes"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Countable Infinity">
+  <P>Before we can talk about uncountable sets, we need to be precise about what it means for a set to be <B>countable</B>. A set <Eq c="S" /> is countable if its elements can be placed in a one-to-one correspondence (a bijection) with the natural numbers <Eq c="\mathbb{N} = \{1, 2, 3, \ldots\}" />. In other words, you can list the elements of <Eq c="S" /> as <Eq c="s_1, s_2, s_3, \ldots" /> such that every element appears exactly once. The set is &ldquo;listable.&rdquo; You can write a program that, given enough time, will eventually print any element you name.</P>
+  <P>The natural numbers themselves are obviously countable (the identity function is the bijection). But what about the integers <Eq c="\mathbb{Z}" />? The integers extend in both directions: <Eq c="\ldots, -3, -2, -1, 0, 1, 2, 3, \ldots" /> It seems like there are &ldquo;twice as many&rdquo; integers as natural numbers. But Cantor showed this intuition is wrong. We can interleave the non-negative and negative integers into a single list:</P>
+
+  <EqBlock c="f: \mathbb{N} \to \mathbb{Z}, \quad f(n) = \begin{cases} \frac{n}{2} & \text{if } n \text{ is even} \\ -\frac{n-1}{2} & \text{if } n \text{ is odd} \end{cases}" />
+
+  <P>This gives the enumeration <Eq c="0, -1, 1, -2, 2, -3, 3, \ldots" /> Every integer appears exactly once. So <Eq c="|\mathbb{Z}| = |\mathbb{N}| = \aleph_0" />. The integers are countable.</P>
+  <P>What about the rational numbers <Eq c="\mathbb{Q}" />? This is even more surprising. The rationals are <B>dense</B>: between any two rationals, there is another rational. Between 0 and 1, there are infinitely many. Between 0 and 0.001, there are infinitely many. It seems impossible that the rationals could be countable. But Cantor found a way, using the famous zigzag argument through an infinite grid.</P>
+  <P>Arrange all positive fractions <Eq c="\frac{p}{q}" /> in a two-dimensional grid where row <Eq c="p" /> and column <Eq c="q" /> correspond to the fraction <Eq c="\frac{p}{q}" />. Then traverse the grid along successive anti-diagonals, skipping any fraction that has already been listed in reduced form. This produces a sequence that hits every positive rational exactly once. Formally, Cantor used the pairing function:</P>
+
+  <EqBlock c="\pi(p, q) = \frac{(p + q - 2)(p + q - 1)}{2} + p" />
+
+  <P>This maps each pair <Eq c="(p, q) \in \mathbb{N} \times \mathbb{N}" /> to a unique natural number, establishing that <Eq c="\mathbb{N} \times \mathbb{N}" /> is countable. Since every rational can be written as <Eq c="\frac{p}{q}" /> with <Eq c="p \in \mathbb{Z}" /> and <Eq c="q \in \mathbb{N}" />, and since <Eq c="\mathbb{Z} \times \mathbb{N}" /> is countable (a countable union of countable sets is countable), it follows that:</P>
+
+  <EqBlock c="|\mathbb{Q}| = \aleph_0" />
+
+  <P>The rationals, despite being dense in the real line, are countable. This is already deeply counterintuitive. But it sets the stage for Cantor&apos;s real discovery: that the real numbers are <Highlight>fundamentally different</Highlight>.</P>
+
+  <Callout label="The surprise of countability">A countable set can be dense, infinite in both directions, and algebraically rich. Countability is about structure, not size in the naive sense. The rationals fill the number line densely, yet they can be listed. This makes the uncountability of the reals all the more shocking.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="The Power Set and Cardinality">
+  <P>The <B>cardinality</B> of a set <Eq c="A" />, written <Eq c="|A|" />, is a measure of its size. For finite sets, cardinality is just the number of elements: <Eq c="|\{a, b, c\}| = 3" />. For infinite sets, Cantor defined cardinality through bijections: two sets have the same cardinality if and only if there exists a one-to-one correspondence between them.</P>
+  <P>The cardinality of the natural numbers is called <B>aleph-null</B>, written <Eq c="\aleph_0" />. It is the smallest infinite cardinal. Every countably infinite set has cardinality <Eq c="\aleph_0" />. As we have seen:</P>
+
+  <EqBlock c="|\mathbb{N}| = |\mathbb{Z}| = |\mathbb{Q}| = \aleph_0" />
+
+  <P>Now the central question: what is the cardinality of the real numbers <Eq c="\mathbb{R}" />? Is <Eq c="|\mathbb{R}| = \aleph_0" />? Can we list all real numbers? Cantor&apos;s diagonal argument shows that the answer is <B>no</B>, and it does so with a proof of breathtaking economy.</P>
+</Section>
+
+<Divider />
+
+<Section name="The Diagonal Argument">
+  <P>This is the core of the post. I will present the proof carefully, step by step, because every detail matters.</P>
+
+  <H3>Setup: Proof by Contradiction</H3>
+  <P><B>Assume for contradiction</B> that the set of real numbers in the interval <Eq c="[0, 1]" /> is countable. Then there exists a bijection <Eq c="f: \mathbb{N} \to [0, 1]" />, meaning we can list every real number in <Eq c="[0, 1]" /> as an infinite sequence:</P>
+
+  <EqBlock c="r_1, r_2, r_3, r_4, \ldots" />
+
+  <P>where every real number in <Eq c="[0, 1]" /> appears somewhere in this list. Write each number in its decimal expansion:</P>
+
+  <EqBlock c="\begin{aligned} r_1 &= 0.d_{11}\, d_{12}\, d_{13}\, d_{14}\, \cdots \\ r_2 &= 0.d_{21}\, d_{22}\, d_{23}\, d_{24}\, \cdots \\ r_3 &= 0.d_{31}\, d_{32}\, d_{33}\, d_{34}\, \cdots \\ r_4 &= 0.d_{41}\, d_{42}\, d_{43}\, d_{44}\, \cdots \\ &\;\vdots \end{aligned}" />
+
+  <P>where each <Eq c="d_{ij}" /> is a digit from 0 to 9, and <Eq c="d_{ij}" /> denotes the <Eq c="j" />-th decimal digit of the <Eq c="i" />-th number in our list. This gives us an infinite matrix of digits. Now look at the <B>diagonal</B>: the sequence of digits <Eq c="d_{11}, d_{22}, d_{33}, d_{44}, \ldots" /></P>
+
+  <H3>Constructing the Forbidden Number</H3>
+  <P>Define a new real number <Eq c="x = 0.x_1 x_2 x_3 x_4 \ldots" /> by choosing each digit <Eq c="x_n" /> to be <B>different</B> from the diagonal digit <Eq c="d_{nn}" />. Specifically, define:</P>
+
+  <EqBlock c="x_n = \begin{cases} 6 & \text{if } d_{nn} \neq 6 \\ 7 & \text{if } d_{nn} = 6 \end{cases}" />
+
+  <P>We choose 6 and 7 (rather than, say, 0 and 9) deliberately to avoid the edge case where <Eq c="0.999\ldots = 1.000\ldots" />. By restricting our constructed digits to 6 and 7, the number <Eq c="x" /> has a unique decimal representation and cannot be equal to any number that differs from it in even a single digit.</P>
+
+  <H3>The Contradiction</H3>
+  <P>Now compare <Eq c="x" /> with every number in our supposedly complete list.</P>
+
+  <ConnectedList>
+    <ConnectedItem><Eq c="x \neq r_1" /> because <Eq c="x_1 \neq d_{11}" /> (they differ in the 1st decimal place).</ConnectedItem>
+    <ConnectedItem><Eq c="x \neq r_2" /> because <Eq c="x_2 \neq d_{22}" /> (they differ in the 2nd decimal place).</ConnectedItem>
+    <ConnectedItem><Eq c="x \neq r_3" /> because <Eq c="x_3 \neq d_{33}" /> (they differ in the 3rd decimal place).</ConnectedItem>
+    <ConnectedItem>In general, <Eq c="x \neq r_n" /> because <Eq c="x_n \neq d_{nn}" /> for every <Eq c="n \in \mathbb{N}" />.</ConnectedItem>
+  </ConnectedList>
+
+  <P>Therefore <Eq c="x" /> is not equal to <B>any</B> number in our list. But <Eq c="x \in [0, 1]" /> (it is a real number between 0 and 1, since all its digits are 6 or 7). This contradicts our assumption that the list contains <B>every</B> real number in <Eq c="[0, 1]" />.</P>
+  <P>The assumption that <Eq c="[0, 1]" /> is countable leads to a contradiction. Therefore:</P>
+
+  <EqBlock c="[0, 1] \text{ is uncountable.}" />
+
+  <P>Since <Eq c="[0, 1] \subseteq \mathbb{R}" />, it follows immediately that:</P>
+
+  <EqBlock c="\mathbb{R} \text{ is uncountable.} \quad |\mathbb{R}| > \aleph_0 \quad \blacksquare" />
+
+  <Callout label="The elegance of diagonalization">The genius of the proof is its simplicity. You do not need any advanced machinery. No topology, no measure theory, no analysis. Just the idea that given any list, you can construct something that is not on it, by systematically disagreeing with each entry at one specific position. It is a proof that a first-year undergraduate can follow, yet it overturned centuries of intuition about infinity.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Cantor's Theorem: The Generalization">
+  <P>The diagonal argument for <Eq c="\mathbb{R}" /> is a special case of a far more general result. Cantor proved that for <B>any</B> set <Eq c="S" />, the power set <Eq c="\mathcal{P}(S)" /> (the set of all subsets of <Eq c="S" />) has strictly greater cardinality than <Eq c="S" /> itself:</P>
+
+  <EqBlock c="|\mathcal{P}(S)| > |S| \quad \text{for every set } S" />
+
+  <Figure
+    src="/img/blog/set-theory.jpg"
+    alt="Abstract representation of set theory and mathematical hierarchies"
+    caption="From finite sets to infinite power sets — Cantor's theorem guarantees an endless tower of ever-larger infinities"
+    source="Photo on Unsplash"
+  />
+
+  <H3>The Proof</H3>
+  <P>Suppose for contradiction that there exists a bijection <Eq c="f: S \to \mathcal{P}(S)" />. For every element <Eq c="s \in S" />, <Eq c="f(s)" /> is a subset of <Eq c="S" />. Now define the <B>diagonal set</B>:</P>
+
+  <EqBlock c="D = \{ s \in S : s \notin f(s) \}" />
+
+  <P>The set <Eq c="D" /> contains exactly those elements of <Eq c="S" /> that are <B>not</B> members of their own image under <Eq c="f" />. Now, <Eq c="D \subseteq S" />, so <Eq c="D \in \mathcal{P}(S)" />. If <Eq c="f" /> is a bijection, then there must exist some <Eq c="d \in S" /> such that <Eq c="f(d) = D" />. We ask: is <Eq c="d \in D" />?</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>If <Eq c="d \in D" />,</B> then by definition of <Eq c="D" />, we have <Eq c="d \notin f(d)" />. But <Eq c="f(d) = D" />, so <Eq c="d \notin D" />. Contradiction.</ConnectedItem>
+    <ConnectedItem><B>If <Eq c="d \notin D" />,</B> then by definition of <Eq c="D" />, we have <Eq c="d \in f(d)" />. But <Eq c="f(d) = D" />, so <Eq c="d \in D" />. Contradiction.</ConnectedItem>
+  </ConnectedList>
+
+  <P>Both cases lead to contradiction, so no such bijection <Eq c="f" /> can exist. Therefore:</P>
+
+  <EqBlock c="|\mathcal{P}(S)| \neq |S|" />
+
+  <P>And since the function <Eq c="g: S \to \mathcal{P}(S)" /> defined by <Eq c="g(s) = \{s\}" /> is an injection (mapping each element to its singleton), we have <Eq c="|S| \leq |\mathcal{P}(S)|" />. Combined with inequality, this gives us:</P>
+
+  <EqBlock c="|\mathcal{P}(S)| > |S| \quad \blacksquare" />
+
+  <H3>The Infinite Tower</H3>
+  <P>This theorem has a staggering consequence. Apply it iteratively starting from <Eq c="\mathbb{N}" />:</P>
+
+  <EqBlock c="\aleph_0 = |\mathbb{N}| < |\mathcal{P}(\mathbb{N})| < |\mathcal{P}(\mathcal{P}(\mathbb{N}))| < |\mathcal{P}(\mathcal{P}(\mathcal{P}(\mathbb{N})))| < \cdots" />
+
+  <P>There is <B>no largest infinity</B>. For any infinite set, you can always construct a strictly larger one by taking its power set. The hierarchy of infinities does not terminate. It extends without end, an infinity of infinities.</P>
+  <P>For the specific case of the reals, it can be shown (through a construction involving characteristic functions and binary representations) that:</P>
+
+  <EqBlock c="|\mathcal{P}(\mathbb{N})| = 2^{\aleph_0} = |\mathbb{R}| = \mathfrak{c}" />
+
+  <P>where <Eq c="\mathfrak{c}" /> is called the <B>cardinality of the continuum</B>. The real numbers have the same cardinality as the power set of the natural numbers. This is why the diagonal argument works on <Eq c="\mathbb{R}" />: listing the reals is equivalent to listing all subsets of <Eq c="\mathbb{N}" />, which Cantor&apos;s theorem says is impossible.</P>
+
+  <Callout label="The Russell connection">Cantor&apos;s diagonal set construction is closely related to Russell&apos;s Paradox. Consider the set <Eq c="R = \{x : x \notin x\}" />. Is <Eq c="R \in R" />? The same self-referential structure that powers Cantor&apos;s proof also reveals the need for careful axiomatization of set theory.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="The Continuum Hypothesis">
+  <P>We now know that <Eq c="\aleph_0 < 2^{\aleph_0} = |\mathbb{R}|" />. But this raises a natural question: is there a cardinality <B>strictly between</B> <Eq c="\aleph_0" /> and <Eq c="2^{\aleph_0}" />? Does there exist an infinite set that is larger than the natural numbers but smaller than the reals?</P>
+  <P>Cantor believed the answer was no. He conjectured that there is no intermediate cardinality, that <Eq c="2^{\aleph_0} = \aleph_1" />, where <Eq c="\aleph_1" /> is defined as the next cardinal after <Eq c="\aleph_0" />. This is the <B>Continuum Hypothesis</B> (CH):</P>
+
+  <EqBlock c="\nexists\; S \;:\; \aleph_0 < |S| < 2^{\aleph_0}" />
+
+  <P>Cantor spent years trying to prove this and never succeeded. It turns out he could not have succeeded, for reasons that go to the very foundations of mathematics.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Godel (1940).</B> Kurt Godel proved that the Continuum Hypothesis is <Highlight>consistent</Highlight> with the standard axioms of set theory (ZFC). If ZFC is consistent, then ZFC + CH is also consistent. You cannot disprove CH from the standard axioms.</ConnectedItem>
+    <ConnectedItem><B>Cohen (1963).</B> Paul Cohen proved that the negation of CH is <B>also</B> consistent with ZFC. If ZFC is consistent, then ZFC + <Eq c="\neg" />CH is also consistent. You cannot prove CH from the standard axioms either.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The Continuum Hypothesis is <B>independent</B> of ZFC. It can be neither proved nor disproved from the standard axioms of set theory. This is not a gap in our knowledge that further cleverness might close. It is a fundamental feature of the axiomatic system. The standard axioms do not contain enough information to determine the answer. You can build perfectly consistent mathematical universes where CH is true and equally consistent universes where it is false.</P>
+  <P>This connects directly to Godel&apos;s incompleteness theorems, which I wrote about in my <A>post on Godel&apos;s incompleteness</A>. Godel showed that any sufficiently powerful formal system contains statements that are true but unprovable. The Continuum Hypothesis is a concrete, natural example of exactly this phenomenon in the wild. It is not some artificial sentence constructed through Godel numbering. It is a genuine mathematical question about the size of the real number line, and the axioms we use cannot settle it.</P>
+
+  <Callout label="A question without an answer">The independence of CH means that the &ldquo;size&rdquo; of the continuum is, in some sense, a matter of choice rather than discovery. Different axioms give different answers. This has profound implications for the philosophy of mathematics: is there a &ldquo;true&rdquo; answer to CH that our axioms simply fail to capture, or is the question itself inherently ambiguous?</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Computational Implications">
+  <P>As someone who builds AI systems, this is where Cantor&apos;s theorem becomes personal. The diagonal argument is not just a fact about abstract set theory. It has direct, concrete consequences for what computers can and cannot do.</P>
+
+  <H3>Most Functions Are Not Computable</H3>
+  <P>Consider the set of all computer programs. Every program is a finite string over a finite alphabet (say, Unicode characters). The set of all finite strings over a finite alphabet is countable (enumerate them by length, then lexicographically within each length). Therefore:</P>
+
+  <EqBlock c="|\{\text{all programs}\}| = \aleph_0" />
+
+  <P>Now consider the set of all functions from natural numbers to natural numbers, <Eq c="\mathbb{N}^{\mathbb{N}}" />. Each such function can be identified with an infinite sequence of natural numbers <Eq c="(f(1), f(2), f(3), \ldots)" />. By an argument analogous to the diagonal argument (or by noting that <Eq c="|\mathbb{N}^{\mathbb{N}}| = |\mathbb{R}| = 2^{\aleph_0}" />), this set is uncountable:</P>
+
+  <EqBlock c="|\mathbb{N}^{\mathbb{N}}| = 2^{\aleph_0} > \aleph_0" />
+
+  <P>There are uncountably many functions but only countably many programs. Therefore, <Highlight>almost all functions from natural numbers to natural numbers are not computable by any program</Highlight>. The computable functions are a vanishingly small subset of all functions. In a precise measure-theoretic sense, if you pick a function &ldquo;at random,&rdquo; the probability that it is computable is zero.</P>
+
+  <EqBlock c="\frac{|\{\text{computable functions}\}|}{|\{\text{all functions } \mathbb{N} \to \mathbb{N}\}|} = \frac{\aleph_0}{2^{\aleph_0}} = 0" />
+
+  <P>This is a staggering fact. Almost all of mathematics is <B>unreachable by algorithm</B>. The computable world is an infinitesimal sliver of the mathematical universe.</P>
+
+  <H3>The Halting Problem as Diagonalization</H3>
+  <P>The undecidability of the Halting Problem, Turing&apos;s most famous result, is itself a diagonal argument in disguise. Suppose a program <IC>halts(P, x)</IC> could decide whether program <Eq c="P" /> halts on input <Eq c="x" />. Construct a new program <Eq c="D" /> that, on input <Eq c="P" />, does the opposite of what <IC>halts(P, P)</IC> predicts. Then <Eq c="D(D)" /> leads to contradiction. The structure is identical to Cantor&apos;s: you take the diagonal and flip it.</P>
+
+  <H3>A Finite Illustration</H3>
+  <P>Here is a Python implementation that demonstrates the diagonal construction on a finite list of decimal expansions. It takes a list of numbers in <Eq c="[0, 1]" /> and constructs a number that differs from each one at the corresponding decimal position, exactly mimicking Cantor&apos;s argument on a finite scale.</P>
+
+```python
+# Cantor's Diagonal Argument — finite illustration
+# Demonstrates the construction on a list of real numbers in [0, 1]
+
+def get_decimal_digits(x, num_digits):
+    """Extract decimal digits of x in [0, 1]."""
+    digits = []
+    for _ in range(num_digits):
+        x *= 10
+        digit = int(x)
+        digits.append(digit)
+        x -= digit
+    return digits
+
+def cantors_diagonal(numbers):
+    """Construct a number not in the list using diagonalization."""
+    n = len(numbers)
+    digit_matrix = [get_decimal_digits(x, n) for x in numbers]
+
+    # Print the matrix with diagonal highlighted
+    print("Decimal expansion matrix:")
+    print("-" * 40)
+    for i, (num, digits) in enumerate(zip(numbers, digit_matrix)):
+        row = ""
+        for j, d in enumerate(digits):
+            if i == j:
+                row += f"[{d}]"  # diagonal digit
+            else:
+                row += f" {d} "
+        print(f"  r{i+1} = 0.{row}")
+
+    # Construct the anti-diagonal number
+    diagonal_digits = [digit_matrix[i][i] for i in range(n)]
+    new_digits = [6 if d != 6 else 7 for d in diagonal_digits]
+
+    print(f"\nDiagonal digits:      {diagonal_digits}")
+    print(f"Anti-diagonal digits: {new_digits}")
+
+    new_number = sum(d * 10 ** (-(i + 1)) for i, d in enumerate(new_digits))
+    print(f"\nConstructed x = 0.{''.join(map(str, new_digits))}...")
+    print(f"x = {new_number:.10f}")
+
+    # Verify x differs from every listed number
+    print(f"\nVerification:")
+    for i in range(n):
+        print(f"  x != r{i+1}: digit {i+1} is {new_digits[i]} != {diagonal_digits[i]}")
+
+    return new_number
+
+# Example: try to "list" some reals in [0, 1]
+reals = [0.14159265, 0.71828182, 0.30258509, 0.44948974, 0.64872127]
+x = cantors_diagonal(reals)
+print(f"\nNo matter how long your list, x is NOT on it.")
+```
+
+  <P>Run this and you will see the diagonal argument in action. The key insight is that <Highlight>this construction works for any list, no matter how long</Highlight>. Even an infinite list would have a number that escapes it. That is the proof.</P>
+
+  <Callout label="Diagonalization everywhere">The diagonal method appears throughout theoretical computer science: the Halting Problem, the time hierarchy theorem, Godel&apos;s incompleteness theorems, the existence of non-recursive languages, and Rice&apos;s theorem. Once you learn to see diagonalization, you find it everywhere. It is one of the deepest patterns in the foundations of mathematics and computation.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Cantor&apos;s diagonal argument proves, in a few lines, that the real numbers cannot be listed. That <Eq c="|\mathbb{R}| > |\mathbb{N}|" />. That infinity is not one thing but a <Highlight>vast hierarchy of ever-larger magnitudes</Highlight>. His generalized theorem proves that for any set <Eq c="S" />, we have <Eq c="|\mathcal{P}(S)| > |S|" />, so the hierarchy never terminates. There is no ceiling on infinity.</P>
+  <P>The implications cascade outward. The Continuum Hypothesis shows that even basic questions about this hierarchy are independent of our axioms. The computational consequences show that almost all mathematical functions are forever beyond the reach of any algorithm. The diagonal method itself became a universal tool, reappearing in Godel&apos;s incompleteness theorems, Turing&apos;s undecidability results, and throughout complexity theory.</P>
+  <P>I keep coming back to this proof because it captures something I find deeply motivating about mathematics. Cantor was attacked, marginalized, and driven to despair for pursuing an idea that turned out to be <B>correct and foundational</B>. The mathematical establishment rejected his work not because it was wrong but because it was too radical, too strange, too far ahead of the intuitions of his time. And yet the proof itself is so simple that any careful reader can follow it. The truth was right there on the page, waiting for people to accept it.</P>
+  <P>As someone who studies both medicine and computer science, I find Cantor&apos;s work a constant reminder that <Highlight>the limits of our current tools are not the limits of reality</Highlight>. The computable functions are a measure-zero subset of all functions. The provable theorems are a subset of the true theorems. The models we build are finite approximations of structures that may be, in a precise Cantorian sense, inexhaustibly larger than anything we can represent. That is not a reason for despair. It is a reason for humility, and a reason to keep building.</P>
+
+  <Callout label="Cantor's legacy">Georg Cantor died in 1918 in a sanatorium in Halle, Germany. He never saw the full vindication of his ideas. Today, his work is universally regarded as one of the greatest intellectual achievements of the 19th century. The diagonal argument is taught in every serious mathematics program on Earth, and the theory of infinite cardinalities he created is the foundation on which all of modern set theory rests. Some infinities are, indeed, bigger than others.</Callout>
+</Section>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DNA Double Helix</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * DNA Double Helix — 3D visualization with base pair coloring
+ * Watson-Crick base pairing: A-T (red-blue), G-C (green-yellow)
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+
+var rotY = 0;
+var rotX = 0.2;
+var autoRotSpeed = 0.008;
+var dragging = false;
+var dragX = 0, dragY = 0, dragRotX = 0, dragRotY = 0;
+
+// DNA parameters
+var NUM_PAIRS = 40;
+var HELIX_RADIUS = 80;
+var RISE_PER_PAIR = 18; // 3.4 Angstroms scaled
+var TWIST_PER_PAIR = Math.PI / 5; // 36 degrees = 10 pairs per turn
+
+// Base pairs with colors
+var BASES = ['AT','TA','GC','CG'];
+var BASE_COLORS = {
+    'A': '#ff6b6b', // Adenine - red
+    'T': '#339af0', // Thymine - blue
+    'G': '#51cf66', // Guanine - green
+    'C': '#ffd43b'  // Cytosine - yellow
+};
+
+// Generate random sequence
+var sequence = [];
+for (var i = 0; i < NUM_PAIRS; i++) {
+    sequence.push(BASES[Math.floor(Math.random() * 4)]);
+}
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+
+function project(x, y, z) {
+    // Rotate around Y
+    var cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    var rx = x * cosY - z * sinY;
+    var rz = x * sinY + z * cosY;
+
+    // Rotate around X
+    var cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+    var ry = y * cosX - rz * sinX;
+    var rz2 = y * sinX + rz * cosX;
+
+    var fov = 500;
+    var depth = rz2 + 400;
+    if (depth < 1) depth = 1;
+    var scale = fov / depth;
+
+    return {
+        sx: rx * scale + W / 2,
+        sy: ry * scale + H / 2,
+        depth: depth,
+        scale: scale
+    };
+}
+
+function render() {
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, W, H);
+
+    var centerY = -(NUM_PAIRS * RISE_PER_PAIR) / 2;
+    var time = Date.now() * 0.001;
+
+    // Collect all drawable elements for depth sorting
+    var elements = [];
+
+    for (var i = 0; i < NUM_PAIRS; i++) {
+        var y = centerY + i * RISE_PER_PAIR;
+        var angle = i * TWIST_PER_PAIR + time * 0.5;
+
+        // Strand 1 backbone
+        var x1 = Math.cos(angle) * HELIX_RADIUS;
+        var z1 = Math.sin(angle) * HELIX_RADIUS;
+
+        // Strand 2 backbone (180 degrees offset)
+        var x2 = Math.cos(angle + Math.PI) * HELIX_RADIUS;
+        var z2 = Math.sin(angle + Math.PI) * HELIX_RADIUS;
+
+        var p1 = project(x1, y, z1);
+        var p2 = project(x2, y, z2);
+
+        var base = sequence[i];
+        var b1color = BASE_COLORS[base[0]];
+        var b2color = BASE_COLORS[base[1]];
+
+        // Base pair connection (hydrogen bonds)
+        elements.push({
+            type: 'bond',
+            x1: p1.sx, y1: p1.sy, x2: p2.sx, y2: p2.sy,
+            depth: (p1.depth + p2.depth) / 2,
+            b1color: b1color, b2color: b2color,
+            scale: (p1.scale + p2.scale) / 2
+        });
+
+        // Backbone atoms
+        elements.push({
+            type: 'atom',
+            x: p1.sx, y: p1.sy,
+            depth: p1.depth,
+            scale: p1.scale,
+            color: b1color,
+            radius: 4
+        });
+
+        elements.push({
+            type: 'atom',
+            x: p2.sx, y: p2.sy,
+            depth: p2.depth,
+            scale: p2.scale,
+            color: b2color,
+            radius: 4
+        });
+
+        // Backbone connection to next pair
+        if (i < NUM_PAIRS - 1) {
+            var nextAngle = (i + 1) * TWIST_PER_PAIR + time * 0.5;
+            var nextY = centerY + (i + 1) * RISE_PER_PAIR;
+
+            var nx1 = Math.cos(nextAngle) * HELIX_RADIUS;
+            var nz1 = Math.sin(nextAngle) * HELIX_RADIUS;
+            var nx2 = Math.cos(nextAngle + Math.PI) * HELIX_RADIUS;
+            var nz2 = Math.sin(nextAngle + Math.PI) * HELIX_RADIUS;
+
+            var np1 = project(nx1, nextY, nz1);
+            var np2 = project(nx2, nextY, nz2);
+
+            elements.push({
+                type: 'backbone',
+                x1: p1.sx, y1: p1.sy, x2: np1.sx, y2: np1.sy,
+                depth: (p1.depth + np1.depth) / 2,
+                scale: (p1.scale + np1.scale) / 2,
+                strand: 1
+            });
+
+            elements.push({
+                type: 'backbone',
+                x1: p2.sx, y1: p2.sy, x2: np2.sx, y2: np2.sy,
+                depth: (p2.depth + np2.depth) / 2,
+                scale: (p2.scale + np2.scale) / 2,
+                strand: 2
+            });
+        }
+    }
+
+    // Sort by depth (far first)
+    elements.sort(function(a, b) { return b.depth - a.depth; });
+
+    // Draw
+    for (var i = 0; i < elements.length; i++) {
+        var el = elements[i];
+        var alpha = Math.max(0.1, Math.min(0.9, 1 - (el.depth - 300) / 300));
+
+        if (el.type === 'bond') {
+            // Base pair bond - gradient from base1 to base2
+            var grad = ctx.createLinearGradient(el.x1, el.y1, el.x2, el.y2);
+            grad.addColorStop(0, el.b1color);
+            grad.addColorStop(0.45, 'rgba(255,255,255,0.15)');
+            grad.addColorStop(0.55, 'rgba(255,255,255,0.15)');
+            grad.addColorStop(1, el.b2color);
+            ctx.beginPath();
+            ctx.moveTo(el.x1, el.y1);
+            ctx.lineTo(el.x2, el.y2);
+            ctx.strokeStyle = grad;
+            ctx.globalAlpha = alpha * 0.5;
+            ctx.lineWidth = Math.max(1, el.scale * 0.8);
+            ctx.stroke();
+        } else if (el.type === 'backbone') {
+            ctx.beginPath();
+            ctx.moveTo(el.x1, el.y1);
+            ctx.lineTo(el.x2, el.y2);
+            ctx.strokeStyle = 'rgba(200,200,210,0.6)';
+            ctx.globalAlpha = alpha * 0.6;
+            ctx.lineWidth = Math.max(1.5, el.scale * 1.2);
+            ctx.stroke();
+        } else if (el.type === 'atom') {
+            var r = Math.max(2, el.radius * el.scale * 0.4);
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = el.color;
+            ctx.globalAlpha = alpha;
+            ctx.fill();
+
+            // Glow
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, r * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = el.color;
+            ctx.globalAlpha = alpha * 0.1;
+            ctx.fill();
+        }
+    }
+
+    ctx.globalAlpha = 1;
+
+    // Legend
+    ctx.font = '10px monospace';
+    var legendX = W - 100;
+    var legendY = H - 80;
+    var bases = [['A','Adenine'],['T','Thymine'],['G','Guanine'],['C','Cytosine']];
+    for (var i = 0; i < 4; i++) {
+        var key = bases[i][0];
+        ctx.fillStyle = BASE_COLORS[key];
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(legendX, legendY + i * 16, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.globalAlpha = 1;
+        ctx.fillText(bases[i][1], legendX + 10, legendY + i * 16 + 4);
+    }
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    if (!dragging) rotY += autoRotSpeed;
+    render();
+}
+
+resize();
+window.addEventListener('resize', resize);
+
+canvas.addEventListener('mousedown', function(e) {
+    dragging = true;
+    dragX = e.clientX; dragY = e.clientY;
+    dragRotX = rotX; dragRotY = rotY;
+});
+window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    rotY = dragRotY + (e.clientX - dragX) * 0.005;
+    rotX = dragRotX + (e.clientY - dragY) * 0.005;
+    rotX = Math.max(-1.2, Math.min(1.2, rotX));
+});
+window.addEventListener('mouseup', function() { dragging = false; });
+
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    dragging = true;
+    dragX = e.touches[0].clientX; dragY = e.touches[0].clientY;
+    dragRotX = rotX; dragRotY = rotY;
+}, {passive:false});
+canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (!dragging) return;
+    rotY = dragRotY + (e.touches[0].clientX - dragX) * 0.005;
+    rotX = dragRotX + (e.touches[0].clientY - dragY) * 0.005;
+    rotX = Math.max(-1.2, Math.min(1.2, rotX));
+}, {passive:false});
+canvas.addEventListener('touchend', function() { dragging = false; });
+
+canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    HELIX_RADIUS = Math.max(40, Math.min(150, HELIX_RADIUS + e.deltaY * 0.1));
+}, {passive:false});
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

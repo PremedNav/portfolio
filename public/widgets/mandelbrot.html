@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Mandelbrot Explorer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+#info{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  color:rgba(255,255,255,.25);padding:7px 14px;border-radius:14px;z-index:10;
+  background:rgba(12,12,12,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.06);box-shadow:0 8px 32px rgba(0,0,0,.45);pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info">Click to zoom in · Right-click to zoom out · Drag to pan</div>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Mandelbrot Set Explorer — WebGL fragment shader with smooth coloring
+ * Inspired by https://github.com/nicoptere/mandelbrot-webgl
+ * and various Shadertoy implementations
+ */
+
+var canvas = document.getElementById('c');
+var gl = canvas.getContext('webgl', {alpha:false,depth:false,stencil:false,antialias:false})
+       || canvas.getContext('experimental-webgl', {alpha:false,depth:false,stencil:false,antialias:false});
+
+// View
+var centerX = -0.5;
+var centerY = 0.0;
+var zoom = 3.0;
+var maxIter = 256;
+var needsRender = true;
+
+// Shaders
+var vertSrc = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+var fragSrc = `
+precision highp float;
+uniform vec2 uRes;
+uniform vec2 uCenter;
+uniform float uZoom;
+uniform float uMaxIter;
+
+vec3 palette(float t) {
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(1.0, 1.0, 1.0);
+    vec3 d = vec3(0.0, 0.1, 0.2);
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
+void main() {
+    vec2 uv = (gl_FragCoord.xy - uRes * 0.5) / min(uRes.x, uRes.y);
+    float cx = uCenter.x + uv.x * uZoom;
+    float cy = uCenter.y + uv.y * uZoom;
+
+    float zx = 0.0, zy = 0.0;
+    float zx2 = 0.0, zy2 = 0.0;
+    float iter = 0.0;
+
+    for (float i = 0.0; i < 2048.0; i++) {
+        if (i >= uMaxIter) break;
+        if (zx2 + zy2 > 256.0) break;
+        zy = 2.0 * zx * zy + cy;
+        zx = zx2 - zy2 + cx;
+        zx2 = zx * zx;
+        zy2 = zy * zy;
+        iter = i;
+    }
+
+    if (zx2 + zy2 > 256.0) {
+        // Smooth coloring
+        float log_zn = log(zx2 + zy2) * 0.5;
+        float nu = log(log_zn / log(2.0)) / log(2.0);
+        float smooth_iter = iter + 1.0 - nu;
+        float t = smooth_iter / uMaxIter;
+        vec3 col = palette(t * 4.0 + 0.5);
+        gl_FragColor = vec4(col * (0.7 + 0.3 * sin(t * 20.0)), 1.0);
+    } else {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+}`;
+
+function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+}
+
+var prog = gl.createProgram();
+gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vertSrc));
+gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fragSrc));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+var buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,-1,1,1,1,1,-1]), gl.STATIC_DRAW);
+var ibuf = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuf);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+var aLoc = gl.getAttribLocation(prog, 'a');
+gl.enableVertexAttribArray(aLoc);
+gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
+
+var uRes = gl.getUniformLocation(prog, 'uRes');
+var uCenter = gl.getUniformLocation(prog, 'uCenter');
+var uZoom = gl.getUniformLocation(prog, 'uZoom');
+var uMaxIter = gl.getUniformLocation(prog, 'uMaxIter');
+
+function render() {
+    if (!needsRender) return;
+    needsRender = false;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform2f(uCenter, centerX, centerY);
+    gl.uniform1f(uZoom, zoom);
+    gl.uniform1f(uMaxIter, maxIter);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+}
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    needsRender = true;
+}
+
+resize();
+window.addEventListener('resize', function() { resize(); });
+
+function screenToComplex(sx, sy) {
+    var aspect = Math.min(canvas.width, canvas.height);
+    return {
+        x: centerX + (sx - canvas.width / 2) / aspect * zoom,
+        y: centerY + (canvas.height / 2 - sy) / aspect * zoom
+    };
+}
+
+// Click to zoom
+canvas.addEventListener('click', function(e) {
+    var c = screenToComplex(e.clientX, e.clientY);
+    centerX = c.x;
+    centerY = c.y;
+    zoom *= 0.5;
+    maxIter = Math.min(2048, maxIter + 50);
+    needsRender = true;
+});
+
+canvas.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    zoom *= 2.0;
+    maxIter = Math.max(128, maxIter - 50);
+    needsRender = true;
+});
+
+// Drag to pan
+var dragging = false;
+var dragStartX, dragStartY, dragCX, dragCY;
+
+canvas.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    dragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragCX = centerX;
+    dragCY = centerY;
+});
+
+canvas.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    var aspect = Math.min(canvas.width, canvas.height);
+    centerX = dragCX - (e.clientX - dragStartX) / aspect * zoom;
+    centerY = dragCY + (e.clientY - dragStartY) / aspect * zoom;
+    needsRender = true;
+});
+
+window.addEventListener('mouseup', function() { dragging = false; });
+
+// Scroll to zoom
+canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var factor = e.deltaY > 0 ? 1.15 : 0.87;
+    var c = screenToComplex(e.clientX, e.clientY);
+    centerX = c.x + (centerX - c.x) * factor;
+    centerY = c.y + (centerY - c.y) * factor;
+    zoom *= factor;
+    if (factor < 1) maxIter = Math.min(2048, maxIter + 10);
+    else maxIter = Math.max(128, maxIter - 10);
+    needsRender = true;
+}, {passive:false});
+
+// Touch: pinch zoom + drag
+var touchDist0 = 0, touchZoom0 = 0;
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        dragCX = centerX;
+        dragCY = centerY;
+    } else if (e.touches.length === 2) {
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchDist0 = Math.sqrt(dx*dx+dy*dy);
+        touchZoom0 = zoom;
+    }
+}, {passive:false});
+
+canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1 && dragging) {
+        var aspect = Math.min(canvas.width, canvas.height);
+        centerX = dragCX - (e.touches[0].clientX - dragStartX) / aspect * zoom;
+        centerY = dragCY + (e.touches[0].clientY - dragStartY) / aspect * zoom;
+        needsRender = true;
+    } else if (e.touches.length === 2) {
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        var dist = Math.sqrt(dx*dx+dy*dy);
+        zoom = touchZoom0 * touchDist0 / dist;
+        needsRender = true;
+    }
+}, {passive:false});
+
+canvas.addEventListener('touchend', function() { dragging = false; });
+
+// Render loop
+function frame() {
+    requestAnimationFrame(frame);
+    render();
+}
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

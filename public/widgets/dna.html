@@ -2,318 +2,745 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Conway's Game of Life</title>
 <style>
-  body { background: transparent; margin: 0; overflow: hidden; }
-  canvas { display: block; width: 100vw; height: 100vh; }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#111}
+body{font-family:'Inter',-apple-system,system-ui,'Segoe UI',sans-serif;color:#fff;user-select:none;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+#canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* ── Toolbar ─────────────────── */
+#ui{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;z-index:100;
+  background:rgba(12,12,12,.82);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  padding:4px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 8px 32px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.04) inset}
+
+/* Buttons */
+.tb{font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  background:transparent;border:1px solid transparent;
+  color:rgba(255,255,255,.45);padding:7px 11px;border-radius:10px;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;position:relative;outline:none}
+.tb:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.tb:active{transform:scale(.96);background:rgba(255,255,255,.05)}
+.tb.act{background:rgba(100,210,255,.1);border-color:rgba(100,210,255,.2);color:rgba(100,210,255,.85)}
+.tb.act:hover{background:rgba(100,210,255,.18)}
+
+/* Separator */
+.sep{width:1px;height:16px;background:rgba(255,255,255,.06);flex-shrink:0;margin:0 2px}
+
+/* ── Custom dropdowns ────────── */
+.dd{position:relative}
+.dd-btn{font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  background:transparent;border:1px solid transparent;
+  color:rgba(255,255,255,.45);padding:7px 24px 7px 11px;border-radius:10px;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;outline:none;position:relative}
+.dd-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.dd-btn::after{content:'';position:absolute;right:9px;top:50%;transform:translateY(-50%);
+  width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;
+  border-bottom:3.5px solid rgba(255,255,255,.3);transition:transform .2s ease}
+.dd.open .dd-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.1)}
+.dd.open .dd-btn::after{transform:translateY(-50%) rotate(180deg)}
+
+/* Dropdown menu (opens upward) */
+.dd-menu{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(4px);
+  min-width:140px;max-height:0;overflow:hidden;
+  background:rgba(18,18,18,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.08);border-radius:12px;
+  box-shadow:0 -12px 40px rgba(0,0,0,.5),0 -1px 0 rgba(255,255,255,.04) inset;
+  padding:0;opacity:0;pointer-events:none;
+  transition:max-height .25s cubic-bezier(.4,0,.2,1),opacity .2s ease,transform .2s ease}
+.dd.open .dd-menu{max-height:320px;opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;padding:4px}
+
+.dd-item{display:flex;align-items:center;gap:8px;
+  font:400 12px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  color:rgba(255,255,255,.5);padding:8px 12px;border-radius:8px;cursor:pointer;
+  transition:all .12s ease;border:none;background:none;width:100%;text-align:left;outline:none}
+.dd-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.dd-item.sel{color:rgba(100,210,255,.9)}
+.dd-item.sel::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;
+  background:rgba(100,210,255,.8);flex-shrink:0}
+.dd-item:not(.sel)::before{content:'';display:inline-block;width:4px;height:4px;flex-shrink:0}
+
+/* ── Stats ───────────────────── */
+#stats{position:fixed;top:12px;right:14px;z-index:10;
+  font:11px/1.6 'SF Mono','Cascadia Code','Fira Code',monospace;color:rgba(255,255,255,.15);
+  text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+#stats b{color:rgba(255,255,255,.35);font-weight:500}
+
+/* ── Splash message ──────────── */
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font:13px/2 'Inter',-apple-system,system-ui,sans-serif;color:rgba(255,255,255,.12);
+  pointer-events:none;text-align:center;letter-spacing:.02em;transition:opacity .6s ease}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+
+<canvas id="canvas"></canvas>
+
+<div id="stats">
+  <div>Gen <b id="g">0</b></div>
+  <div>Pop <b id="p">0</b></div>
+</div>
+
+<div id="msg">Click &amp; drag to draw<br>Right-click to erase</div>
+
+<div id="ui">
+  <button class="tb" id="pp">Pause</button>
+  <button class="tb" id="st">Step</button>
+  <span class="sep"></span>
+  <div class="dd" id="dd-speed">
+    <button class="dd-btn" id="sp-btn">Medium</button>
+    <div class="dd-menu" id="sp-menu">
+      <button class="dd-item" data-val="5">Slow</button>
+      <button class="dd-item sel" data-val="15">Medium</button>
+      <button class="dd-item" data-val="30">Fast</button>
+      <button class="dd-item" data-val="0">Max</button>
+    </div>
+  </div>
+  <div class="dd" id="dd-pattern">
+    <button class="dd-btn" id="pt-btn">Draw</button>
+    <div class="dd-menu" id="pt-menu">
+      <button class="dd-item sel" data-val="">Draw</button>
+      <button class="dd-item" data-val="glider">Glider</button>
+      <button class="dd-item" data-val="lwss">LWSS</button>
+      <button class="dd-item" data-val="pulsar">Pulsar</button>
+      <button class="dd-item" data-val="gun">Gosper Gun</button>
+      <button class="dd-item" data-val="rpent">R-pentomino</button>
+      <button class="dd-item" data-val="acorn">Acorn</button>
+      <button class="dd-item" data-val="diehard">Diehard</button>
+    </div>
+  </div>
+  <span class="sep"></span>
+  <button class="tb" id="rn">Random</button>
+  <button class="tb" id="cl">Clear</button>
+</div>
+
 <script>
-const C = document.getElementById('c');
-const gl = C.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+(function(){
+"use strict";
 
-const S = 256;    // simulation grid
-const BL = 128;   // bloom blur resolution (half)
-let dk = true;
+/* ════════════════════════════════════════════════════════
+   Conway's Game of Life
+   ════════════════════════════════════════════════════════ */
 
-window.addEventListener('message', e => { if (e.data?.theme) dk = e.data.theme === 'dark'; });
-window.parent.postMessage({ type: 'widget-ready' }, '*');
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d', {alpha:false});
 
-function resize() { C.width = innerWidth; C.height = innerHeight; }
-resize();
-addEventListener('resize', resize);
+// Grid dimensions
+var COLS = 300;
+var ROWS = 300;
 
-/* ── GL helpers ─────────────────────────────── */
-function mkS(src, type) {
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
-  return s;
-}
-function mkP(vs, fs) {
-  const p = gl.createProgram();
-  gl.attachShader(p, mkS(vs, gl.VERTEX_SHADER));
-  gl.attachShader(p, mkS(fs, gl.FRAGMENT_SHADER));
-  gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
-  return p;
-}
+// Two flat arrays: current state and next state
+var grid = new Uint8Array(COLS * ROWS);
+var next = new Uint8Array(COLS * ROWS);
 
-const qb = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, qb);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+// Cell age for coloring (positive = alive ticks, negative = dead trail)
+var age = new Float64Array(COLS * ROWS);
 
-function quad(p) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, qb);
-  const a = gl.getAttribLocation(p, 'a');
-  gl.enableVertexAttribArray(a);
-  gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
+// Rendering buffer — reused every frame
+var imageData = null;
+var pixels = null;
 
-function mkFBO(w, h, filter) {
-  const t = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, t);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-  const f = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, f);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
-  return { t, f };
-}
+// Camera / viewport
+var camX = 0;
+var camY = 0;
+var cellPx = 3;
 
-/* ── Framebuffers ───────────────────────────── */
-let stA = mkFBO(S, S, gl.NEAREST);   // simulation ping
-let stB = mkFBO(S, S, gl.NEAREST);   // simulation pong
-let colFBO = mkFBO(S, S, gl.LINEAR); // color output
-let blA = mkFBO(BL, BL, gl.LINEAR);  // bloom ping
-let blB = mkFBO(BL, BL, gl.LINEAR);  // bloom pong
+// Simulation
+var running = true;
+var simRate = 15; // steps per second, 0 = max
+var generation = 0;
+var population = 0;
 
-/* ── Seed ───────────────────────────────────── */
-function seed() {
-  const d = new Uint8Array(S * S * 4);
-  for (let i = 0; i < S * S; i++) {
-    const alive = Math.random() > 0.82 ? 255 : 0;
-    d[i * 4] = alive;       // R = alive
-    d[i * 4 + 1] = 0;       // G = age
-    d[i * 4 + 2] = 0;       // B = trail
-    d[i * 4 + 3] = 255;
-  }
-  gl.bindTexture(gl.TEXTURE_2D, stA.t);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, S, S, 0, gl.RGBA, gl.UNSIGNED_BYTE, d);
-}
-seed();
-setInterval(seed, 10000);
+// Interaction
+var isDrawing = false;
+var isErasing = false;
+var isPanning = false;
+var panAnchorX = 0;
+var panAnchorY = 0;
+var panCamStartX = 0;
+var panCamStartY = 0;
+var prevCellX = -1;
+var prevCellY = -1;
+var curPattern = '';
 
-/* ── Shaders ────────────────────────────────── */
-const VS = `
-  attribute vec2 a;
-  varying vec2 v;
-  void main() { v = a * .5 + .5; gl_Position = vec4(a, 0, 1); }
-`;
+// Theme
+var isDark = true;
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.theme) isDark = e.data.theme === 'dark';
+});
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e){}
 
-// Conway B3/S23 on GPU — tracks age + death trail
-const SIM_FS = `
-precision highp float;
-varying vec2 v;
-uniform sampler2D u;
-uniform vec2 px;
-
-void main() {
-  vec4 c = texture2D(u, v);
-  float alive = step(.5, c.r);
-  float age   = c.g;
-  float trail = c.b;
-
-  // Count 8 neighbors (REPEAT wrapping handles edges)
-  float n = 0.0;
-  for (int dy = -1; dy <= 1; dy++)
-    for (int dx = -1; dx <= 1; dx++) {
-      if (dx == 0 && dy == 0) continue;
-      n += step(.5, texture2D(u, v + vec2(float(dx), float(dy)) * px).r);
-    }
-
-  // Birth (3 neighbors) or Survival (2-3 neighbors)
-  float born = step(2.5, n) * step(n, 3.5) * (1.0 - alive);
-  float surv = alive * step(1.5, n) * step(n, 3.5);
-  float na   = max(born, surv);
-
-  // Age increments each gen; resets on birth
-  float nAge = na > .5 ? (alive > .5 ? min(age + 1.0 / 255.0, 1.0) : 0.0) : 0.0;
-
-  // Trail: starts on death, decays each frame
-  float nTrail = trail * 0.92;
-  if (alive > .5 && na < .5) nTrail = 1.0; // just died
-  if (na > .5) nTrail = 0.0;               // alive = no trail
-
-  gl_FragColor = vec4(na, nAge, nTrail, 1.0);
-}
-`;
-
-// Color mapping — bioluminescent palette
-const COL_FS = `
-precision highp float;
-varying vec2 v;
-uniform sampler2D u;
-uniform float dm;
-
-vec3 palette(float t, float isDark) {
-  vec3 a, b, c, d;
-  if (isDark > .5) {
-    // Bioluminescent: bright cyan → electric blue → hot magenta → deep violet
-    a = vec3(0.05, 1.0, 0.85);
-    b = vec3(0.25, 0.45, 1.0);
-    c = vec3(0.9, 0.15, 1.0);
-    d = vec3(0.38, 0.0, 0.58);
-  } else {
-    // Deeper for light bg: teal → navy → purple → dark violet
-    a = vec3(0.0, 0.58, 0.5);
-    b = vec3(0.1, 0.22, 0.7);
-    c = vec3(0.55, 0.06, 0.6);
-    d = vec3(0.28, 0.0, 0.38);
-  }
-  if (t < 0.33) return mix(a, b, t / 0.33);
-  if (t < 0.66) return mix(b, c, (t - 0.33) / 0.33);
-  return mix(c, d, (t - 0.66) / 0.34);
-}
-
-void main() {
-  vec4 s = texture2D(u, v);
-  vec3 col  = vec3(0.0);
-  float alp = 0.0;
-
-  if (s.r > .5) {
-    // Living cell — age-based color + white-hot core for young cells
-    col = palette(s.g, dm);
-    col = mix(col, vec3(1.0), 0.3 * (1.0 - smoothstep(0.0, 0.15, s.g)));
-    alp = 0.95;
-  } else if (s.b > 0.01) {
-    // Death trail — fading purple ghost
-    vec3 tc = dm > .5 ? vec3(0.35, 0.02, 0.55) : vec3(0.2, 0.01, 0.32);
-    float ta = s.b * (dm > .5 ? 0.5 : 0.35);
-    col = tc;
-    alp = ta;
-  }
-
-  gl_FragColor = vec4(col, alp);
-}
-`;
-
-// 9-tap separable Gaussian blur
-const BLUR_FS = `
-precision highp float;
-varying vec2 v;
-uniform sampler2D u;
-uniform vec2 dir;
-
-void main() {
-  vec4 s = vec4(0.0);
-  s += texture2D(u, v - dir * 4.0) * 0.016216;
-  s += texture2D(u, v - dir * 3.0) * 0.054054;
-  s += texture2D(u, v - dir * 2.0) * 0.121621;
-  s += texture2D(u, v - dir * 1.0) * 0.194594;
-  s += texture2D(u, v)             * 0.227027;
-  s += texture2D(u, v + dir * 1.0) * 0.194594;
-  s += texture2D(u, v + dir * 2.0) * 0.121621;
-  s += texture2D(u, v + dir * 3.0) * 0.054054;
-  s += texture2D(u, v + dir * 4.0) * 0.016216;
-  gl_FragColor = s;
-}
-`;
-
-// Final composite: sharp cells + soft bloom halo
-const COMP_FS = `
-precision highp float;
-varying vec2 v;
-uniform sampler2D orig;
-uniform sampler2D bloom;
-uniform float str;
-
-void main() {
-  vec4 a = texture2D(orig, v);
-  vec4 b = texture2D(bloom, v);
-
-  vec3 col = a.rgb + b.rgb * str;
-  float alp = min(a.a + b.a * str * 0.7, 1.0);
-
-  gl_FragColor = vec4(col, alp);
-}
-`;
-
-/* ── Programs + uniforms ────────────────────── */
-const pSim  = mkP(VS, SIM_FS);
-const pCol  = mkP(VS, COL_FS);
-const pBlur = mkP(VS, BLUR_FS);
-const pComp = mkP(VS, COMP_FS);
-
-const uSim  = { u: gl.getUniformLocation(pSim, 'u'),  px: gl.getUniformLocation(pSim, 'px') };
-const uCol  = { u: gl.getUniformLocation(pCol, 'u'),  dm: gl.getUniformLocation(pCol, 'dm') };
-const uBlur = { u: gl.getUniformLocation(pBlur, 'u'), dir: gl.getUniformLocation(pBlur, 'dir') };
-const uComp = {
-  orig:  gl.getUniformLocation(pComp, 'orig'),
-  bloom: gl.getUniformLocation(pComp, 'bloom'),
-  str:   gl.getUniformLocation(pComp, 'str'),
+/* ── Patterns ──────────────────────────────────────────── */
+// Stored as [row, col] offsets from center
+var patterns = {
+  glider: [[0,1],[1,2],[2,0],[2,1],[2,2]],
+  lwss: [[0,1],[0,4],[1,0],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3]],
+  rpent: [[0,1],[0,2],[1,0],[1,1],[2,1]],
+  pulsar: (function(){
+    var pts = [];
+    var offsets = [[1,2],[1,3],[1,4],[2,1],[3,1],[4,1],[2,6],[3,6],[4,6],[6,2],[6,3],[6,4]];
+    offsets.forEach(function(o){
+      [[o[0],o[1]],[14-o[0],o[1]],[o[0],14-o[1]],[14-o[0],14-o[1]]].forEach(function(p){
+        pts.push([p[0]-7, p[1]-7]);
+      });
+    });
+    return pts;
+  })(),
+  gun: (function(){
+    var raw = [[5,1],[5,2],[6,1],[6,2],[3,13],[3,14],[4,12],[4,16],[5,11],[5,17],
+               [6,11],[6,15],[6,17],[6,18],[7,11],[7,17],[8,12],[8,16],[9,13],[9,14],
+               [1,25],[2,23],[2,25],[3,21],[3,22],[4,21],[4,22],[5,21],[5,22],
+               [6,23],[6,25],[7,25],[3,35],[3,36],[4,35],[4,36]];
+    var cy = 5, cx = 18;
+    return raw.map(function(p){ return [p[0]-cy, p[1]-cx]; });
+  })(),
+  acorn: [[0,1],[1,3],[2,0],[2,1],[2,4],[2,5],[2,6]],
+  diehard: [[0,6],[1,0],[1,1],[2,1],[2,5],[2,6],[2,7]]
 };
 
-/* ── Render loop ────────────────────────────── */
-function frame() {
-  requestAnimationFrame(frame);
+/* ── Color lookup table ────────────────────────────────── */
+// Pre-build 512 ABGR colors for ages 0..511
+var colorLUT = new Uint32Array(512);
+(function(){
+  for (var i = 0; i < 512; i++) {
+    var t = Math.min(i / 300, 1);
+    var r, g, b;
+    if (t < 0.05) {
+      // brand-new: bright white
+      r = 255; g = 255; b = 255;
+    } else if (t < 0.2) {
+      // white → cyan
+      var p = (t - 0.05) / 0.15;
+      r = Math.round(255 - p * 115); // → 140
+      g = Math.round(255 - p * 25);  // → 230
+      b = Math.round(255 - p * 10);  // → 245
+    } else if (t < 0.5) {
+      // cyan → blue
+      var p = (t - 0.2) / 0.3;
+      r = Math.round(140 - p * 90);  // → 50
+      g = Math.round(230 - p * 110); // → 120
+      b = Math.round(245 + p * 10);  // → 255
+    } else if (t < 0.8) {
+      // blue → purple
+      var p = (t - 0.5) / 0.3;
+      r = Math.round(50 + p * 80);   // → 130
+      g = Math.round(120 - p * 80);  // → 40
+      b = Math.round(255 - p * 30);  // → 225
+    } else {
+      // purple → deep
+      var p = (t - 0.8) / 0.2;
+      r = Math.round(130 - p * 40);  // → 90
+      g = Math.round(40 - p * 15);   // → 25
+      b = Math.round(225 - p * 55);  // → 170
+    }
+    colorLUT[i] = (255 << 24) | (b << 16) | (g << 8) | r;
+  }
+})();
 
-  // 1 ── Simulation step (A → B, then swap)
-  gl.viewport(0, 0, S, S);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, stB.f);
-  gl.useProgram(pSim);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, stA.t);
-  gl.uniform1i(uSim.u, 0);
-  gl.uniform2f(uSim.px, 1 / S, 1 / S);
-  quad(pSim);
-  [stA, stB] = [stB, stA];
+/* ── Grid helpers ──────────────────────────────────────── */
+function wrap(v, max) { return ((v % max) + max) % max; }
 
-  // 2 ── Color mapping
-  gl.bindFramebuffer(gl.FRAMEBUFFER, colFBO.f);
-  gl.useProgram(pCol);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, stA.t);
-  gl.uniform1i(uCol.u, 0);
-  gl.uniform1f(uCol.dm, dk ? 1 : 0);
-  quad(pCol);
-
-  // 3 ── Bloom: 2× separable Gaussian blur at half res
-  gl.viewport(0, 0, BL, BL);
-  gl.useProgram(pBlur);
-
-  // Pass 1 — horizontal
-  gl.bindFramebuffer(gl.FRAMEBUFFER, blA.f);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, colFBO.t);
-  gl.uniform1i(uBlur.u, 0);
-  gl.uniform2f(uBlur.dir, 1.5 / BL, 0);
-  quad(pBlur);
-
-  // Pass 1 — vertical
-  gl.bindFramebuffer(gl.FRAMEBUFFER, blB.f);
-  gl.bindTexture(gl.TEXTURE_2D, blA.t);
-  gl.uniform2f(uBlur.dir, 0, 1.5 / BL);
-  quad(pBlur);
-
-  // Pass 2 — wider horizontal
-  gl.bindFramebuffer(gl.FRAMEBUFFER, blA.f);
-  gl.bindTexture(gl.TEXTURE_2D, blB.t);
-  gl.uniform2f(uBlur.dir, 2.5 / BL, 0);
-  quad(pBlur);
-
-  // Pass 2 — wider vertical
-  gl.bindFramebuffer(gl.FRAMEBUFFER, blB.f);
-  gl.bindTexture(gl.TEXTURE_2D, blA.t);
-  gl.uniform2f(uBlur.dir, 0, 2.5 / BL);
-  quad(pBlur);
-
-  // 4 ── Composite sharp cells + bloom → screen
-  gl.viewport(0, 0, C.width, C.height);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  gl.useProgram(pComp);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, colFBO.t);
-  gl.uniform1i(uComp.orig, 0);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, blB.t);
-  gl.uniform1i(uComp.bloom, 1);
-  gl.uniform1f(uComp.str, dk ? 1.5 : 0.9);
-  quad(pComp);
+function alive(x, y) {
+  return grid[wrap(y, ROWS) * COLS + wrap(x, COLS)];
 }
 
-frame();
+function setAlive(x, y, val) {
+  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
+  var i = y * COLS + x;
+  grid[i] = val ? 1 : 0;
+  age[i] = val ? 1 : 0;
+}
+
+function fillRandom() {
+  generation = 0;
+  for (var i = 0; i < COLS * ROWS; i++) {
+    grid[i] = Math.random() < 0.12 ? 1 : 0;
+    age[i] = grid[i] ? (Math.random() * 40 | 0) + 1 : 0;
+  }
+}
+
+function clearGrid() {
+  generation = 0;
+  population = 0;
+  grid.fill(0);
+  next.fill(0);
+  age.fill(0);
+}
+
+function placePattern(cx, cy, name) {
+  var pts = patterns[name];
+  if (!pts) return;
+  for (var i = 0; i < pts.length; i++) {
+    var px = cx + pts[i][1];
+    var py = cy + pts[i][0];
+    if (px >= 0 && px < COLS && py >= 0 && py < ROWS) {
+      setAlive(px, py, 1);
+    }
+  }
+}
+
+/* ── Simulation step ───────────────────────────────────── */
+function tick() {
+  var p = 0;
+  for (var y = 0; y < ROWS; y++) {
+    var ym1 = y === 0 ? ROWS - 1 : y - 1;
+    var yp1 = y === ROWS - 1 ? 0 : y + 1;
+    var rU = ym1 * COLS;
+    var rC = y * COLS;
+    var rD = yp1 * COLS;
+
+    for (var x = 0; x < COLS; x++) {
+      var xm1 = x === 0 ? COLS - 1 : x - 1;
+      var xp1 = x === COLS - 1 ? 0 : x + 1;
+
+      var neighbors = grid[rU + xm1] + grid[rU + x] + grid[rU + xp1]
+                    + grid[rC + xm1]                 + grid[rC + xp1]
+                    + grid[rD + xm1] + grid[rD + x] + grid[rD + xp1];
+
+      var i = rC + x;
+      var wasAlive = grid[i];
+
+      if (wasAlive) {
+        next[i] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+      } else {
+        next[i] = (neighbors === 3) ? 1 : 0;
+      }
+
+      if (next[i]) {
+        p++;
+        age[i] = (age[i] > 0) ? Math.min(age[i] + 1, 511) : 1;
+      } else {
+        age[i] = wasAlive ? -15 : (age[i] < 0 ? age[i] + 1 : 0);
+      }
+    }
+  }
+
+  // Swap buffers
+  var tmp = grid;
+  grid = next;
+  next = tmp;
+
+  generation++;
+  population = p;
+}
+
+/* ── Rendering ─────────────────────────────────────────── */
+function ensureImageData() {
+  if (!imageData || imageData.width !== canvas.width || imageData.height !== canvas.height) {
+    imageData = ctx.createImageData(canvas.width, canvas.height);
+    pixels = new Uint32Array(imageData.data.buffer);
+  }
+}
+
+function render() {
+  var w = canvas.width;
+  var h = canvas.height;
+  ensureImageData();
+
+  // Background
+  var bgCol = isDark
+    ? (255 << 24) | (17 << 16) | (17 << 8) | 17
+    : (255 << 24) | (246 << 16) | (248 << 8) | 248;
+  pixels.fill(bgCol);
+
+  // Which grid cells are visible?
+  var startCol = Math.max(0, Math.floor(-camX / cellPx));
+  var startRow = Math.max(0, Math.floor(-camY / cellPx));
+  var endCol = Math.min(COLS, Math.ceil((w - camX) / cellPx));
+  var endRow = Math.min(ROWS, Math.ceil((h - camY) / cellPx));
+
+  for (var gy = startRow; gy < endRow; gy++) {
+    var rowOff = gy * COLS;
+
+    // Pixel Y range for this row
+    var py0 = Math.round(camY + gy * cellPx);
+    var py1 = Math.round(camY + (gy + 1) * cellPx);
+    if (py0 < 0) py0 = 0;
+    if (py1 > h) py1 = h;
+    if (py0 >= py1) continue;
+
+    for (var gx = startCol; gx < endCol; gx++) {
+      var idx = rowOff + gx;
+      var a = age[idx];
+      var col;
+
+      if (grid[idx]) {
+        // Alive cell — get color from LUT
+        col = colorLUT[Math.min(511, Math.max(0, a | 0))];
+      } else if (a < 0) {
+        // Recently dead — faint trail
+        var fade = 1.0 + a / 15; // a is negative, so this goes 1→0
+        if (fade <= 0) continue;
+        var dr = isDark ? 17 : 248;
+        var dg = isDark ? 17 : 248;
+        var db = isDark ? 17 : 246;
+        var tr = Math.round(dr + fade * (60 - dr) * 0.4);
+        var tg = Math.round(dg + fade * (20 - dg) * 0.4);
+        var tb = Math.round(db + fade * (80 - db) * 0.4);
+        col = (255 << 24) | (tb << 16) | (tg << 8) | tr;
+      } else {
+        continue; // empty — already background
+      }
+
+      // Pixel X range
+      var px0 = Math.round(camX + gx * cellPx);
+      var px1 = Math.round(camX + (gx + 1) * cellPx);
+      if (px0 < 0) px0 = 0;
+      if (px1 > w) px1 = w;
+      if (px0 >= px1) continue;
+
+      // Fill rectangle
+      for (var py = py0; py < py1; py++) {
+        var base = py * w;
+        for (var px = px0; px < px1; px++) {
+          pixels[base + px] = col;
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  // Grid lines when zoomed in
+  if (cellPx >= 10) {
+    ctx.beginPath();
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.07)';
+    ctx.lineWidth = 1;
+    for (var x = startCol; x <= endCol; x++) {
+      var lx = Math.round(camX + x * cellPx) + 0.5;
+      ctx.moveTo(lx, Math.round(camY + startRow * cellPx));
+      ctx.lineTo(lx, Math.round(camY + endRow * cellPx));
+    }
+    for (var y = startRow; y <= endRow; y++) {
+      var ly = Math.round(camY + y * cellPx) + 0.5;
+      ctx.moveTo(Math.round(camX + startCol * cellPx), ly);
+      ctx.lineTo(Math.round(camX + endCol * cellPx), ly);
+    }
+    ctx.stroke();
+  }
+}
+
+/* ── Resize ────────────────────────────────────────────── */
+function onResize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  imageData = null;
+  centerCamera();
+}
+
+function centerCamera() {
+  camX = Math.round((canvas.width - COLS * cellPx) / 2);
+  camY = Math.round((canvas.height - ROWS * cellPx) / 2);
+}
+
+/* ── Screen → Grid ─────────────────────────────────────── */
+function toGrid(sx, sy) {
+  return {
+    x: Math.floor((sx - camX) / cellPx),
+    y: Math.floor((sy - camY) / cellPx)
+  };
+}
+
+/* ── Drawing (Bresenham) ───────────────────────────────── */
+function drawLine(x0, y0, x1, y1, val) {
+  var dx = Math.abs(x1 - x0);
+  var dy = Math.abs(y1 - y0);
+  var sx = x0 < x1 ? 1 : -1;
+  var sy = y0 < y1 ? 1 : -1;
+  var err = dx - dy;
+  while (true) {
+    setAlive(x0, y0, val);
+    if (x0 === x1 && y0 === y1) break;
+    var e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 < dx) { err += dx; y0 += sy; }
+  }
+}
+
+function handleDraw(sx, sy) {
+  var g = toGrid(sx, sy);
+  if (g.x < 0 || g.x >= COLS || g.y < 0 || g.y >= ROWS) return;
+
+  // Pattern stamp mode
+  if (curPattern && !isErasing) {
+    placePattern(g.x, g.y, curPattern);
+    prevCellX = g.x;
+    prevCellY = g.y;
+    return;
+  }
+
+  var val = isErasing ? 0 : 1;
+  if (prevCellX >= 0 && (prevCellX !== g.x || prevCellY !== g.y)) {
+    drawLine(prevCellX, prevCellY, g.x, g.y, val);
+  } else {
+    setAlive(g.x, g.y, val);
+  }
+  prevCellX = g.x;
+  prevCellY = g.y;
+}
+
+/* ── Mouse ─────────────────────────────────────────────── */
+canvas.addEventListener('mousedown', function(e) {
+  dismissMsg();
+  // Middle mouse or shift+click = pan
+  if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+    isPanning = true;
+    panAnchorX = e.clientX;
+    panAnchorY = e.clientY;
+    panCamStartX = camX;
+    panCamStartY = camY;
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+    return;
+  }
+  isDrawing = true;
+  isErasing = e.button === 2;
+  prevCellX = -1;
+  prevCellY = -1;
+  handleDraw(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('mousemove', function(e) {
+  if (isPanning) {
+    camX = panCamStartX + e.clientX - panAnchorX;
+    camY = panCamStartY + e.clientY - panAnchorY;
+    return;
+  }
+  if (isDrawing) handleDraw(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('mouseup', function() {
+  isDrawing = false;
+  isPanning = false;
+  prevCellX = -1;
+  prevCellY = -1;
+  canvas.style.cursor = curPattern ? 'cell' : 'crosshair';
+});
+
+canvas.addEventListener('mouseleave', function() {
+  isDrawing = false;
+  isPanning = false;
+  prevCellX = -1;
+  prevCellY = -1;
+});
+
+canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+/* ── Touch ─────────────────────────────────────────────── */
+var pinchDist0 = 0;
+var pinchCell0 = 0;
+
+function touchDist(t) {
+  var dx = t[0].clientX - t[1].clientX;
+  var dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  dismissMsg();
+  if (e.touches.length === 2) {
+    isPanning = true;
+    var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    var my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    panAnchorX = mx;
+    panAnchorY = my;
+    panCamStartX = camX;
+    panCamStartY = camY;
+    pinchDist0 = touchDist(e.touches);
+    pinchCell0 = cellPx;
+    return;
+  }
+  isDrawing = true;
+  isErasing = false;
+  prevCellX = -1;
+  prevCellY = -1;
+  handleDraw(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive:false});
+
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (isPanning && e.touches.length === 2) {
+    var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    var my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    camX = panCamStartX + mx - panAnchorX;
+    camY = panCamStartY + my - panAnchorY;
+    // Pinch zoom
+    var d = touchDist(e.touches);
+    var newCell = Math.max(1, Math.min(24, Math.round(pinchCell0 * d / pinchDist0)));
+    if (newCell !== cellPx) {
+      var ratio = newCell / cellPx;
+      camX = mx - (mx - camX) * ratio;
+      camY = my - (my - camY) * ratio;
+      cellPx = newCell;
+    }
+    return;
+  }
+  if (isDrawing && e.touches.length === 1) {
+    handleDraw(e.touches[0].clientX, e.touches[0].clientY);
+  }
+}, {passive:false});
+
+canvas.addEventListener('touchend', function() {
+  isDrawing = false;
+  isPanning = false;
+  prevCellX = -1;
+  prevCellY = -1;
+});
+
+/* ── Zoom (wheel) ──────────────────────────────────────── */
+canvas.addEventListener('wheel', function(e) {
+  e.preventDefault();
+  var oldCell = cellPx;
+  cellPx = Math.max(1, Math.min(24, cellPx + (e.deltaY < 0 ? 1 : -1)));
+  if (cellPx !== oldCell) {
+    var mx = e.clientX, my = e.clientY;
+    camX = mx - (mx - camX) * (cellPx / oldCell);
+    camY = my - (my - camY) * (cellPx / oldCell);
+  }
+}, {passive:false});
+
+/* ── Keyboard ──────────────────────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  else if (e.code === 'ArrowRight') { e.preventDefault(); tick(); }
+  else if (e.key === 'c' || e.key === 'C') clearGrid();
+  else if (e.key === 'r' || e.key === 'R') fillRandom();
+});
+
+/* ── UI Controls ───────────────────────────────────────── */
+var elPP = document.getElementById('pp');
+var elSt = document.getElementById('st');
+var elRn = document.getElementById('rn');
+var elCl = document.getElementById('cl');
+var elG  = document.getElementById('g');
+var elP  = document.getElementById('p');
+
+function togglePlay() {
+  running = !running;
+  elPP.textContent = running ? 'Pause' : 'Play';
+  elPP.classList.toggle('act', !running);
+}
+
+elPP.onclick = togglePlay;
+elSt.onclick = function() { if (!running) tick(); };
+elRn.onclick = fillRandom;
+elCl.onclick = clearGrid;
+
+/* ── Custom dropdown logic ────────────────────────────── */
+var allDropdowns = document.querySelectorAll('.dd');
+
+function closeAllDropdowns(except) {
+  allDropdowns.forEach(function(dd) {
+    if (dd !== except) dd.classList.remove('open');
+  });
+}
+
+// Toggle dropdown on button click
+allDropdowns.forEach(function(dd) {
+  var btn = dd.querySelector('.dd-btn');
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = dd.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) dd.classList.add('open');
+  });
+});
+
+// Close dropdowns on outside click
+document.addEventListener('click', function() { closeAllDropdowns(); });
+
+// Speed dropdown
+var ddSpeed = document.getElementById('dd-speed');
+var spBtn = document.getElementById('sp-btn');
+ddSpeed.querySelectorAll('.dd-item').forEach(function(item) {
+  item.addEventListener('click', function(e) {
+    e.stopPropagation();
+    simRate = parseInt(item.dataset.val);
+    spBtn.textContent = item.textContent;
+    ddSpeed.querySelectorAll('.dd-item').forEach(function(el) { el.classList.remove('sel'); });
+    item.classList.add('sel');
+    ddSpeed.classList.remove('open');
+  });
+});
+
+// Pattern dropdown
+var ddPattern = document.getElementById('dd-pattern');
+var ptBtn = document.getElementById('pt-btn');
+ddPattern.querySelectorAll('.dd-item').forEach(function(item) {
+  item.addEventListener('click', function(e) {
+    e.stopPropagation();
+    curPattern = item.dataset.val;
+    ptBtn.textContent = item.textContent;
+    canvas.style.cursor = curPattern ? 'cell' : 'crosshair';
+    ddPattern.querySelectorAll('.dd-item').forEach(function(el) { el.classList.remove('sel'); });
+    item.classList.add('sel');
+    ddPattern.classList.remove('open');
+  });
+});
+
+// Prevent toolbar clicks from drawing on canvas
+var uiEl = document.getElementById('ui');
+uiEl.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+uiEl.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
+
+/* ── Splash message ────────────────────────────────────── */
+var msgEl = document.getElementById('msg');
+var msgShown = true;
+function dismissMsg() {
+  if (!msgShown) return;
+  msgShown = false;
+  msgEl.style.opacity = '0';
+}
+
+/* ── Init ──────────────────────────────────────────────── */
+onResize();
+window.addEventListener('resize', onResize);
+fillRandom();
+
+/* ── Main loop ─────────────────────────────────────────── */
+var accumulator = 0;
+var lastFrameTime = 0;
+
+function frame(timestamp) {
+  requestAnimationFrame(frame);
+
+  var dt = lastFrameTime ? (timestamp - lastFrameTime) : 16;
+  lastFrameTime = timestamp;
+
+  // Simulation
+  if (running) {
+    if (simRate === 0) {
+      // Max speed: as many ticks as we can afford in 10ms
+      var end = performance.now() + 10;
+      while (performance.now() < end) tick();
+    } else {
+      accumulator += dt;
+      var interval = 1000 / simRate;
+      var maxSteps = 5;
+      while (accumulator >= interval && maxSteps > 0) {
+        tick();
+        accumulator -= interval;
+        maxSteps--;
+      }
+      if (maxSteps <= 0) accumulator = 0;
+    }
+  }
+
+  render();
+
+  // Update stats
+  elG.textContent = generation;
+  elP.textContent = population;
+}
+
+requestAnimationFrame(frame);
+
+})();
 </script>
 </body>
 </html>

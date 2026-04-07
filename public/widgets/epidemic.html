@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Epidemic Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0c}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+#ui{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;z-index:100;
+  background:rgba(12,12,12,.82);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  padding:4px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 8px 32px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.04) inset}
+.tb{font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  background:transparent;border:1px solid transparent;
+  color:rgba(255,255,255,.45);padding:7px 11px;border-radius:10px;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;outline:none}
+.tb:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.tb:active{transform:scale(.96)}
+.tb.sel{background:rgba(100,210,255,.1);border-color:rgba(100,210,255,.2);color:rgba(100,210,255,.85)}
+.sep{width:1px;height:16px;background:rgba(255,255,255,.06);flex-shrink:0;margin:0 2px}
+#stats{position:fixed;top:16px;left:20px;z-index:10;font:11px/1.8 'SF Mono','Cascadia Code',monospace;
+  color:rgba(255,255,255,.3);letter-spacing:.02em}
+#stats b{font-weight:600}
+.s-color{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="stats">
+  <div><span class="s-color" style="background:#339af0"></span>Susceptible <b id="ns">0</b></div>
+  <div><span class="s-color" style="background:#ff6b6b"></span>Infected <b id="ni">0</b></div>
+  <div><span class="s-color" style="background:#51cf66"></span>Recovered <b id="nr">0</b></div>
+  <div><span class="s-color" style="background:#868e96"></span>Deceased <b id="nd">0</b></div>
+  <div style="margin-top:6px">Day <b id="day">0</b></div>
+  <div>R\u2080 \u2248 <b id="r0">2.5</b></div>
+</div>
+<div id="ui">
+  <button class="tb" data-v="0">0% Vaccinated</button>
+  <button class="tb sel" data-v="0.3">30% Vaccinated</button>
+  <button class="tb" data-v="0.7">70% Vaccinated</button>
+  <button class="tb" data-v="0.95">95% (Herd)</button>
+  <span class="sep"></span>
+  <button class="tb" id="rst">Restart</button>
+</div>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Agent-Based SIR Epidemic Model
+ * Demonstrates herd immunity, R0, and vaccination impact
+ * Inspired by 3Blue1Brown's epidemic simulation and
+ * https://github.com/victorqribeiro/isern (MIT)
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+
+var NUM = 600;
+var agents = [];
+var vaccRate = 0.3;
+var infectionRadius = 12;
+var infectionProb = 0.06;
+var recoveryTime = 500; // frames
+var mortalityRate = 0.02;
+var day = 0;
+var frameCount = 0;
+var baseR0 = 2.5;
+
+// States: 0=susceptible, 1=infected, 2=recovered, 3=dead, 4=vaccinated
+var COLORS = ['#339af0','#ff6b6b','#51cf66','#555','#7cc5e8'];
+
+function init() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    agents = [];
+    frameCount = 0;
+    day = 0;
+
+    for (var i = 0; i < NUM; i++) {
+        var vaccinated = Math.random() < vaccRate;
+        agents.push({
+            x: 40 + Math.random() * (W - 80),
+            y: 40 + Math.random() * (H - 80),
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+            state: vaccinated ? 4 : 0, // vaccinated or susceptible
+            infectedAt: 0
+        });
+    }
+
+    // Patient zero (always in center-ish)
+    var pz = agents.find(function(a) { return a.state === 0; });
+    if (pz) {
+        pz.state = 1;
+        pz.infectedAt = 0;
+        pz.x = W / 2;
+        pz.y = H / 2;
+    }
+}
+
+function step() {
+    frameCount++;
+    if (frameCount % 30 === 0) day++;
+
+    for (var i = 0; i < NUM; i++) {
+        var a = agents[i];
+        if (a.state === 3) continue; // dead don't move
+
+        // Move
+        a.x += a.vx;
+        a.y += a.vy;
+
+        // Bounce off walls
+        if (a.x < 5 || a.x > W - 5) a.vx *= -1;
+        if (a.y < 5 || a.y > H - 5) a.vy *= -1;
+        a.x = Math.max(5, Math.min(W - 5, a.x));
+        a.y = Math.max(5, Math.min(H - 5, a.y));
+
+        // Slight random direction change
+        a.vx += (Math.random() - 0.5) * 0.1;
+        a.vy += (Math.random() - 0.5) * 0.1;
+        var spd = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+        if (spd > 2) { a.vx *= 2 / spd; a.vy *= 2 / spd; }
+
+        // Recovery / death
+        if (a.state === 1) {
+            if (frameCount - a.infectedAt > recoveryTime) {
+                a.state = Math.random() < mortalityRate ? 3 : 2;
+            }
+        }
+    }
+
+    // Infection spread
+    for (var i = 0; i < NUM; i++) {
+        var a = agents[i];
+        if (a.state !== 1) continue; // only infected spread
+
+        for (var j = 0; j < NUM; j++) {
+            if (i === j) continue;
+            var b = agents[j];
+            if (b.state !== 0) continue; // only susceptible can be infected
+
+            var dx = a.x - b.x;
+            var dy = a.y - b.y;
+            if (dx * dx + dy * dy < infectionRadius * infectionRadius) {
+                if (Math.random() < infectionProb) {
+                    b.state = 1;
+                    b.infectedAt = frameCount;
+                }
+            }
+        }
+    }
+}
+
+function render() {
+    ctx.fillStyle = '#0a0a0c';
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw agents
+    for (var i = 0; i < NUM; i++) {
+        var a = agents[i];
+        var color = COLORS[a.state];
+        var radius = a.state === 3 ? 2 : 3;
+
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Infection ring for infected
+        if (a.state === 1) {
+            ctx.beginPath();
+            ctx.arc(a.x, a.y, infectionRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,107,107,0.08)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    // Update stats
+    var s = 0, inf = 0, r = 0, d = 0;
+    for (var i = 0; i < NUM; i++) {
+        switch(agents[i].state) {
+            case 0: s++; break;
+            case 1: inf++; break;
+            case 2: r++; break;
+            case 3: d++; break;
+            case 4: s++; break; // count vaccinated as "protected susceptible"
+        }
+    }
+    document.getElementById('ns').textContent = s;
+    document.getElementById('ni').textContent = inf;
+    document.getElementById('nr').textContent = r;
+    document.getElementById('nd').textContent = d;
+    document.getElementById('day').textContent = day;
+
+    // Effective R0 estimate
+    var effectiveR0 = baseR0 * (1 - vaccRate);
+    document.getElementById('r0').textContent = effectiveR0.toFixed(1);
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    step();
+    render();
+}
+
+resize();
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', function() { resize(); init(); });
+
+init();
+requestAnimationFrame(frame);
+
+// Toolbar
+var buttons = document.querySelectorAll('#ui .tb[data-v]');
+buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        vaccRate = parseFloat(btn.dataset.v);
+        init();
+    });
+});
+
+document.getElementById('rst').onclick = function() { init(); };
+
+var uiEl = document.getElementById('ui');
+uiEl.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+uiEl.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
+
+// Click to infect at location
+canvas.addEventListener('click', function(e) {
+    for (var i = 0; i < agents.length; i++) {
+        var a = agents[i];
+        if (a.state !== 0) continue;
+        var dx = a.x - e.clientX;
+        var dy = a.y - e.clientY;
+        if (dx * dx + dy * dy < 400) {
+            a.state = 1;
+            a.infectedAt = frameCount;
+            break;
+        }
+    }
+});
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

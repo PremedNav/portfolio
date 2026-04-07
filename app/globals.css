@@ -24,42 +24,50 @@ body {
   @font-face {
     font-family: "circular-web";
     src: url("/fonts/circularweb-book.woff2") format("woff2");
+    font-display: swap;
   }
 
   @font-face {
     font-family: "general";
     src: url("/fonts/general.woff2") format("woff2");
+    font-display: swap;
   }
 
   @font-face {
     font-family: "robert-medium";
     src: url("/fonts/robert-medium.woff2") format("woff2");
+    font-display: swap;
   }
 
   @font-face {
     font-family: "robert-regular";
     src: url("/fonts/robert-regular.woff2") format("woff2");
+    font-display: swap;
   }
 
   @font-face {
     font-family: "fk-screamer";
     src: url("/fonts/FKScreamer-Regular.woff2") format("woff2");
     font-weight: 400;
+    font-display: swap;
   }
   @font-face {
     font-family: "fk-screamer";
     src: url("/fonts/FKScreamer-Medium.woff2") format("woff2");
     font-weight: 500;
+    font-display: swap;
   }
   @font-face {
     font-family: "fk-screamer";
     src: url("/fonts/FKScreamer-Bold.woff2") format("woff2");
     font-weight: 700;
+    font-display: swap;
   }
   @font-face {
     font-family: "fk-screamer";
     src: url("/fonts/FKScreamer-Black.woff2") format("woff2");
     font-weight: 900;
+    font-display: swap;
   }
 }
 
@@ -394,6 +402,7 @@ body {
     opacity: 0.7;
   }
 }
+
 
 /* ── OverlayScrollbars — futuristic custom theme ── */
 .os-theme-custom.os-theme-custom {

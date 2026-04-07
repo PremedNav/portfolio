@@ -1,0 +1,177 @@
+---
+title: "The Pre-Med Tech Stack: Tools Every Applicant Should Know About"
+subtitle: "A curated guide to the tools, apps, and platforms that give pre-med students an edge."
+date: "2026-02-10"
+readTime: "6 min"
+category: "Tips"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>The pre-med application process is a logistics problem disguised as a personal journey. You are simultaneously managing AMCAS, AACOMAS, and potentially TMDSAS applications, each with different character limits, different activity categorization systems, and different deadlines. You are tracking clinical hours across multiple sites, maintaining relationships with letter writers, studying for an exam that covers four years of science, and trying to keep your GPA intact while doing all of it.</P>
+  <P>Most students manage this with a combination of spreadsheets, sticky notes, and anxiety. I managed it by building software. As someone who has been programming since age 6 and now maintains <A>PreMeder</A>, a platform used by over 12,000 pre-health students, I have a specific perspective on this: <Highlight>the right tools do not just save time, they reduce the cognitive load that makes this process feel impossible</Highlight>.</P>
+  <P>This is the stack I actually use. Not theoretical recommendations. The tools that sit open on my laptop every day alongside my Biochemistry and Organic Chemistry notes.</P>
+
+  <Figure
+    src="/img/blog/study-workspace.jpg"
+    alt="An organized study workspace with laptop, textbooks, and notes"
+    caption="Where technology meets medicine: the right tools transform the pre-med journey from an overwhelming logistics problem into a manageable, systematic process."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Application Tracking Problem">
+  <P>Here is what no one tells you until you are deep into application season: AMCAS gives you <IC>700 characters</IC> per activity description. AACOMAS gives you <IC>600</IC>. TMDSAS uses a completely different activity classification system. If you are applying to all three, you are writing <B>three different versions</B> of every experience description, and they cannot just be truncated copies of each other.</P>
+  <P>Spreadsheets are the default tool here, and they break down fast. A Google Sheet with 15 activities, 3 application services, and 5 columns per entry becomes unwieldy within days. You lose track of which descriptions you have finalized, which still need trimming, which schools require supplemental materials.</P>
+
+  <Callout label="Key takeaway">The application process is not one application. It is three parallel systems with overlapping but non-identical requirements. Your tracking tool needs to reflect that structure or it will actively mislead you about your progress.</Callout>
+
+  <P>This is exactly why I built the tracking features in PreMeder. The core insight was simple: <Highlight>treat each application service as a separate pipeline</Highlight> with shared source data but independent output requirements. You write the canonical version of each activity once, then adapt it per service with character-count-aware editing. The tool tracks completion status per service, not per activity.</P>
+</Section>
+
+<Divider />
+
+<Section name="The MCAT Study Stack">
+  <P>The MCAT is a <B>spaced repetition problem</B>. The content spans General Chemistry, Organic Chemistry, Biochemistry, Biology, Physics, Psychology, Sociology, and critical analysis. No human being retains all of that through passive review. The science on this is unambiguous: spaced repetition with active recall is the most effective method for long-term retention.</P>
+
+  <H3>Anki Configuration That Actually Works</H3>
+
+  <P>Anki is the foundation. But default Anki settings are calibrated for language learning, not medical science. Here is what I run:</P>
+
+```python
+# Anki settings for MCAT prep (set in deck options)
+new_cards_per_day = 40        # aggressive but sustainable
+review_limit = 9999           # never cap reviews
+learning_steps = "15 1440"    # 15 min, then next day
+graduating_interval = 3       # days before first spaced review
+easy_interval = 7             # days for cards marked "easy"
+starting_ease = 250           # default 250%, leave this alone
+interval_modifier = 1.0       # adjust after 1 month of data
+```
+
+  <P>The key insight is the <IC>learning_steps</IC> setting. Two steps, <IC>15 1440</IC>, means you see a new card, then see it again 15 minutes later, then the next day. This maps directly to the encoding-consolidation cycle described in cognitive psychology. The hard part is not the settings. <Highlight>The hard part is doing your reviews every single day without exception.</Highlight></P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Anki</B> for active recall and spaced repetition. Use pre-made decks like Milesdown or JackSparrow as a starting base, then supplement with your own cards from practice problems you get wrong.</ConnectedItem>
+    <ConnectedItem><B>UWorld</B> for passage-based practice. The explanations are better than any textbook. After every UWorld block, make Anki cards for concepts you missed. This creates a feedback loop between practice and retention.</ConnectedItem>
+    <ConnectedItem><B>AAMC materials</B> in the final 6-8 weeks. These are the only resources that match the actual test-day feel. Section banks, question packs, and full-length exams in that order.</ConnectedItem>
+    <ConnectedItem><B>A tracking spreadsheet</B> for practice scores. Plot your AAMC FL scores over time. The trajectory matters more than any single score.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Clinical Hours Tracking">
+  <P>I have logged over <IC>910 hours</IC> at Mountain Peak Primary Care and <IC>260 hours</IC> of shadowing at Denver Health. Here is what I have learned about tracking: <Highlight>the hours are the easy part, the reflections are the hard part</Highlight>.</P>
+  <P>Medical schools do not care that you volunteered 200 hours. They care about what you observed, what you felt, and how it shaped your understanding of medicine. If you are not logging reflections alongside your hours, you are going to stare at a blank AMCAS activity description in June trying to remember what happened in October.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Log the same day.</B> Spend 5 minutes after every shift writing down one specific patient interaction (de-identified), what the physician did, and what you learned. This is the raw material your application essays will draw from.</ConnectedItem>
+    <ConnectedItem><B>Categorize by theme.</B> Tag entries with themes like empathy, clinical reasoning, interdisciplinary care, health disparities. When it is time to write, you filter by theme instead of scrolling through months of entries.</ConnectedItem>
+    <ConnectedItem><B>Track cumulative hours automatically.</B> Manual addition across 18 months of shifts is where spreadsheets introduce errors. PreMeder calculates running totals per site and projects your hours forward to application deadlines.</ConnectedItem>
+  </ConnectedList>
+
+  <P>I use Notion as a daily journal and PreMeder for the structured tracking. The two serve different purposes: Notion captures the messy, reflective thinking. PreMeder keeps the numbers accurate and the deadlines visible.</P>
+
+  <P>One pattern I found essential: <B>weekly reviews</B>. Every Sunday, spend 15 minutes reviewing the week&apos;s clinical entries. Consolidate notes, add missing reflections, and flag any patient encounters that feel significant enough to anchor an essay. This weekly cadence prevents the end-of-cycle scramble where you are trying to reconstruct months of experiences from fragmented memories. The compound effect of 15 minutes per week for 18 months is an application that writes itself.</P>
+
+  <Figure
+    src="/img/blog/science-research.jpg"
+    alt="Science research setting with laboratory instruments and digital tracking tools"
+    caption="The intersection of lab work and digital tools: tracking clinical hours and research experiences with the same rigor you bring to the bench."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="School List Research and Letter Management">
+  <P>Building a school list is a data problem. You need to cross-reference your GPA and MCAT against median matriculant statistics, filter by mission alignment, check for state residency preferences, and verify prerequisite requirements. <A>MSAR</A> (Medical School Admissions Requirements) is the canonical data source, but it is a static database that does not sort or filter well.</P>
+  <P>In practice, I maintain a Notion database with columns for school name, median GPA, median MCAT, in-state bias, mission keywords, secondary essay prompts from the previous cycle, and application status. The secondary prompts column is <Highlight>the most valuable</Highlight>. Schools reuse 80-90% of their prompts year to year. You can pre-write drafts months before secondaries arrive.</P>
+
+  <H3>Letter of Recommendation Workflow</H3>
+
+  <P>Letters are the most anxiety-inducing part of the process because they depend on other people&apos;s timelines. The system that works:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Ask early.</B> 8-10 weeks before you need the letter submitted. Give your letter writer a packet: your CV, personal statement draft, the specific experiences you shared with them, and a bulleted list of qualities you hope they can speak to.</ConnectedItem>
+    <ConnectedItem><B>Use Interfolio</B> as a central letter repository. Upload once, distribute to every application service. This eliminates the problem of asking a professor to submit the same letter to 25 different portals.</ConnectedItem>
+    <ConnectedItem><B>Track status in one place.</B> A simple table: writer name, date asked, date confirmed, date submitted, services sent to. Check it weekly. Send polite reminders at the 4-week and 2-week marks.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="The Case for Learning to Code as a Pre-Med">
+  <P>This is the part where my two worlds collide. I am a pre-med student with a 3.974 GPA at CU Denver, and I am also a software architect who has built <A>an LLM with 12 billion parameters</A>, a <A>pathology AI system</A>, and a <A>biochemical pathway discovery engine</A>. These are not separate identities. <Highlight>The technical skills directly serve the medicine.</Highlight></P>
+  <P>You do not need to build large-scale systems. But learning basic Python gives you three concrete advantages as a pre-med:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Research becomes accessible.</B> Every wet lab and clinical research group needs someone who can clean data, run statistical analyses, and produce figures. If you can write a Python script to parse a CSV and generate a plot, you are immediately useful in ways that most pre-meds are not.</ConnectedItem>
+    <ConnectedItem><B>Automation saves hundreds of hours.</B> I wrote scripts to track my clinical hours, parse MSAR data, and auto-format activity descriptions to character limits. Each script took an hour to write and saved dozens of hours over the application cycle.</ConnectedItem>
+    <ConnectedItem><B>It differentiates your application.</B> Admissions committees see thousands of applicants with research experience. Far fewer can say they built the tools their lab uses, or that they developed software serving thousands of other pre-med students.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Why this matters">Medicine is becoming increasingly computational. Genomics, imaging AI, clinical decision support, electronic health records. The physicians who understand these systems will shape how they are built. The ones who do not will have these systems imposed on them.</Callout>
+
+  <P>Start small. Install Python. Work through a free tutorial. Write a script that reads a CSV of your clinical hours and calculates totals by site. That single exercise teaches you file I/O, data parsing, and basic aggregation. From there, the path to more sophisticated tools is incremental, not a leap.</P>
+</Section>
+
+<Divider />
+
+<Section name="The Full Stack at a Glance">
+  <H3>Tools by Category</H3>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Category</TH>
+          <TH>Tool</TH>
+          <TH last>Why It Works</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Application Tracking</TD>
+          <TD>PreMeder</TD>
+          <TD last>Multi-service pipeline with character-count-aware editing</TD>
+        </TR>
+        <TR>
+          <TD first bold>MCAT Study</TD>
+          <TD>Anki + UWorld + AAMC</TD>
+          <TD last>Spaced repetition, passage practice, and official materials in sequence</TD>
+        </TR>
+        <TR>
+          <TD first bold>Clinical Hours</TD>
+          <TD>PreMeder + Notion</TD>
+          <TD last>Structured tracking for numbers, freeform journal for reflections</TD>
+        </TR>
+        <TR>
+          <TD first bold>School Research</TD>
+          <TD>MSAR + Notion DB</TD>
+          <TD last>Cross-reference statistics with mission alignment and pre-written secondaries</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Letters</TD>
+          <TD>Interfolio</TD>
+          <TD last>Upload once, distribute everywhere, track status centrally</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+</Section>
+
+<Divider />
+
+<Section name="Technology Serves Medicine, Not the Other Way Around">
+  <P>I want to end with a philosophical point that grounds everything above. After 910 hours of clinical volunteering, I have watched technology both help and hinder patient care. I have seen physicians spend more time clicking through EHR dropdowns than talking to patients. I have also seen a well-designed clinical decision support tool catch a drug interaction that a fatigued resident missed at 3 AM.</P>
+  <P>The difference is always the same: <Highlight>was the technology designed by people who understand clinical workflows, or by people who do not?</Highlight></P>
+  <P>That is why I am pursuing both paths. The pre-med track gives me the clinical understanding. The engineering gives me the ability to build tools that actually fit into the workflow. PreMeder exists because I understood the pain of the application process from the inside. Histia works on pathology slides because I spent time in labs understanding what pathologists actually need.</P>
+  <P>Every tool in this stack, whether I built it or chose it, follows the same principle: <B>reduce friction in the process so you can focus on the thing that actually matters</B>, which is becoming the kind of physician your future patients deserve.</P>
+
+  <Callout label="Get involved">If you are a pre-med student who codes, or wants to learn, I would love to hear from you. The intersection of medicine and technology needs more people building from both sides. Reach out or check out PreMeder.</Callout>
+</Section>

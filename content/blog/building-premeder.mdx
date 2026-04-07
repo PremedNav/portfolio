@@ -1,0 +1,197 @@
+---
+title: "Building PreMeder: From Personal Frustration to 12,000 Users"
+subtitle: "The story of building a pre-med platform from scratch and growing it to thousands of active users."
+date: "2026-02-20"
+readTime: "9 min"
+category: "Case Studies"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>I built PreMeder because the existing tools for tracking a pre-med journey were <Highlight>embarrassingly bad</Highlight>. Spreadsheets with 40 tabs. Sticky notes on monitors. GroupMe threads where someone asks for the third time which schools accept AP credit. The entire pre-health application process, AMCAS, AACOMAS, TMDSAS, is a logistics problem, and nobody had built a proper tool to solve it.</P>
+  <P>PreMeder started as a personal project to track my own clinical hours and school list. It now has over 12,000 active users. This is the story of how it got there, what I built, and what I learned about shipping a product for a niche community that desperately needed one.</P>
+
+  <Figure
+    src="/img/blog/medical-team.jpg"
+    alt="A team of medical professionals collaborating in a clinical environment"
+    caption="The pre-medical community is driven by collaboration and shared experience. PreMeder was built to give that community the organizational tools it deserved."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Problem">
+  <P>If you have never applied to medical school, the scope of the tracking problem is hard to appreciate. A typical applicant manages the following simultaneously:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Clinical and volunteer hours.</B> Medical schools want to see sustained commitment. You need to log every shift, supervisor, reflection, and running total across categories: clinical volunteering, non-clinical volunteering, shadowing, research, paid clinical work. Most applicants track this in a spreadsheet that grows unwieldy by month three.</ConnectedItem>
+    <ConnectedItem><B>School list management.</B> The average applicant applies to 20-30 schools. Each school has different secondary essay prompts, deadlines, interview formats, mission statements, and admissions statistics. You need to track where you are in the pipeline for each one: primary submitted, secondary received, secondary completed, interview invited, accepted, waitlisted, or rejected.</ConnectedItem>
+    <ConnectedItem><B>Timeline coordination.</B> AMCAS opens in May, secondaries arrive June through August, interviews run September through March, and decisions come April through June. Missing a secondary deadline by a week can tank your chances at a school. The entire cycle demands a tracking system, and most applicants cobble one together from Google Sheets and willpower.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The insight that started everything">Pre-meds are some of the most organized people I know, and they were still drowning in spreadsheets. The problem was not discipline. It was the absence of a tool designed for the specific workflow.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Technical Stack">
+  <P>I chose the stack based on two constraints: I was the only developer, and I needed to ship fast. Every technology choice was filtered through the question: <Highlight>does this let me move faster without creating debt I cannot pay back later?</Highlight></P>
+
+  <H3>The Stack</H3>
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Layer</TH>
+          <TH>Technology</TH>
+          <TH last>Why</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Framework</TD>
+          <TD>Next.js (App Router)</TD>
+          <TD last>Server components, API routes, and static generation in one framework</TD>
+        </TR>
+        <TR>
+          <TD first bold>Database</TD>
+          <TD>PostgreSQL + Prisma</TD>
+          <TD last>Relational data with type-safe queries and zero migration headaches</TD>
+        </TR>
+        <TR>
+          <TD first bold>Auth</TD>
+          <TD>NextAuth.js</TD>
+          <TD last>Google OAuth for frictionless sign-up, session management handled</TD>
+        </TR>
+        <TR>
+          <TD first bold>Hosting</TD>
+          <TD>Vercel + Supabase</TD>
+          <TD last>Edge deployment, managed Postgres, no DevOps overhead</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Styling</TD>
+          <TD>Tailwind CSS</TD>
+          <TD last>Rapid iteration on UI without context-switching to CSS files</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>The decision to use <IC>PostgreSQL</IC> over a NoSQL option was critical. Application tracking is inherently relational. A school has many secondaries. A user has many schools. An activity has many hours entries. Trying to model this in a document store would have created join nightmares within the first month.</P>
+  <P>Prisma gave me type-safe database queries that caught schema mismatches at compile time. When you are the only developer and there is no code review, <Highlight>the compiler is your code reviewer</Highlight>.</P>
+</Section>
+
+<Divider />
+
+<Section name="Core Features">
+  <P>PreMeder has three pillars. Each one addresses a specific pain point that I experienced personally and validated with dozens of conversations in pre-med communities.</P>
+
+  <H3>Application Tracker</H3>
+  <P>The tracker models the full application lifecycle as a <B>state machine</B>. Each school-application pair moves through defined states: <IC>not started</IC>, <IC>primary submitted</IC>, <IC>secondary received</IC>, <IC>secondary submitted</IC>, <IC>under review</IC>, <IC>interview invited</IC>, <IC>interview completed</IC>, and finally one of <IC>accepted</IC>, <IC>waitlisted</IC>, or <IC>rejected</IC>. Transitions are validated server-side to prevent impossible state jumps.</P>
+
+```typescript
+// Simplified state machine for application status
+const VALID_TRANSITIONS: Record<AppStatus, AppStatus[]> = {
+  NOT_STARTED:        ['PRIMARY_SUBMITTED'],
+  PRIMARY_SUBMITTED:  ['SECONDARY_RECEIVED'],
+  SECONDARY_RECEIVED: ['SECONDARY_SUBMITTED'],
+  SECONDARY_SUBMITTED:['UNDER_REVIEW'],
+  UNDER_REVIEW:       ['INTERVIEW_INVITED', 'WAITLISTED', 'REJECTED'],
+  INTERVIEW_INVITED:  ['INTERVIEW_COMPLETED'],
+  INTERVIEW_COMPLETED:['ACCEPTED', 'WAITLISTED', 'REJECTED'],
+  WAITLISTED:         ['ACCEPTED', 'REJECTED'],
+  ACCEPTED:           [],
+  REJECTED:           [],
+}
+```
+
+  <H3>Hours Logger</H3>
+  <P>The hours logger tracks activities across AMCAS categories with running totals, supervisor information, and per-entry reflections. The hard part was not logging hours. The hard part was making it fast enough that people would actually use it instead of defaulting back to their spreadsheet. Every interaction, adding an entry, editing a total, switching categories, needed to feel <Highlight>instant</Highlight>.</P>
+  <P>I implemented optimistic updates on the client side. When a user logs hours, the UI updates immediately while the write propagates to the database asynchronously. If the write fails, the UI rolls back. This pattern cut perceived latency from 400ms to under 50ms.</P>
+
+  <H3>School List Builder</H3>
+  <P>The school list builder aggregates admissions data, average MCAT, GPA ranges, mission statements, and secondary prompts, and lets users build a balanced list of reach, target, and safety schools. The data layer pulls from a curated dataset that I maintain manually, cross-referencing MSAR data with publicly available admissions statistics.</P>
+</Section>
+
+<Divider />
+
+<Section name="Growing to 12,000 Users">
+  <P>I did not run ads. PreMeder grew entirely through <B>organic distribution</B> in pre-med communities. The growth curve had three phases.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Phase 1: Reddit and Discord (0 to 500 users).</B> I posted about PreMeder on <IC>r/premed</IC> and in pre-med Discord servers. The initial reception was skeptical, as it should have been. Pre-meds had seen tools come and go. What converted the first users was the hours logger. It solved an immediate, daily pain point. Once someone logged their first week of clinical hours, they were hooked.</ConnectedItem>
+    <ConnectedItem><B>Phase 2: Word of mouth (500 to 4,000 users).</B> The application cycle is social. Pre-meds talk to each other constantly about where they are in the process. When one person in a study group uses a tool that makes tracking effortless, the rest of the group asks about it. This organic loop drove the majority of growth. I did not engineer it. I just built something people wanted to talk about.</ConnectedItem>
+    <ConnectedItem><B>Phase 3: Community trust (4,000 to 12,000 users).</B> Once PreMeder appeared in recommendation threads unprompted, growth became self-sustaining. Pre-med advisors at universities started recommending it. Student organizations included it in their resource guides. The product had crossed the threshold from tool to <Highlight>community infrastructure</Highlight>.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Growth lesson">You do not need a marketing strategy for a niche product. You need a product so good that the niche markets it for you. Every hour I spent on product quality returned more users than any hour I could have spent on promotion.</Callout>
+
+  <Figure
+    src="/img/blog/app-community.jpg"
+    alt="A collaborative team working together on building community software"
+    caption="Building PreMeder meant translating the frustrations of the pre-med application process into software that 12,000 students now rely on daily."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Technical Challenges">
+  <P>Scaling from a personal tool to 12,000 users surfaced problems I had not anticipated.</P>
+  <P><B>Real-time sync across devices.</B> Many users log hours on their phone during a shift and review their application tracker on a laptop later. The data needed to be consistent across devices within seconds. I implemented this with a combination of <IC>SWR</IC> for stale-while-revalidate caching and WebSocket-based invalidation for critical state changes like application status updates.</P>
+  <P><B>Mobile responsiveness under load.</B> The application tracker displays a dense grid of schools and statuses. On a phone screen, this became unusable. I rebuilt the mobile layout as a <Highlight>card-based interface</Highlight> with swipe gestures for status transitions, which actually turned out to be faster than the desktop grid for quick updates.</P>
+  <P><B>Data integrity during the cycle.</B> During peak secondary season (July-August), users are making dozens of updates per day. Race conditions between optimistic updates and server-side validation could produce inconsistent states. I added idempotency keys to every mutation and implemented server-side conflict resolution that always favored the most recent user intent.</P>
+
+```typescript
+// Idempotent mutation with conflict resolution
+async function updateApplicationStatus(
+  userId: string,
+  schoolId: string,
+  newStatus: AppStatus,
+  idempotencyKey: string
+) {
+  return await prisma.$transaction(async (tx) => {
+    const existing = await tx.mutation.findUnique({
+      where: { idempotencyKey }
+    });
+    if (existing) return existing.result; // Already processed
+
+    const app = await tx.application.findUnique({
+      where: { userId_schoolId: { userId, schoolId } }
+    });
+
+    if (!VALID_TRANSITIONS[app.status].includes(newStatus)) {
+      throw new InvalidTransitionError(app.status, newStatus);
+    }
+
+    return await tx.application.update({
+      where: { id: app.id },
+      data: { status: newStatus },
+    });
+  });
+}
+```
+</Section>
+
+<Divider />
+
+<Section name="What I Learned">
+  <P>Building PreMeder taught me things that no computer science course covers.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Niche products win on empathy.</B> I am a pre-med. I understood the pain because I lived it. Every feature decision was informed by my own experience. If you are building for a community you belong to, you have an advantage that no amount of user research can replicate.</ConnectedItem>
+    <ConnectedItem><B>Ship the smallest useful thing first.</B> The first version of PreMeder was just the hours logger. No school list builder. No application tracker. Just a clean way to log clinical hours. That single feature was enough to get the first 500 users, and their feedback shaped everything that followed.</ConnectedItem>
+    <ConnectedItem><B>Trust compounds.</B> Pre-meds are entrusting PreMeder with data that affects their career. The application cycle is stressful, and a data loss incident would be unforgivable. I invested heavily in backups, data export, and transparent communication about uptime. That trust is the reason the product grew, and it is the thing I guard most carefully.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>PreMeder exists because I was frustrated, and I could code. That is the entire origin story. The technical decisions were important, but <Highlight>the product instinct came from being the user</Highlight>. I did not need to interview customers to understand the problem. I was the customer.</P>
+  <P>12,000 users later, the most meaningful metric is not the number. It is the messages I get from applicants who say PreMeder helped them stay organized during the most stressful year of their lives. That is worth more than any technical achievement in the stack.</P>
+
+  <Callout label="For builders in niche communities">If you belong to a community with an unsolved problem, build the solution. You already have the domain expertise. You already have the distribution channel. The only thing between you and a product people love is the willingness to start.</Callout>
+</Section>

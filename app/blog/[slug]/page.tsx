@@ -1,24 +1,19 @@
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import { getAllSlugs, getPostBySlug, getAllPosts } from '@/lib/blog'
+import { mdxComponents } from './mdx-components'
 import BlogPostContent from './BlogPostContent'
 
-const ALL_SLUGS = [
-  'building-medical-ai',
-  'prompt-engineering',
-  'llm-cost-optimization',
-  'eval-driven-development',
-  'training-12b-model',
-  'biochemical-pathway-discovery',
-  'building-premeder',
-  'designing-ml-language',
-  'premed-tech-stack',
-  'medical-image-classification',
-  'phage-therapy-computational',
-  'realtime-data-pipelines',
-]
-
 export function generateStaticParams() {
-  return ALL_SLUGS.map((slug) => ({ slug }))
+  return getAllSlugs().map((slug) => ({ slug }))
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  return <BlogPostContent slug={params.slug} />
+  const { meta, content, toc } = getPostBySlug(params.slug)
+  const allPosts = getAllPosts()
+
+  return (
+    <BlogPostContent meta={meta} toc={toc} allPosts={allPosts}>
+      <MDXRemote source={content} components={mdxComponents} />
+    </BlogPostContent>
+  )
 }

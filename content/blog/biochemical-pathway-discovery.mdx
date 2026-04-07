@@ -1,0 +1,157 @@
+---
+title: "Biochemical Pathway Discovery: Cross-Referencing Research Papers With AI"
+subtitle: "Using AI to accelerate biochemical pathway discovery by cross-referencing thousands of research papers."
+date: "2026-02-28"
+readTime: "8 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Biochemical pathway discovery has a scaling problem. The interactions between genes, proteins, and metabolites that govern cellular behavior are documented across <Highlight>millions of research papers</Highlight>, spread across decades of journals, each describing a small fragment of a larger biological network. No single paper contains the full picture. No single researcher can read them all.</P>
+  <P>In practice, the literature review phase of pathway research can take weeks. A graduate student investigating a novel gene-metabolite interaction will read hundreds of papers, manually trace citations, and maintain spreadsheets of entity relationships. The cognitive overhead is enormous, and the process is fundamentally error-prone because <B>humans miss connections that span disciplinary boundaries</B>.</P>
+  <P>Aethon is my attempt to fix this. It is an AI system that ingests biomedical research papers, extracts biological entities and their relationships, constructs a knowledge graph, and surfaces pathway connections that would take a human researcher months to find manually. The hard part was not building the NLP pipeline. It was building a system whose outputs biologists actually trust.</P>
+
+  <Figure
+    src="/img/blog/molecular-model.jpg"
+    alt="Three-dimensional molecular structure model showing interconnected atoms and chemical bonds"
+    caption="Molecular structures form the foundation of biochemical pathway networks, with each interaction representing a potential discovery waiting to be connected across the literature."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Problem With Manual Literature Review">
+  <P>Consider a concrete scenario. A researcher hypothesizes that a specific kinase, <IC>AMPK</IC>, mediates a previously unknown connection between lipid metabolism and inflammatory signaling in hepatocytes. To validate or refute this hypothesis, they need to answer several questions simultaneously.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>What substrates does AMPK phosphorylate?</B> This information is scattered across enzymology papers, phosphoproteomics studies, and structural biology publications. No single database is comprehensive.</ConnectedItem>
+    <ConnectedItem><B>Which of those substrates participate in inflammatory cascades?</B> This requires cross-referencing immunology literature with the enzymology results. The terminology differs between fields, making keyword search unreliable.</ConnectedItem>
+    <ConnectedItem><B>Has anyone observed this interaction in hepatocyte-specific contexts?</B> Tissue-specific pathway behavior is documented in clinical and translational papers that rarely cite the foundational biochemistry work.</ConnectedItem>
+    <ConnectedItem><B>What experimental evidence supports or contradicts the hypothesis?</B> Negative results are underreported, so the absence of evidence is not evidence of absence. The researcher needs to infer gaps in the literature, not just find what exists.</ConnectedItem>
+  </ConnectedList>
+
+  <P>This is fundamentally a <Highlight>graph traversal problem</Highlight> disguised as a reading problem. The information exists. It is distributed across a graph of entities and relationships that no human can hold in working memory. Aethon makes this graph explicit and traversable.</P>
+</Section>
+
+<Divider />
+
+<Section name="How Aethon Works">
+  <P>Aethon operates as a four-stage pipeline. Each stage transforms unstructured biomedical text into structured, queryable knowledge.</P>
+
+  <H3>Stage 1: Paper Ingestion and Preprocessing</H3>
+  <P>The system ingests papers from PubMed Central, bioRxiv, and user-uploaded PDFs. Raw text is extracted, section-segmented (abstract, methods, results, discussion), and sentence-tokenized. Section segmentation matters because <B>the same entity mention carries different evidential weight</B> depending on where it appears. A gene mentioned in the results section of a controlled experiment is stronger evidence than the same gene mentioned speculatively in a discussion.</P>
+
+  <H3>Stage 2: Named Entity Recognition</H3>
+  <P>Biomedical NER is not the same as general-purpose NER. Standard models trained on news corpora fail catastrophically on text like <IC>phosphorylated STAT3 binds the IL-6 promoter region</IC>. Aethon uses a fine-tuned <IC>PubMedBERT</IC> model with entity type heads for genes, proteins, metabolites, diseases, drugs, and biological processes.</P>
+
+```python
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+import torch
+
+class BioEntityExtractor:
+    def __init__(self, model_name="microsoft/BiomedNLP-PubMedBERT-base"):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForTokenClassification.from_pretrained(
+            "aethon/pubmedbert-ner-bio",
+            num_labels=13  # BIO tags for 6 entity types + O
+        )
+        self.label_map = {
+            0: "O", 1: "B-GENE", 2: "I-GENE",
+            3: "B-PROTEIN", 4: "I-PROTEIN",
+            5: "B-METABOLITE", 6: "I-METABOLITE",
+            7: "B-DISEASE", 8: "I-DISEASE",
+            9: "B-DRUG", 10: "I-DRUG",
+            11: "B-PROCESS", 12: "I-PROCESS",
+        }
+
+    def extract(self, text):
+        inputs = self.tokenizer(
+            text, return_tensors="pt",
+            truncation=True, max_length=512
+        )
+        with torch.no_grad():
+            logits = self.model(**inputs).logits
+        predictions = torch.argmax(logits, dim=-1)[0]
+        tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+        return self._merge_bio_tags(tokens, predictions)
+```
+
+  <P>The critical detail is the <IC>_merge_bio_tags</IC> method, which reconstructs multi-token entity spans from BIO-tagged subwords. Getting this wrong means splitting <IC>tumor necrosis factor alpha</IC> into separate entities, which corrupts every downstream relationship.</P>
+
+  <H3>Stage 3: Relation Extraction</H3>
+  <P>Entity extraction alone produces a list of biological actors. Relation extraction identifies <Highlight>how they interact</Highlight>. Aethon classifies sentence-level entity pairs into relation types: <IC>phosphorylates</IC>, <IC>inhibits</IC>, <IC>activates</IC>, <IC>binds</IC>, <IC>upregulates</IC>, <IC>downregulates</IC>, and <IC>co-expressed_with</IC>.</P>
+  <P>The model is a relation classification head on top of the same PubMedBERT encoder, taking the concatenated entity representations as input. In practice, the precision-recall tradeoff here is critical. A false positive relation pollutes the knowledge graph with phantom edges. Aethon operates at a <B>high-precision, moderate-recall</B> operating point, preferring to miss real relations rather than hallucinate fake ones.</P>
+
+  <H3>Stage 4: Knowledge Graph Construction</H3>
+  <P>Extracted entities become nodes. Extracted relations become edges. Each edge carries metadata: the source paper, the section it was extracted from, the confidence score, and the relation type. Edge weights are computed as a function of <B>evidence strength</B>, which combines extraction confidence, publication recency, journal impact, and the number of independent papers supporting the same relation.</P>
+
+  <Callout label="Key takeaway">The knowledge graph is not a static artifact. Every new paper ingested can add nodes, add edges, or increase the weight of existing edges. The graph is a living representation of the field&apos;s collective knowledge.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="The Knowledge Graph Architecture">
+  <P>The graph itself is stored in <IC>Neo4j</IC> with a property graph model. Nodes have types (gene, protein, metabolite, disease, drug, process) and properties (canonical name, aliases, organism, UniProt ID where applicable). Edges have types (the seven relation categories) and properties (weight, source papers, extraction confidence).</P>
+  <P>The choice of a property graph over a simple triple store was deliberate. Biomedical relationships are <Highlight>not binary</Highlight>. The statement "AMPK phosphorylates ACC" is incomplete without knowing the organism, tissue context, experimental conditions, and confidence level. Property graphs encode this naturally.</P>
+  <P>Pathway discovery is then framed as graph queries. To find novel connections between two entities, Aethon computes shortest paths, identifies high-betweenness intermediary nodes, and ranks candidate pathways by cumulative edge weight. A pathway supported by ten high-confidence edges from recent papers ranks higher than one supported by two low-confidence edges from 2003.</P>
+
+```python
+# Simplified pathway discovery query
+def discover_pathways(graph, source, target, max_hops=4):
+    paths = graph.find_all_paths(
+        start=source, end=target,
+        max_depth=max_hops,
+        relationship_types=["activates", "inhibits", "phosphorylates", "binds"]
+    )
+    scored = []
+    for path in paths:
+        edge_weights = [e["weight"] for e in path.edges]
+        novelty = compute_novelty_score(path)
+        score = geometric_mean(edge_weights) * novelty
+        scored.append((path, score))
+    return sorted(scored, key=lambda x: x[1], reverse=True)
+```
+
+  <P>The <IC>novelty</IC> score is the key innovation. It measures how unexpected a pathway is by comparing it against known pathways in KEGG and Reactome. A high-confidence pathway that already exists in canonical databases is useful for validation but not for discovery. Aethon prioritizes paths that are <Highlight>well-supported but previously uncharacterized</Highlight>.</P>
+
+  <Figure
+    src="/img/blog/lab-equipment.jpg"
+    alt="Laboratory bench with precision scientific equipment used for wet-lab validation experiments"
+    caption="Computational pathway predictions ultimately require wet-lab validation. The knowledge graph narrows the search space, but the bench work confirms the biology."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="What Aethon Has Surfaced">
+  <P>During development and testing against curated pathway databases, Aethon identified several categories of findings that demonstrate the system&apos;s practical value.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Cross-pathway bridging nodes.</B> Entities that appear in multiple well-known pathways but whose role as connectors between those pathways has not been explicitly characterized. These are the most actionable outputs because they suggest specific experiments.</ConnectedItem>
+    <ConnectedItem><B>Underexplored metabolite-gene interactions.</B> The literature has a strong bias toward protein-protein interactions. Metabolite-gene regulatory relationships are documented but rarely synthesized into pathway models. Aethon&apos;s entity type diversity captures these systematically.</ConnectedItem>
+    <ConnectedItem><B>Temporal evidence patterns.</B> By tracking publication dates, Aethon identifies relationships where supporting evidence has been accumulating incrementally across papers without anyone synthesizing the pattern explicitly. These are hypotheses hiding in plain sight.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Why this matters">Drug discovery depends on understanding pathway biology. Every novel pathway connection Aethon surfaces is a potential therapeutic target that would otherwise require months of manual literature synthesis to identify.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Implications for Drug Discovery">
+  <P>The pharmaceutical industry spends billions on target identification, the process of finding biological entities whose modulation could treat a disease. This process is bottlenecked by exactly the literature synthesis problem Aethon addresses. If a kinase sits at the intersection of two disease-relevant pathways, it is a candidate for dual-indication drug development. But <B>finding that intersection requires reading papers from both fields</B>, which rarely happens because researchers specialize.</P>
+  <P>Aethon does not replace the biologist. It replaces the months of literature review that precede hypothesis formation. The biologist still designs the experiment, interprets the results, and validates the pathway in wet-lab conditions. But they start from a position of <Highlight>comprehensive rather than partial</Highlight> knowledge of what the literature already contains.</P>
+  <P>The system currently indexes over 50,000 papers and maintains a graph with approximately 180,000 entity nodes and 420,000 relationship edges. Processing a new paper takes under 30 seconds. Running a pathway discovery query between two arbitrary entities returns results in under two seconds.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Biochemical pathway discovery is a graph problem masked by the linear format of research papers. Aethon converts scattered textual evidence into a structured, weighted, queryable knowledge graph where novel pathway connections emerge from the intersection of thousands of independent observations.</P>
+  <P>The technical components, biomedical NER, relation extraction, evidence-weighted graph construction, are individually well-understood. The contribution is in combining them into a system that operates at literature scale and produces outputs that biologists find trustworthy and actionable. The hard part was never the NLP. It was building something that a researcher would actually use instead of reading one more paper.</P>
+
+  <Callout label="Get involved">If you&apos;re working on computational biology, knowledge graphs, or biomedical NLP, I&apos;d love to hear from you. Reach out to discuss Aethon or related research.</Callout>
+</Section>

@@ -1,0 +1,161 @@
+---
+title: "Building Medical AI: A Complete Guide To Pathology Slide Analysis"
+subtitle: "The architectures, datasets, evaluation methods, and deployment challenges every team building medical imaging AI needs to understand."
+date: "2026-03-28"
+readTime: "10 min"
+category: "Research"
+author: "Navtej Singh"
+featured: true
+---
+
+<Section name="Introduction">
+  <P>Medical imaging AI sits at one of the most promising intersections of deep learning and clinical practice. The core task is deceptively simple: given a digitized pathology slide, identify and classify regions of diagnostic interest. The execution is <Highlight>not simple at all</Highlight>.</P>
+  <P>A single whole-slide image can exceed <IC>100,000 x 100,000 pixels</IC>. Standard convolutional networks cannot process inputs at this scale. The field has converged on a set of architectural patterns to handle this, and understanding them is prerequisite to building anything that works in production.</P>
+
+  <Figure
+    src="/img/blog/pathology-slide.jpg"
+    alt="Microscopic view of tissue under laboratory analysis"
+    caption="Microscopy at the cellular level — medical AI processes thousands of tiles like this from a single slide"
+    source="Photo by CDC on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="How Medical AI Analyzes Pathology Slides">
+  <P>Understanding how medical AI works begins with understanding the data it processes. A digitized pathology slide is not a photograph. It is a <B>pyramidal image</B>, stored at multiple resolution levels, with the highest resolution capturing cellular-level detail across an area that may span several square centimeters of tissue.</P>
+  <P>The model never sees the full slide at once. Instead, the slide is divided into overlapping tiles, typically <IC>256x256</IC> or <IC>512x512</IC> pixels at 20x or 40x magnification. Each tile is processed independently through a feature extractor, producing a fixed-length embedding vector. The collection of embeddings is then aggregated using an <B>attention mechanism</B> to produce a slide-level prediction.</P>
+  <P>This mechanism explains two things that otherwise feel arbitrary.</P>
+
+  <ConnectedList>
+    <ConnectedItem>It explains why <B>tile-level labels are not required</B> for training. The attention mechanism learns which tiles are diagnostically relevant. This is critical because pathologists annotate at the slide level, not the tile level.</ConnectedItem>
+    <ConnectedItem>It explains why two slides that look similar to a human observer can produce meaningfully different model outputs. The model attends to spatial patterns in the embedding space that may not correspond to visually obvious features. A complete breakdown of <A>attention-based MIL architectures</A> covers the full mechanism in depth.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="The Core Pipeline Architecture">
+  <P>With the mechanism in place, the pipeline taxonomy becomes intelligible. Each stage is a structured transformation of the raw slide data into a clinically actionable prediction.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Tissue detection and segmentation.</B> Before any analysis begins, background regions must be separated from tissue. This is typically handled by color-space thresholding in <IC>HSV</IC> or Otsu binarization, though learned segmentation models perform better on staining artifacts.</ConnectedItem>
+    <ConnectedItem><B>Tile extraction and normalization.</B> Tissue regions are divided into tiles at the target magnification. Stain normalization (<IC>Macenko</IC> or <IC>Vahadane</IC> methods) standardizes color distributions across slides from different scanners and labs.</ConnectedItem>
+    <ConnectedItem><B>Feature extraction.</B> A pretrained encoder (<IC>ResNet-50</IC>, <IC>ViT</IC>, or increasingly, pathology-specific foundation models like <Highlight>UNI</Highlight> or <Highlight>CONCH</Highlight>) maps each tile to a dense embedding vector.</ConnectedItem>
+    <ConnectedItem><B>Aggregation and classification.</B> An attention-based pooling layer combines tile embeddings into a single slide-level representation, which is fed to a classifier for the target task (cancer detection, grading, molecular subtyping).</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Approaches to Medical Image Analysis">
+  <H3>Medical AI vs. Alternatives: The Diagnostic Guide</H3>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Approach</TH>
+          <TH>Root cause it solves</TH>
+          <TH>When to use it</TH>
+          <TH last>The signal that it&apos;s time</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Multiple Instance Learning</TD>
+          <TD>Slide-level labels only, no tile annotations available</TD>
+          <TD>Always start here for whole-slide classification</TD>
+          <TD last>You have slide diagnoses but no pixel-level masks</TD>
+        </TR>
+        <TR>
+          <TD first bold>Supervised segmentation</TD>
+          <TD>Need precise spatial localization of pathology</TD>
+          <TD>After pathologist-annotated masks are available</TD>
+          <TD last>Clinical workflow requires tumor boundary delineation</TD>
+        </TR>
+        <TR>
+          <TD first bold>Foundation model fine-tuning</TD>
+          <TD>Limited labeled data for rare pathologies</TD>
+          <TD>When pretrained pathology encoders are available</TD>
+          <TD last>Small dataset but high performance requirements</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Graph neural networks</TD>
+          <TD>Spatial relationships between cells matter for diagnosis</TD>
+          <TD>When tissue microenvironment drives the prediction</TD>
+          <TD last>Tile-level features alone miss inter-cellular context</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P>In practice, the tile extraction step is straightforward to implement. Here&apos;s a simplified version of the core loop:</P>
+
+```python
+import openslide
+import numpy as np
+
+def extract_tiles(slide_path, tile_size=256, level=0):
+    slide = openslide.OpenSlide(slide_path)
+    w, h = slide.level_dimensions[level]
+
+    tiles = []
+    for y in range(0, h, tile_size):
+        for x in range(0, w, tile_size):
+            tile = slide.read_region((x, y), level, (tile_size, tile_size))
+            tile_np = np.array(tile.convert('RGB'))
+
+            # Skip background tiles (mostly white)
+            if tile_np.mean() < 220:
+                tiles.append((x, y, tile_np))
+
+    return tiles
+```
+
+  <Figure
+    src="/img/blog/microscope-lab.jpg"
+    alt="Research laboratory with microscope and tissue samples"
+    caption="The wet lab side of computational pathology — digitized slides begin here before any model touches them"
+    source="Photo by National Cancer Institute on Unsplash"
+  />
+
+  <P><A>Foundation model fine-tuning vs. training from scratch</A> covers the decision in full. The core rule is that you should not train from scratch until you have thoroughly evaluated pretrained encoders. Because training on a dataset you haven&apos;t benchmarked against existing models rarely yields the expected result and makes the underlying failure harder to see.</P>
+</Section>
+
+<Divider />
+
+<Section name="Key Technical Challenges">
+  <P>Medical AI has a defined set of failure modes. Three technical challenges — <Highlight>distribution shift</Highlight>, <Highlight>label noise</Highlight>, and <Highlight>computational scale</Highlight> — account for the majority of deployment failures.</P>
+
+  <Callout label="Key takeaway">Distribution shift is the silent killer. A model trained at one hospital can drop 15-20% in accuracy when deployed at another — even on the same cancer type — purely due to differences in scanners and staining protocols.</Callout>
+
+  <P>Distribution shift occurs when a model trained on slides from one institution encounters slides from another. Different scanners, staining protocols, and tissue preparation methods produce systematic visual differences that can degrade model performance dramatically. Stain normalization reduces but does not eliminate this problem.</P>
+  <P>Label noise is endemic to pathology datasets. Inter-observer agreement among pathologists for certain diagnoses (particularly grading) can be <Highlight>surprisingly low</Highlight>. Training with noisy labels requires either robust loss functions or consensus-based label refinement, both of which add complexity to the training pipeline.</P>
+
+  <Figure
+    src="/img/blog/medical-research.jpg"
+    alt="Medical researcher analyzing samples in a clinical laboratory"
+    caption="Clinical validation requires pathologist review — the human side of the evaluation pipeline that no model can skip"
+    source="Photo by National Cancer Institute on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="What Changed in 2025-2026">
+  <P>The most significant shift in computational pathology over the past year has been the emergence of <B>pathology foundation models</B>. Models like <IC>UNI</IC>, <IC>CONCH</IC>, and <IC>Virchow</IC> were trained on hundreds of thousands to millions of pathology slides using self-supervised learning. They produce tile embeddings that transfer effectively to downstream tasks with minimal fine-tuning.</P>
+
+  <Callout label="Why this matters">Foundation models have fundamentally changed the economics: you need hundreds of labeled slides instead of thousands, making clinical AI feasible for smaller research groups and rare pathologies.</Callout>
+
+  <P>This changes the economics of medical AI development. Previously, building a competitive pathology model required access to large, well-annotated datasets and significant compute for training. Foundation models reduce the data requirement to <Highlight>hundreds rather than thousands</Highlight> of labeled slides, making it feasible for smaller research groups to develop clinically useful models.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Building medical AI for pathology is a <Highlight>systems problem</Highlight>, not just a modeling problem. The pipeline from raw whole-slide images to clinically validated predictions involves tissue detection, tile extraction, feature encoding, attention-based aggregation, and careful evaluation against distribution shift and label noise.</P>
+  <P>The arrival of foundation models has simplified the feature extraction stage considerably, but the surrounding infrastructure — the data pipelines, evaluation frameworks, and deployment considerations — remains the hard part. The teams that get this right will define the next generation of diagnostic tools.</P>
+
+  <Callout label="Get involved">This is an active area of my research. If you&apos;re working on medical imaging AI or want to collaborate, feel free to reach out.</Callout>
+</Section>

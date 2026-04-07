@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Hodgkin-Huxley Neuron</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0c}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+#info{position:fixed;top:16px;left:20px;z-index:10;font:11px/1.8 'SF Mono','Cascadia Code',monospace;
+  color:rgba(255,255,255,.25);letter-spacing:.02em}
+#info b{font-weight:600;color:rgba(255,255,255,.5)}
+.ch{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+#hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font:13px/2 'Inter',-apple-system,system-ui,sans-serif;color:rgba(255,255,255,.12);
+  pointer-events:none;text-align:center;letter-spacing:.02em;transition:opacity .6s}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info">
+  <div><span class="ch" style="background:#ffd43b"></span>Membrane Potential (mV) <b id="vm">-65.0</b></div>
+  <div><span class="ch" style="background:#ff6b6b"></span>Na\u207A activation (m)</div>
+  <div><span class="ch" style="background:#339af0"></span>K\u207A activation (n)</div>
+  <div><span class="ch" style="background:#51cf66"></span>Na\u207A inactivation (h)</div>
+  <div style="margin-top:6px;color:rgba(255,255,255,.15)">I<sub>stim</sub> = <b id="istim">0</b> \u03BCA/cm\u00B2</div>
+</div>
+<div id="hint">Click or hold anywhere to inject stimulus current</div>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Hodgkin-Huxley Neuron Model (1952)
+ * Nobel Prize-winning model of action potential generation
+ * Equations from Hodgkin & Huxley, J Physiol 117:500-544
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+
+// Hodgkin-Huxley parameters
+var C_m = 1.0;      // membrane capacitance (uF/cm^2)
+var g_Na = 120.0;   // max Na conductance (mS/cm^2)
+var g_K = 36.0;     // max K conductance
+var g_L = 0.3;      // leak conductance
+var E_Na = 50.0;    // Na reversal potential (mV)
+var E_K = -77.0;    // K reversal potential
+var E_L = -54.387;  // leak reversal potential
+
+// State variables
+var V = -65.0;       // membrane potential
+var m = 0.05;        // Na activation gate
+var h = 0.6;         // Na inactivation gate
+var n = 0.32;        // K activation gate
+var I_stim = 0;      // stimulus current
+
+var dt = 0.02;       // time step (ms)
+var stepsPerFrame = 40;
+
+// History for plotting
+var HISTORY_LEN;
+var vHistory = [];
+var mHistory = [];
+var nHistory = [];
+var hHistory = [];
+var histIdx = 0;
+
+// Rate functions (alpha and beta for each gate variable)
+function alphaN(V) { return 0.01 * (V + 55) / (1 - Math.exp(-(V + 55) / 10)); }
+function betaN(V) { return 0.125 * Math.exp(-(V + 65) / 80); }
+function alphaM(V) { return 0.1 * (V + 40) / (1 - Math.exp(-(V + 40) / 10)); }
+function betaM(V) { return 4 * Math.exp(-(V + 65) / 18); }
+function alphaH(V) { return 0.07 * Math.exp(-(V + 65) / 20); }
+function betaH(V) { return 1 / (1 + Math.exp(-(V + 35) / 10)); }
+
+function step() {
+    var am = alphaM(V), bm = betaM(V);
+    var ah = alphaH(V), bh = betaH(V);
+    var an = alphaN(V), bn = betaN(V);
+
+    // Ionic currents
+    var I_Na = g_Na * m * m * m * h * (V - E_Na);
+    var I_K = g_K * n * n * n * n * (V - E_K);
+    var I_L = g_L * (V - E_L);
+
+    // Membrane equation
+    var dV = (I_stim - I_Na - I_K - I_L) / C_m;
+    V += dV * dt;
+
+    // Gate kinetics
+    m += (am * (1 - m) - bm * m) * dt;
+    h += (ah * (1 - h) - bh * h) * dt;
+    n += (an * (1 - n) - bn * n) * dt;
+
+    // Clamp
+    m = Math.max(0, Math.min(1, m));
+    h = Math.max(0, Math.min(1, h));
+    n = Math.max(0, Math.min(1, n));
+}
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    HISTORY_LEN = Math.ceil(W / 1.5);
+    vHistory = new Array(HISTORY_LEN).fill(-65);
+    mHistory = new Array(HISTORY_LEN).fill(0.05);
+    nHistory = new Array(HISTORY_LEN).fill(0.32);
+    hHistory = new Array(HISTORY_LEN).fill(0.6);
+    histIdx = 0;
+}
+
+function drawTrace(history, color, yMin, yMax, areaTop, areaHeight) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+
+    for (var i = 0; i < HISTORY_LEN; i++) {
+        var idx = (histIdx + i) % HISTORY_LEN;
+        var x = (i / HISTORY_LEN) * W;
+        var y = areaTop + areaHeight - ((history[idx] - yMin) / (yMax - yMin)) * areaHeight;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+}
+
+function render() {
+    ctx.fillStyle = '#0a0a0c';
+    ctx.fillRect(0, 0, W, H);
+
+    // Voltage trace (top 60%)
+    var vTop = 30;
+    var vHeight = H * 0.55;
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.font = '10px monospace';
+    ctx.fillText('+40 mV', 5, vTop + 15);
+    ctx.fillText('-80 mV', 5, vTop + vHeight - 5);
+
+    // Zero line
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    var zeroY = vTop + vHeight - ((-0 - (-80)) / (40 - (-80))) * vHeight;
+    ctx.moveTo(0, zeroY);
+    ctx.lineTo(W, zeroY);
+    ctx.stroke();
+
+    // Resting potential line
+    var restY = vTop + vHeight - ((-65 - (-80)) / (40 - (-80))) * vHeight;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.setLineDash([4, 4]);
+    ctx.moveTo(0, restY);
+    ctx.lineTo(W, restY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillText('-65 mV (rest)', W - 90, restY - 4);
+
+    // Voltage
+    ctx.shadowColor = '#ffd43b';
+    ctx.shadowBlur = 6;
+    drawTrace(vHistory, '#ffd43b', -80, 40, vTop, vHeight);
+    ctx.shadowBlur = 0;
+
+    // Gate variables (bottom 35%)
+    var gTop = H * 0.65;
+    var gHeight = H * 0.3;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillText('1.0', 5, gTop + 12);
+    ctx.fillText('0.0', 5, gTop + gHeight - 2);
+
+    drawTrace(mHistory, 'rgba(255,107,107,0.7)', 0, 1, gTop, gHeight);
+    drawTrace(nHistory, 'rgba(51,154,240,0.7)', 0, 1, gTop, gHeight);
+    drawTrace(hHistory, 'rgba(81,207,102,0.7)', 0, 1, gTop, gHeight);
+
+    // Update display
+    document.getElementById('vm').textContent = V.toFixed(1);
+    document.getElementById('istim').textContent = I_stim.toFixed(0);
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+
+    for (var i = 0; i < stepsPerFrame; i++) {
+        step();
+    }
+
+    // Record history
+    vHistory[histIdx] = V;
+    mHistory[histIdx] = m;
+    nHistory[histIdx] = n;
+    hHistory[histIdx] = h;
+    histIdx = (histIdx + 1) % HISTORY_LEN;
+
+    render();
+}
+
+resize();
+window.addEventListener('resize', resize);
+
+// Mouse/touch: hold to inject current
+var stimulating = false;
+var hintEl = document.getElementById('hint');
+var hintShown = true;
+
+function dismissHint() {
+    if (!hintShown) return;
+    hintShown = false;
+    hintEl.style.opacity = '0';
+}
+
+canvas.addEventListener('mousedown', function(e) {
+    stimulating = true;
+    I_stim = 10;
+    dismissHint();
+});
+window.addEventListener('mouseup', function() {
+    stimulating = false;
+    I_stim = 0;
+});
+
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    stimulating = true;
+    I_stim = 10;
+    dismissHint();
+}, {passive:false});
+canvas.addEventListener('touchend', function() {
+    stimulating = false;
+    I_stim = 0;
+});
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

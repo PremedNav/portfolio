@@ -52,21 +52,10 @@ const LOGO_GROUPS = [
   ],
 ];
 
-const WIDGETS = [
-  { src: '/widgets/dna.html', title: 'Game of Life', label: 'Game of Life' },
-  { src: '/widgets/quantum.html', title: 'Quantum Network', label: 'Quantum Network' },
-  { src: '/widgets/blackhole.html', title: 'Black Hole', label: 'Black Hole' },
-  { src: '/widgets/neuron.html', title: 'Neuron', label: 'Neural Synapse' },
-  { src: '/widgets/morphology.html', title: 'Morphology', label: 'Morphology' },
-];
-
 const Hero = () => {
   const dark = false;
   const [loading, setLoading] = useState(true);
   const [coloradoTime, setColoradoTime] = useState('');
-
-  const [heroReady, setHeroReady] = useState(false);
-  const [visibleWidgets, setVisibleWidgets] = useState(0);
 
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
@@ -115,45 +104,21 @@ const Hero = () => {
       };
       img.src = src;
     });
+
+    // Prefetch below-fold resources while loader plays
+    const warmup = ['/videos/feature-4.mp4', '/videos/trovex.mp4'];
+    warmup.forEach((href) => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = href;
+      document.head.appendChild(link);
+    });
   }, []);
 
   // Fallback: dismiss loader after 3s
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 3000);
     return () => clearTimeout(timeout);
-  }, []);
-
-  // ── Listen for hero-ready to defer widgets ──
-  useEffect(() => {
-    const onReady = () => setHeroReady(true);
-    window.addEventListener('hero-ready', onReady);
-    return () => window.removeEventListener('hero-ready', onReady);
-  }, []);
-
-  // ── Stagger widget loading after hero is ready ──
-  useEffect(() => {
-    if (!heroReady) return;
-    let count = 0;
-    const interval = setInterval(() => {
-      count++;
-      setVisibleWidgets(count);
-      if (count >= WIDGETS.length) clearInterval(interval);
-    }, 400);
-    return () => clearInterval(interval);
-  }, [heroReady]);
-
-  // ── Broadcast theme to widget iframes ──
-  useEffect(() => {
-    const msg = { theme: 'light' };
-    const iframes = document.querySelectorAll('iframe[data-widget]');
-    iframes.forEach((f) => f.contentWindow?.postMessage(msg, '*'));
-    const handler = (e) => {
-      if (e.data?.type === 'widget-ready' && e.source) {
-        e.source.postMessage(msg, '*');
-      }
-    };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
   }, []);
 
   // ── Auto-scroll chat to bottom ──
@@ -438,77 +403,6 @@ const Hero = () => {
 
       {/* ── HelmetReveal: face/skeleton + contour bg + brush ── */}
       <HelmetReveal dark={dark} />
-
-      {/* ── 5 Interactive 3D Widgets (deferred + staggered after hero-ready) ── */}
-      {heroReady && WIDGETS.slice(0, visibleWidgets).map((w, i) => {
-        const positions = [
-          { top: '50%', left: '-2%',  ty: '-50%' },
-          { top: '8%',  left: '10%' },
-          { top: '-2%', left: '50%', tx: '-50%' },
-          { top: '8%',  right: '10%' },
-          { top: '50%', right: '-2%', ty: '-50%' },
-        ];
-        const p = positions[i];
-        return (
-          <div
-            key={w.title}
-            className="group absolute z-[12] pointer-events-auto hidden sm:block w-[180px] h-[180px] sm:w-[280px] sm:h-[280px]"
-            style={{
-              top: p.top,
-              left: p.left,
-              right: p.right,
-              transform: `translate(${p.tx || '0'}, ${p.ty || '0'})`,
-            }}
-          >
-            <iframe
-              src={w.src}
-              data-widget
-              className="absolute inset-0 w-full h-full"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                WebkitMaskImage: 'radial-gradient(circle at center, black 25%, transparent 65%)',
-                maskImage: 'radial-gradient(circle at center, black 25%, transparent 65%)',
-              }}
-              title={w.title}
-              loading="lazy"
-              allowTransparency
-              onLoad={(e) => {
-                e.target.contentWindow?.postMessage(
-                  { theme: dark ? 'dark' : 'light' }, '*'
-                );
-              }}
-            />
-            {/* Curved arc label on hover */}
-            <svg
-              className="absolute left-0 w-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              style={{ top: '70%', height: '40px' }}
-              viewBox="0 0 200 40"
-              overflow="visible"
-            >
-              <defs>
-                <path
-                  id={`arc-${i}`}
-                  d="M 20,5 A 100,100 0 0,0 180,5"
-                  fill="none"
-                />
-              </defs>
-              <text
-                className="select-none"
-                fill={dark ? 'rgba(232,230,225,0.7)' : 'rgba(26,26,26,0.7)'}
-                fontSize="11"
-                fontWeight="600"
-                letterSpacing="0.15em"
-                textAnchor="middle"
-              >
-                <textPath href={`#arc-${i}`} startOffset="50%">
-                  {w.label.toUpperCase()}
-                </textPath>
-              </text>
-            </svg>
-          </div>
-        );
-      })}
 
       {/* ── Hero Text Content ── */}
       <div className="absolute bottom-16 sm:bottom-8 left-0 z-[30] px-5 sm:px-10">

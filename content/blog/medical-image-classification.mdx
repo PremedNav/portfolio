@@ -1,0 +1,205 @@
+---
+title: "Getting Started with Medical Image Classification Using Deep Learning"
+subtitle: "A practical tutorial on building your first medical image classifier with modern deep learning tools."
+date: "2026-02-05"
+readTime: "8 min"
+category: "Tutorials"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Medical image classification is one of the most accessible entry points into healthcare AI. The core task, given a medical image, assign it a diagnostic category, is structurally identical to standard image classification. The difference is that <Highlight>the stakes are higher and the failure modes are more subtle</Highlight>. A misclassified cat is a meme. A misclassified pathology slide is a missed diagnosis.</P>
+  <P>This tutorial walks through building a medical image classifier using PyTorch. It draws from my experience building Histia, a pathology AI system, and focuses on the practical decisions that separate a working medical classifier from a dangerously misleading one. If you know basic Python and have seen a PyTorch tutorial, you have enough to follow along.</P>
+
+  <Figure
+    src="/img/blog/medical-tech.jpg"
+    alt="Advanced medical imaging technology equipment in a clinical setting"
+    caption="Medical imaging technology generates massive volumes of visual data that deep learning models can analyze for diagnostic patterns invisible to the human eye."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Choosing Your Dataset">
+  <P>The dataset determines everything downstream. For a first project, you want something small enough to iterate quickly, well-labeled enough to trust, and medically relevant enough to be interesting.</P>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Dataset</TH>
+          <TH>Domain</TH>
+          <TH>Size</TH>
+          <TH last>Best for</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>PathMNIST</TD>
+          <TD>Colon pathology</TD>
+          <TD>107K images, 9 classes</TD>
+          <TD last>First project, fast iteration</TD>
+        </TR>
+        <TR>
+          <TD first bold>ISIC 2020</TD>
+          <TD>Dermatology</TD>
+          <TD>33K images, 2 classes</TD>
+          <TD last>Binary classification, class imbalance</TD>
+        </TR>
+        <TR last>
+          <TD first bold>CheXpert</TD>
+          <TD>Chest X-ray</TD>
+          <TD>224K images, 14 labels</TD>
+          <TD last>Multi-label, uncertainty handling</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+
+  <P><B>Start with PathMNIST.</B> Part of the MedMNIST collection, it provides standardized 224x224 images with consistent train/val/test splits, eliminating data engineering overhead so you can focus on modeling.</P>
+
+```python
+from medmnist import PathMNIST
+from torchvision import transforms
+
+train_transform = transforms.Compose([
+    transforms.Resize(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation(15),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+val_transform = transforms.Compose([
+    transforms.Resize(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+train_data = PathMNIST(split="train", transform=train_transform, download=True, size=224)
+val_data = PathMNIST(split="val", transform=val_transform, download=True, size=224)
+test_data = PathMNIST(split="test", transform=val_transform, download=True, size=224)
+```
+
+  <Callout label="Key takeaway">Notice what is NOT in the augmentation pipeline: random color jitter. In pathology, color carries diagnostic information. Stain intensity differences between eosinophilic and basophilic tissue are how pathologists distinguish cell types. Randomly shifting hue and saturation destroys clinically meaningful signal.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Preprocessing Pitfalls Specific to Medical Imaging">
+  <P>Medical image preprocessing has domain-specific pitfalls that general CV tutorials never cover.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Normalization must match pretraining.</B> Use ImageNet statistics for ImageNet-pretrained models, pathology-specific statistics for pathology-pretrained models. Mismatched normalization silently degrades performance.</ConnectedItem>
+    <ConnectedItem><B>Augmentation must respect clinical semantics.</B> Flips and rotation are safe for pathology because tissue orientation is arbitrary under a microscope. But elastic deformations can create biologically impossible morphology, and aggressive cropping can remove diagnostically critical regions.</ConnectedItem>
+    <ConnectedItem><B>Stain normalization is a separate step.</B> If your dataset combines images from multiple scanners, stain variation will dominate your feature space. Macenko or Vahadane normalization standardizes appearance. Skip this and your model learns scanner identity, not pathology.</ConnectedItem>
+    <ConnectedItem><B>Patient-level splitting is mandatory.</B> Multiple images from the same patient must all go into the same split. If patient A appears in both training and validation, the model memorizes patient-specific features and reports inflated metrics. This is <Highlight>data leakage</Highlight>, the most common methodological error in medical imaging papers.</ConnectedItem>
+  </ConnectedList>
+</Section>
+
+<Divider />
+
+<Section name="Transfer Learning: The Two-Phase Approach">
+  <P>Do not train from scratch. Medical image datasets are small by deep learning standards. <B>Transfer learning is not optional. It is required.</B> ResNet-50 pretrained on ImageNet is the baseline: well-understood, fast to fine-tune, and competitive on most medical imaging benchmarks.</P>
+
+```python
+import torch
+import torch.nn as nn
+from torchvision.models import resnet50, ResNet50_Weights
+from torch.optim import AdamW
+
+class MedicalClassifier(nn.Module):
+    def __init__(self, num_classes=9, freeze_backbone=True):
+        super().__init__()
+        self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+        if freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Sequential(
+            nn.Dropout(0.3), nn.Linear(in_features, 512), nn.ReLU(),
+            nn.Dropout(0.2), nn.Linear(512, num_classes)
+        )
+
+    def forward(self, x):
+        return self.backbone(x)
+
+    def unfreeze(self):
+        for param in self.backbone.parameters():
+            param.requires_grad = True
+
+model = MedicalClassifier(num_classes=9, freeze_backbone=True).cuda()
+criterion = nn.CrossEntropyLoss()
+
+# Phase 1: Train classifier head (5-10 epochs, lr=1e-3)
+opt = AdamW(model.backbone.fc.parameters(), lr=1e-3, weight_decay=1e-4)
+
+# Phase 2: Unfreeze and fine-tune entire network (10-20 epochs, lr=1e-5)
+model.unfreeze()
+opt = AdamW(model.parameters(), lr=1e-5, weight_decay=1e-4)
+```
+
+  <P><B>Phase one</B> freezes the backbone and trains only the classification head at <IC>lr=1e-3</IC>, adapting the classifier to your label space without disrupting pretrained features. <B>Phase two</B> unfreezes the backbone and fine-tunes at <IC>lr=1e-5</IC>, letting the feature extractor adapt to medical image statistics while the classifier head stays stable.</P>
+  <P>Vision Transformers (<IC>ViT</IC>) often outperform CNNs on medical imaging because their attention mechanism handles spatial relationships between tissue structures naturally. But they are more data-hungry. Try <IC>ViT-B/16</IC> after you have a ResNet baseline. If ViT does not improve AUROC by at least 2 points, the complexity is not worth it.</P>
+</Section>
+
+<Divider />
+
+<Section name="Evaluation: Why Accuracy Lies">
+  <P>Here is where most tutorials fail. In medical classification, <Highlight>accuracy is a misleading metric</Highlight>. A skin lesion classifier where 95% of images are benign achieves 95% accuracy by predicting "benign" for everything while missing every cancer case.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>AUROC.</B> Measures the model&apos;s ability to distinguish classes across all thresholds. This is the primary metric for medical classifiers and should be reported per-class in multi-class settings.</ConnectedItem>
+    <ConnectedItem><B>Sensitivity and Specificity.</B> Sensitivity measures what fraction of true positives are caught. In screening, sensitivity matters more because missing a disease is worse than a false alarm.</ConnectedItem>
+    <ConnectedItem><B>Confusion Matrix.</B> Shows exactly which classes the model confuses. Confusing <IC>adenocarcinoma</IC> with <IC>squamous cell carcinoma</IC> has different clinical implications than confusing either with <IC>normal tissue</IC>.</ConnectedItem>
+    <ConnectedItem><B>Calibration.</B> A model outputting 0.8 probability should be correct 80% of the time at that confidence. Temperature scaling fixes poorly calibrated models post-hoc.</ConnectedItem>
+  </ConnectedList>
+
+```python
+from sklearn.metrics import roc_auc_score, classification_report
+import numpy as np
+
+def evaluate(model, loader, device):
+    model.eval()
+    all_probs, all_labels = [], []
+    with torch.no_grad():
+        for images, labels in loader:
+            outputs = model(images.to(device))
+            all_probs.append(torch.softmax(outputs, dim=1).cpu().numpy())
+            all_labels.append(labels.squeeze().numpy())
+    probs, labels = np.concatenate(all_probs), np.concatenate(all_labels)
+    auroc = roc_auc_score(labels, probs, multi_class="ovr", average=None)
+    print(f"Mean AUROC: {auroc.mean():.4f}")
+    print(classification_report(labels, probs.argmax(1), digits=4))
+```
+</Section>
+
+<Divider />
+
+<Section name="Common Pitfalls That Waste Months">
+  <ConnectedList>
+    <ConnectedItem><B>Class imbalance.</B> If your dataset has 50,000 normal images and 500 cancer images, the model predicts normal for everything and achieves 99% accuracy while being clinically useless. Fix this with weighted cross-entropy that scales inversely with class frequency, oversampling, or focal loss.</ConnectedItem>
+    <ConnectedItem><B>Data leakage from image-level splits.</B> If your dataset contains multiple images per patient, splitting at the image level lets the model memorize patient-specific features and report inflated metrics. <B>Always split at the patient level.</B> PathMNIST handles this for you. Other datasets may not.</ConnectedItem>
+    <ConnectedItem><B>Center-specific overfitting.</B> Models trained on single-hospital data learn scanner characteristics and staining protocols, not pathology. Performance drops dramatically at other institutions. This is distribution shift, and it is <Highlight>the reason most medical AI papers do not replicate</Highlight>.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Why this matters">Medical AI is not a Kaggle competition. These metrics map to patient outcomes. A model that optimizes accuracy while ignoring sensitivity on the disease class misses sick patients. Build proper evaluation into your training loop from day one.</Callout>
+
+  <Figure
+    src="/img/blog/brain-scan.jpg"
+    alt="Medical brain scan image showing detailed neural structures analyzed by deep learning"
+    caption="Deep learning applied to medical imaging can detect subtle patterns across thousands of scans, but proper evaluation metrics are essential to ensure clinical reliability."
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Building a medical image classifier is structurally similar to any image classification task. The difference is that every decision carries clinical weight. Random color jitter destroys diagnostic signal. Accuracy hides class imbalance. Image-level splits produce unreplicable results.</P>
+  <P>Start with PathMNIST and a pretrained ResNet-50. Get the two-phase transfer learning pipeline working. Evaluate with AUROC and per-class metrics. Split at the patient level. Then iterate. The goal is not to beat a benchmark. It is to build something a clinician would trust with their patients, and that standard is <Highlight>much higher and more interesting</Highlight> than a leaderboard position.</P>
+
+  <Callout label="Get involved">If you are building medical imaging tools or want to discuss Histia and the computational pathology work behind it, reach out. This is a field where more builders are needed.</Callout>
+</Section>

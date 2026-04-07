@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Reaction-Diffusion</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+
+#ui{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;z-index:100;
+  background:rgba(12,12,12,.82);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  padding:4px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 8px 32px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.04) inset}
+.tb{font:500 11px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.01em;
+  background:transparent;border:1px solid transparent;
+  color:rgba(255,255,255,.45);padding:7px 11px;border-radius:10px;cursor:pointer;
+  transition:all .15s ease;white-space:nowrap;outline:none}
+.tb:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.tb:active{transform:scale(.96)}
+.tb.sel{background:rgba(100,210,255,.1);border-color:rgba(100,210,255,.2);color:rgba(100,210,255,.85)}
+.sep{width:1px;height:16px;background:rgba(255,255,255,.06);flex-shrink:0;margin:0 2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <button class="tb sel" data-f="0.0545" data-k="0.062">Coral</button>
+  <button class="tb" data-f="0.0367" data-k="0.0649">Mitosis</button>
+  <button class="tb" data-f="0.058" data-k="0.065">Worms</button>
+  <button class="tb" data-f="0.030" data-k="0.062">Spots</button>
+  <button class="tb" data-f="0.029" data-k="0.057">Maze</button>
+  <span class="sep"></span>
+  <button class="tb" id="rst">Reset</button>
+</div>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Gray-Scott Reaction-Diffusion System
+ * Based on Karl Sims' work and GPU implementations from:
+ * https://github.com/piellardj/reaction-diffusion-webgl (MIT)
+ * https://github.com/pmneila/jsexp
+ */
+
+var canvas = document.getElementById('c');
+var gl = canvas.getContext('webgl', {alpha:false,depth:false,stencil:false,antialias:false});
+if (!gl) gl = canvas.getContext('experimental-webgl', {alpha:false,depth:false,stencil:false,antialias:false});
+
+// Extensions for float textures
+var halfFloat = gl.getExtension('OES_texture_half_float');
+var halfFloatLinear = gl.getExtension('OES_texture_half_float_linear');
+var floatExt = gl.getExtension('OES_texture_float');
+var floatLinear = gl.getExtension('OES_texture_float_linear');
+
+var texType, useFloat;
+if (halfFloat && halfFloatLinear) {
+    texType = halfFloat.HALF_FLOAT_OES;
+    useFloat = false;
+} else if (floatExt && floatLinear) {
+    texType = gl.FLOAT;
+    useFloat = true;
+} else {
+    texType = halfFloat ? halfFloat.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
+}
+
+// Parameters
+var feed = 0.0545;
+var kill = 0.062;
+var simW, simH;
+var stepsPerFrame = 12;
+
+// Shaders
+function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+}
+
+function createProgram(vs, fs) {
+    var p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+    return p;
+}
+
+var vertSrc = `
+    attribute vec2 a;
+    varying vec2 v;
+    void main(){v=a*0.5+0.5;gl_Position=vec4(a,0,1);}
+`;
+
+var simSrc = `
+    precision highp float;
+    uniform sampler2D u;
+    uniform vec2 ts;
+    uniform float f,k;
+    varying vec2 v;
+    void main(){
+        vec2 c=texture2D(u,v).rg;
+        vec2 L=texture2D(u,v+vec2(-ts.x,0)).rg;
+        vec2 R=texture2D(u,v+vec2(ts.x,0)).rg;
+        vec2 T=texture2D(u,v+vec2(0,ts.y)).rg;
+        vec2 B=texture2D(u,v+vec2(0,-ts.y)).rg;
+        vec2 lap=L+R+T+B-4.0*c;
+        float uvv=c.r*c.g*c.g;
+        float du=1.0*lap.r-uvv+f*(1.0-c.r);
+        float dv=0.5*lap.g+uvv-(f+k)*c.g;
+        gl_FragColor=vec4(clamp(c.r+du,0.0,1.0),clamp(c.g+dv,0.0,1.0),0,1);
+    }
+`;
+
+var splatSrc = `
+    precision highp float;
+    uniform sampler2D u;
+    uniform vec2 pt,ts;
+    uniform float rad;
+    varying vec2 v;
+    void main(){
+        vec2 c=texture2D(u,v).rg;
+        float d=length((v-pt)/vec2(ts.y/ts.x,1.0));
+        float s=exp(-d*d/(rad*rad));
+        c.g=min(1.0,c.g+s*0.5);
+        c.r=max(0.0,c.r-s*0.2);
+        gl_FragColor=vec4(c,0,1);
+    }
+`;
+
+var dispSrc = `
+    precision highp float;
+    uniform sampler2D u;
+    varying vec2 v;
+    void main(){
+        vec2 c=texture2D(u,v).rg;
+        float val=c.g;
+        vec3 c1=vec3(0.02,0.02,0.04);
+        vec3 c2=vec3(0.05,0.25,0.45);
+        vec3 c3=vec3(0.85,0.55,0.15);
+        vec3 c4=vec3(1.0,0.98,0.95);
+        vec3 col;
+        if(val<0.08) col=mix(c1,c2,val/0.08);
+        else if(val<0.25) col=mix(c2,c3,(val-0.08)/0.17);
+        else col=mix(c3,c4,clamp((val-0.25)/0.35,0.0,1.0));
+        gl_FragColor=vec4(col,1);
+    }
+`;
+
+var vert = compileShader(gl.VERTEX_SHADER, vertSrc);
+var simProg = createProgram(vert, compileShader(gl.FRAGMENT_SHADER, simSrc));
+var splatProg = createProgram(compileShader(gl.VERTEX_SHADER, vertSrc), compileShader(gl.FRAGMENT_SHADER, splatSrc));
+var dispProg = createProgram(compileShader(gl.VERTEX_SHADER, vertSrc), compileShader(gl.FRAGMENT_SHADER, dispSrc));
+
+// Fullscreen quad
+var buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,-1,1,1,1,1,-1]), gl.STATIC_DRAW);
+var ibuf = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuf);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+
+function bindQuad(prog) {
+    var a = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(a);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuf);
+}
+
+// FBO helpers
+function createTex(w, h) {
+    var t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, texType, null);
+    return t;
+}
+
+function createFBO(w, h) {
+    var t = createTex(w, h);
+    var f = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    return {tex: t, fbo: f};
+}
+
+var state = [null, null];
+var current = 0;
+
+function initState() {
+    simW = Math.floor(canvas.width / 2);
+    simH = Math.floor(canvas.height / 2);
+    if (simW < 64) simW = 64;
+    if (simH < 64) simH = 64;
+
+    // Clean up old FBOs
+    if (state[0]) {
+        gl.deleteTexture(state[0].tex);
+        gl.deleteFramebuffer(state[0].fbo);
+        gl.deleteTexture(state[1].tex);
+        gl.deleteFramebuffer(state[1].fbo);
+    }
+
+    state[0] = createFBO(simW, simH);
+    state[1] = createFBO(simW, simH);
+    current = 0;
+
+    // Initialize: U=1 everywhere, V=0. Then seed random patches.
+    // Write initial data via a pixel buffer
+    var data;
+    if (texType === gl.FLOAT) {
+        data = new Float32Array(simW * simH * 4);
+    } else {
+        // For half-float, we need to write via framebuffer
+        // Use a simple clear + splat approach
+        data = null;
+    }
+
+    if (data) {
+        for (var i = 0; i < simW * simH; i++) {
+            data[i * 4] = 1.0;     // U
+            data[i * 4 + 1] = 0.0; // V
+            data[i * 4 + 2] = 0.0;
+            data[i * 4 + 3] = 1.0;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, state[0].tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simW, simH, 0, gl.RGBA, texType, data);
+        gl.bindTexture(gl.TEXTURE_2D, state[1].tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simW, simH, 0, gl.RGBA, texType, data);
+    } else {
+        // For half-float: use shader to initialize
+        initWithShader();
+    }
+
+    // Seed random patches of V
+    seedPatches();
+}
+
+var initSrc = `
+    precision highp float;
+    varying vec2 v;
+    void main(){ gl_FragColor=vec4(1,0,0,1); }
+`;
+var initProg = createProgram(compileShader(gl.VERTEX_SHADER, vertSrc), compileShader(gl.FRAGMENT_SHADER, initSrc));
+
+function initWithShader() {
+    gl.useProgram(initProg);
+    bindQuad(initProg);
+    for (var i = 0; i < 2; i++) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, state[i].fbo);
+        gl.viewport(0, 0, simW, simH);
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    }
+}
+
+function seedPatches() {
+    // Add 6-10 random rectangular seeds of V
+    var count = 6 + Math.floor(Math.random() * 5);
+    for (var i = 0; i < count; i++) {
+        var x = Math.random();
+        var y = Math.random();
+        doSplat(x, y, 0.02 + Math.random() * 0.03);
+    }
+}
+
+function doSplat(nx, ny, radius) {
+    gl.useProgram(splatProg);
+    bindQuad(splatProg);
+    gl.uniform1i(gl.getUniformLocation(splatProg, 'u'), 0);
+    gl.uniform2f(gl.getUniformLocation(splatProg, 'pt'), nx, ny);
+    gl.uniform2f(gl.getUniformLocation(splatProg, 'ts'), simW, simH);
+    gl.uniform1f(gl.getUniformLocation(splatProg, 'rad'), radius);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, state[current].tex);
+    var next = 1 - current;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, state[next].fbo);
+    gl.viewport(0, 0, simW, simH);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    current = next;
+
+    // Copy to other buffer too
+    gl.bindTexture(gl.TEXTURE_2D, state[current].tex);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, state[1 - current].fbo);
+    gl.useProgram(dispProg); // just need a pass-through... use init
+    // Actually let's use a copy
+    gl.useProgram(initProg);
+    // Hmm, let me just re-splat the other buffer
+    gl.useProgram(splatProg);
+    bindQuad(splatProg);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, state[1 - current].tex);
+    // No, just leave it - the sim step will handle convergence
+}
+
+// Simulation step
+var simUniforms = {};
+function cacheSim() {
+    gl.useProgram(simProg);
+    simUniforms.u = gl.getUniformLocation(simProg, 'u');
+    simUniforms.ts = gl.getUniformLocation(simProg, 'ts');
+    simUniforms.f = gl.getUniformLocation(simProg, 'f');
+    simUniforms.k = gl.getUniformLocation(simProg, 'k');
+}
+cacheSim();
+
+function simStep() {
+    gl.useProgram(simProg);
+    bindQuad(simProg);
+    gl.uniform1i(simUniforms.u, 0);
+    gl.uniform2f(simUniforms.ts, 1.0 / simW, 1.0 / simH);
+    gl.uniform1f(simUniforms.f, feed);
+    gl.uniform1f(simUniforms.k, kill);
+
+    var next = 1 - current;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, state[current].tex);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, state[next].fbo);
+    gl.viewport(0, 0, simW, simH);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    current = next;
+}
+
+// Display
+var dispUniforms = {};
+function cacheDisp() {
+    gl.useProgram(dispProg);
+    dispUniforms.u = gl.getUniformLocation(dispProg, 'u');
+}
+cacheDisp();
+
+function display() {
+    gl.useProgram(dispProg);
+    bindQuad(dispProg);
+    gl.uniform1i(dispUniforms.u, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, state[current].tex);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+}
+
+// Resize
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resize();
+initState();
+
+window.addEventListener('resize', function() {
+    resize();
+    initState();
+});
+
+// Input
+var mouseDown = false;
+var lastX = -1, lastY = -1;
+
+canvas.addEventListener('mousedown', function(e) {
+    mouseDown = true;
+    var nx = e.clientX / canvas.clientWidth;
+    var ny = 1.0 - e.clientY / canvas.clientHeight;
+    doSplat(nx, ny, 0.015);
+    lastX = nx; lastY = ny;
+});
+
+canvas.addEventListener('mousemove', function(e) {
+    if (!mouseDown) return;
+    var nx = e.clientX / canvas.clientWidth;
+    var ny = 1.0 - e.clientY / canvas.clientHeight;
+    doSplat(nx, ny, 0.012);
+    lastX = nx; lastY = ny;
+});
+
+window.addEventListener('mouseup', function() { mouseDown = false; });
+
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    for (var i = 0; i < e.touches.length; i++) {
+        var nx = e.touches[i].clientX / canvas.clientWidth;
+        var ny = 1.0 - e.touches[i].clientY / canvas.clientHeight;
+        doSplat(nx, ny, 0.015);
+    }
+}, {passive:false});
+
+canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    for (var i = 0; i < e.touches.length; i++) {
+        var nx = e.touches[i].clientX / canvas.clientWidth;
+        var ny = 1.0 - e.touches[i].clientY / canvas.clientHeight;
+        doSplat(nx, ny, 0.012);
+    }
+}, {passive:false});
+
+canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+// Toolbar
+var buttons = document.querySelectorAll('#ui .tb[data-f]');
+var rstBtn = document.getElementById('rst');
+var uiEl = document.getElementById('ui');
+
+buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        feed = parseFloat(btn.dataset.f);
+        kill = parseFloat(btn.dataset.k);
+        buttons.forEach(function(b) { b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        initState();
+    });
+});
+
+rstBtn.addEventListener('click', function() { initState(); });
+
+uiEl.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+uiEl.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
+
+// Main loop
+function frame() {
+    requestAnimationFrame(frame);
+    for (var i = 0; i < stepsPerFrame; i++) simStep();
+    display();
+}
+requestAnimationFrame(frame);
+
+// Widget communication
+window.addEventListener('message', function(e) {
+    if (e.data && e.data.theme) { /* always dark */ }
+});
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+---
+title: "The Basel Problem: How Euler Proved That 1/1² + 1/2² + 1/3² + ... = π²/6"
+subtitle: "A 90-year-old mystery, a 28-year-old genius, and the proof that launched modern analysis."
+date: "2026-02-20"
+readTime: "12 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>In 1644, the Italian mathematician Pietro Mengoli posed a question that would haunt the greatest minds in Europe for nearly a century: what is the exact value of the sum <Eq c="\frac{1}{1^2} + \frac{1}{2^2} + \frac{1}{3^2} + \frac{1}{4^2} + \cdots" />? The series clearly converges — each term shrinks rapidly — but to what? Mathematicians could compute partial sums to arbitrary precision, yet the exact closed form eluded everyone. The Bernoulli family, among the most prolific mathematical dynasties in history, tried and failed. Jakob Bernoulli himself publicly admitted defeat, writing that he would be grateful to anyone who could find the answer.</P>
+  <P>Ninety-one years later, in 1735, a 28-year-old Leonhard Euler announced the solution. The answer was <Highlight>not a ratio of integers, not an algebraic number, but something far stranger</Highlight>: <Eq c="\frac{\pi^2}{6}" />. The sum of reciprocal squares of the natural numbers — a purely arithmetic object built from integers alone — equals a constant defined by the geometry of the circle divided by six. This result shocked the mathematical world. It was the first deep, unexpected connection between discrete arithmetic and continuous geometry, and it launched an entire branch of mathematics that would ultimately lead to the Riemann zeta function and some of the deepest unsolved problems in number theory.</P>
+
+  <Figure
+    src="/img/blog/basel-proof.jpg"
+    alt="Mathematical proof written on a chalkboard with summation notation and pi"
+    caption="The Basel Problem — where the integers meet the circle, and arithmetic meets geometry"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Problem">
+  <P>The Basel Problem asks for the exact value of the infinite series:</P>
+
+  <EqBlock c="\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{1}{1^2} + \frac{1}{2^2} + \frac{1}{3^2} + \frac{1}{4^2} + \frac{1}{5^2} + \cdots" />
+
+  <P>Before we can talk about the exact value, we need to know this series converges. One way to see this is by comparison with a telescoping series. Notice that for <Eq c="n \geq 2" />:</P>
+
+  <EqBlock c="\frac{1}{n^2} < \frac{1}{n(n-1)} = \frac{1}{n-1} - \frac{1}{n}" />
+
+  <P>So the partial sum satisfies:</P>
+
+  <EqBlock c="\sum_{n=1}^{N} \frac{1}{n^2} = 1 + \sum_{n=2}^{N} \frac{1}{n^2} < 1 + \sum_{n=2}^{N} \left( \frac{1}{n-1} - \frac{1}{n} \right) = 1 + 1 - \frac{1}{N} < 2" />
+
+  <P>The partial sums are increasing and bounded above by 2, so the series converges. But to what? The first several partial sums tell a suggestive story:</P>
+
+  <ConnectedList>
+    <ConnectedItem><Eq c="S_1 = 1.000000" /></ConnectedItem>
+    <ConnectedItem><Eq c="S_2 = 1.250000" /></ConnectedItem>
+    <ConnectedItem><Eq c="S_5 = 1.463611..." /></ConnectedItem>
+    <ConnectedItem><Eq c="S_{10} = 1.549768..." /></ConnectedItem>
+    <ConnectedItem><Eq c="S_{100} = 1.634984..." /></ConnectedItem>
+    <ConnectedItem><Eq c="S_{1000} = 1.643935..." /></ConnectedItem>
+    <ConnectedItem><Eq c="S_{\infty} = 1.644934..." /></ConnectedItem>
+  </ConnectedList>
+
+  <P>That limit, <Eq c="1.6449340668..." />, is suspiciously close to <Eq c="\frac{\pi^2}{6} = 1.6449340668..." />. But knowing the decimal expansion is not the same as proving the identity. Mathematicians in the early 18th century could compute these partial sums to many decimal places. They could even conjecture the answer. What they could not do was prove it. The gap between numerical evidence and rigorous proof is where the real mathematics lives.</P>
+</Section>
+
+<Divider />
+
+<Section name="Failed Attempts">
+  <P>The Basel Problem resisted solution for 91 years, and it is worth understanding why. This was not a problem that lacked attention. Some of the finest mathematical minds of the 17th and early 18th centuries worked on it.</P>
+  <P><B>Pietro Mengoli</B> posed the problem in 1644 but could not solve it himself. <B>Jakob Bernoulli</B>, who made foundational contributions to probability theory and calculus, attempted the problem repeatedly and published his frustration. He proved that the sum was bounded between <Eq c="\frac{3}{2}" /> and <Eq c="2" />, but tightening these bounds proved extraordinarily difficult. His brother <B>Johann Bernoulli</B>, equally brilliant and famously competitive, also failed.</P>
+  <P>The difficulty was not computational but conceptual. The tools available — geometric series, comparison tests, telescoping sums — could establish convergence and approximate the value, but <Highlight>no known technique could produce an exact closed form</Highlight>. The problem required a fundamentally new idea: treating the sine function as an infinite polynomial and factoring it by its roots. This was the insight that only Euler had the audacity to try.</P>
+
+  <Callout label="Historical context">The Basel Problem is named after Basel, Switzerland, the hometown of the Bernoulli family and also of Euler. It is fitting that the problem that defeated the Bernoullis was solved by their most famous student — Euler studied under Johann Bernoulli in Basel before moving to St. Petersburg.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Euler's Brilliant Insight — The sin(x)/x Product">
+  <P>Euler&apos;s proof begins with one of the most important functions in mathematics: <Eq c="\sin(x)" />. The Taylor series expansion of the sine function around zero is:</P>
+
+  <EqBlock c="\sin(x) = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \cdots = \sum_{k=0}^{\infty} \frac{(-1)^k x^{2k+1}}{(2k+1)!}" />
+
+  <P>If we divide both sides by <Eq c="x" />, we obtain the function <Eq c="\frac{\sin(x)}{x}" />, sometimes called the sinc function:</P>
+
+  <EqBlock c="\frac{\sin(x)}{x} = 1 - \frac{x^2}{3!} + \frac{x^4}{5!} - \frac{x^6}{7!} + \cdots = 1 - \frac{x^2}{6} + \frac{x^4}{120} - \frac{x^6}{5040} + \cdots" />
+
+  <P>Now comes the crucial observation. The function <Eq c="\frac{\sin(x)}{x}" /> has a very specific set of zeros. Since <Eq c="\sin(x) = 0" /> when <Eq c="x = n\pi" /> for any nonzero integer <Eq c="n" />, and dividing by <Eq c="x" /> removes the root at <Eq c="x = 0" />, the function <Eq c="\frac{\sin(x)}{x}" /> has zeros precisely at:</P>
+
+  <EqBlock c="x = \pm \pi, \; \pm 2\pi, \; \pm 3\pi, \; \pm 4\pi, \; \ldots" />
+
+  <P>Euler&apos;s key insight was an analogy with polynomials. If a polynomial <Eq c="p(x)" /> of degree <Eq c="n" /> has roots <Eq c="r_1, r_2, \ldots, r_n" /> and satisfies <Eq c="p(0) = 1" />, then it factors as:</P>
+
+  <EqBlock c="p(x) = \left(1 - \frac{x}{r_1}\right)\left(1 - \frac{x}{r_2}\right) \cdots \left(1 - \frac{x}{r_n}\right)" />
+
+  <P>Euler boldly extended this to the transcendental function <Eq c="\frac{\sin(x)}{x}" />, which is not a polynomial but an &ldquo;infinite polynomial&rdquo; with infinitely many roots. Since the roots come in pairs <Eq c="\pm n\pi" />, pairing them gives factors of the form <Eq c="\left(1 - \frac{x}{n\pi}\right)\left(1 + \frac{x}{n\pi}\right) = 1 - \frac{x^2}{n^2\pi^2}" />. Therefore:</P>
+
+  <EqBlock c="\frac{\sin(x)}{x} = \left(1 - \frac{x^2}{\pi^2}\right)\left(1 - \frac{x^2}{4\pi^2}\right)\left(1 - \frac{x^2}{9\pi^2}\right)\left(1 - \frac{x^2}{16\pi^2}\right) \cdots" />
+
+  <P>In compact notation:</P>
+
+  <EqBlock c="\frac{\sin(x)}{x} = \prod_{n=1}^{\infty} \left(1 - \frac{x^2}{n^2 \pi^2}\right)" />
+
+  <P>This is the infinite product representation of <Eq c="\frac{\sin(x)}{x}" />. Euler used it before it was rigorously justified. The rigorous foundation came later through Weierstrass&apos;s factorization theorem, which confirms that entire functions can be expressed as products over their zeros (with appropriate convergence factors). Euler&apos;s mathematical intuition was running decades ahead of the available theory, and he was right.</P>
+
+  <Callout label="The leap of faith">Euler treated a transcendental function as if it were a polynomial with infinitely many roots. This was not rigorous by modern standards, and contemporaries questioned it. But the answer it produced was correct, and the approach opened doors that led to some of the deepest results in complex analysis.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Matching Coefficients">
+  <P>We now have two representations of the same function <Eq c="\frac{\sin(x)}{x}" />. Euler&apos;s strategy is to expand both and compare the coefficients of <Eq c="x^2" />.</P>
+
+  <H3>The Taylor Series Form</H3>
+
+  <P>From the Taylor series, we already have:</P>
+
+  <EqBlock c="\frac{\sin(x)}{x} = 1 - \frac{x^2}{6} + \frac{x^4}{120} - \cdots" />
+
+  <P>The coefficient of <Eq c="x^2" /> in this expansion is <Eq c="-\frac{1}{6}" />.</P>
+
+  <H3>The Infinite Product Form</H3>
+
+  <P>Now consider the product expansion:</P>
+
+  <EqBlock c="\prod_{n=1}^{\infty} \left(1 - \frac{x^2}{n^2 \pi^2}\right) = \left(1 - \frac{x^2}{\pi^2}\right)\left(1 - \frac{x^2}{4\pi^2}\right)\left(1 - \frac{x^2}{9\pi^2}\right) \cdots" />
+
+  <P>When we multiply this out, the constant term is clearly <Eq c="1" /> (the product of all the 1s). The <Eq c="x^2" /> coefficient comes from choosing the <Eq c="-\frac{x^2}{n^2\pi^2}" /> term from exactly one factor and the <Eq c="1" /> from every other factor. Summing over all such choices:</P>
+
+  <EqBlock c="\text{coefficient of } x^2 = -\frac{1}{\pi^2} - \frac{1}{4\pi^2} - \frac{1}{9\pi^2} - \frac{1}{16\pi^2} - \cdots" />
+
+  <P>Factoring out <Eq c="-\frac{1}{\pi^2}" />:</P>
+
+  <EqBlock c="\text{coefficient of } x^2 = -\frac{1}{\pi^2} \left( \frac{1}{1^2} + \frac{1}{2^2} + \frac{1}{3^2} + \frac{1}{4^2} + \cdots \right) = -\frac{1}{\pi^2} \sum_{n=1}^{\infty} \frac{1}{n^2}" />
+
+  <H3>Setting Them Equal</H3>
+
+  <P>Since both expressions represent the same function, their <Eq c="x^2" /> coefficients must be equal:</P>
+
+  <EqBlock c="-\frac{1}{\pi^2} \sum_{n=1}^{\infty} \frac{1}{n^2} = -\frac{1}{6}" />
+
+  <P>Multiplying both sides by <Eq c="-\pi^2" />:</P>
+
+  <EqBlock c="\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}" />
+
+  <P>And there it is. Ninety-one years of effort, resolved in a single stroke of algebraic comparison. The sum of the reciprocal squares of all positive integers is exactly <Eq c="\frac{\pi^2}{6}" />.</P>
+
+  <Callout label="The algebraic beauty">The entire proof reduces to one idea: express the same function two different ways, then compare coefficients. The Taylor series gives you the coefficient from calculus. The infinite product gives you the coefficient from the zeros of sine. Setting them equal produces the identity. This technique of &ldquo;matching coefficients&rdquo; became one of Euler&apos;s most powerful tools.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Why This Was Revolutionary">
+  <P>It is hard to overstate the impact of Euler&apos;s result. Before 1735, mathematicians had no reason to expect that a sum built entirely from integers — <Eq c="1, 4, 9, 16, 25, \ldots" /> — would have anything to do with <Eq c="\pi" />, a constant defined by the ratio of a circle&apos;s circumference to its diameter. The Basel Problem revealed a <Highlight>hidden bridge between arithmetic and geometry</Highlight> that no one had suspected.</P>
+
+  <Figure
+    src="/img/blog/pi-calculation.jpg"
+    alt="Mathematical visualization showing the connection between pi and infinite series"
+    caption="Pi appears in the most unexpected places — the Basel Problem was the first proof that arithmetic sums encode geometric constants"
+    source="Photo on Unsplash"
+  />
+
+  <P>Euler did not stop at <Eq c="\zeta(2)" />. By matching higher-order coefficients in the same product-series comparison, he computed the exact values of <Eq c="\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}" /> for all positive even integers:</P>
+
+  <EqBlock c="\zeta(2) = \frac{\pi^2}{6}, \quad \zeta(4) = \frac{\pi^4}{90}, \quad \zeta(6) = \frac{\pi^6}{945}, \quad \zeta(8) = \frac{\pi^8}{9450}" />
+
+  <P>The general pattern, later formalized using Bernoulli numbers <Eq c="B_{2k}" />, is:</P>
+
+  <EqBlock c="\zeta(2k) = \frac{(-1)^{k+1} (2\pi)^{2k} B_{2k}}{2 \cdot (2k)!}" />
+
+  <P>Every even zeta value is a rational multiple of a power of <Eq c="\pi" />. This is a deep structural fact about the integers and their relationship to the circle.</P>
+  <P>But here is the mystery that remains: the <B>odd</B> zeta values — <Eq c="\zeta(3), \zeta(5), \zeta(7), \ldots" /> — resist all similar characterization. In 1978, Roger Apery stunned the mathematical world by proving that <Eq c="\zeta(3)" /> is irrational (it is now called Apery&apos;s constant, approximately <Eq c="1.2020569..." />). But we still do not know whether <Eq c="\zeta(3)" /> is related to <Eq c="\pi" /> in any natural way. We do not even know whether <Eq c="\zeta(5)" /> is irrational. The even-odd asymmetry in the zeta function is one of the deepest unsolved puzzles in number theory.</P>
+  <P>Euler&apos;s work on the Basel Problem also laid the foundation for the <B>Riemann zeta function</B>, which Bernhard Riemann extended to the complex plane in 1859. Riemann&apos;s insight was that the function <Eq c="\zeta(s)" /> could be analytically continued to all complex values of <Eq c="s" /> (except <Eq c="s = 1" />), and that the distribution of prime numbers is intimately connected to the zeros of this function. The <Highlight>Riemann Hypothesis</Highlight> — that all nontrivial zeros of <Eq c="\zeta(s)" /> lie on the line <Eq c="\text{Re}(s) = \frac{1}{2}" /> — remains the most important unsolved problem in mathematics. It is, in a very real sense, a direct descendant of Euler&apos;s Basel Problem. I wrote more about this connection in my post on <B>unsolved conjectures in mathematics</B>.</P>
+
+  <Callout label="From Basel to Riemann">The line from the Basel Problem to the Riemann Hypothesis is direct: Euler computed specific values of the zeta function. Riemann extended it to the complex plane and connected it to prime numbers. The question of where this function vanishes became the central problem of analytic number theory. It all started with the sum of reciprocal squares.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="A Modern Proof Sketch — Parseval's Theorem">
+  <P>Euler&apos;s proof, while correct, relied on the unproven assumption that transcendental functions can be factored like polynomials. Over the following centuries, mathematicians found numerous independent proofs of the Basel identity. One of the most elegant uses Fourier analysis — a completely different branch of mathematics that did not exist in Euler&apos;s time.</P>
+  <P>Consider the function <Eq c="f(x) = x" /> on the interval <Eq c="[-\pi, \pi]" />. Its Fourier series expansion is:</P>
+
+  <EqBlock c="f(x) = x = \sum_{n=1}^{\infty} \frac{2(-1)^{n+1}}{n} \sin(nx)" />
+
+  <P>The Fourier coefficients are <Eq c="a_n = 0" /> (since <Eq c="f" /> is odd) and <Eq c="b_n = \frac{2(-1)^{n+1}}{n}" />. Now we invoke <B>Parseval&apos;s theorem</B>, which states that for a function with Fourier coefficients <Eq c="a_n" /> and <Eq c="b_n" />:</P>
+
+  <EqBlock c="\frac{1}{\pi} \int_{-\pi}^{\pi} |f(x)|^2 \, dx = \frac{a_0^2}{2} + \sum_{n=1}^{\infty} \left( a_n^2 + b_n^2 \right)" />
+
+  <P>Parseval&apos;s theorem is, at its core, a statement about energy conservation: the total energy of a signal equals the sum of energies of its frequency components. Let us compute each side for <Eq c="f(x) = x" />.</P>
+
+  <H3>The Left Side</H3>
+
+  <EqBlock c="\frac{1}{\pi} \int_{-\pi}^{\pi} x^2 \, dx = \frac{1}{\pi} \cdot \frac{2\pi^3}{3} = \frac{2\pi^2}{3}" />
+
+  <H3>The Right Side</H3>
+
+  <P>Since <Eq c="a_0 = 0" /> and <Eq c="a_n = 0" /> for all <Eq c="n" />, and <Eq c="b_n = \frac{2(-1)^{n+1}}{n}" />, we get:</P>
+
+  <EqBlock c="\sum_{n=1}^{\infty} b_n^2 = \sum_{n=1}^{\infty} \frac{4}{n^2} = 4 \sum_{n=1}^{\infty} \frac{1}{n^2}" />
+
+  <H3>Equating Both Sides</H3>
+
+  <P>Parseval&apos;s theorem gives us:</P>
+
+  <EqBlock c="\frac{2\pi^2}{3} = 4 \sum_{n=1}^{\infty} \frac{1}{n^2}" />
+
+  <P>Dividing both sides by 4:</P>
+
+  <EqBlock c="\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{2\pi^2}{12} = \frac{\pi^2}{6}" />
+
+  <P>The same answer, derived from a completely independent set of ideas. The fact that Euler&apos;s product-based argument and the Fourier-analytic approach converge on the same identity is a deep confirmation. The result is not an accident of one method. It is a <Highlight>structural truth about the relationship between integers and the circle</Highlight> that manifests through every lens we turn on it.</P>
+
+  <Callout label="Two roads to the same summit">Euler&apos;s proof uses the zeros of the sine function. The Fourier proof uses the orthogonality of sines and cosines. Both arrive at the same identity. In mathematics, when two completely different approaches yield the same result, it is a strong signal that the result touches something fundamental.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Python Verification">
+  <P>One of the things I love about mathematics is that you can verify deep theoretical results with a few lines of code. Here is a Python script that computes the Basel sum numerically and compares it to <Eq c="\frac{\pi^2}{6}" />:</P>
+
+```python
+import math
+
+# Compute partial sums of the Basel series: sum of 1/n^2
+def basel_partial_sum(N):
+    """Compute the partial sum of 1/n^2 for n = 1, 2, ..., N."""
+    return sum(1.0 / n**2 for n in range(1, N + 1))
+
+# The exact answer
+exact = math.pi**2 / 6
+
+# Show convergence at different partial sums
+print("Basel Problem: sum of 1/n^2 = pi^2/6")
+print(f"{'N':>12}  {'Partial Sum':>18}  {'pi^2/6':>18}  {'Error':>14}")
+print("-" * 68)
+for N in [1, 5, 10, 100, 1_000, 10_000, 100_000, 1_000_000]:
+    s = basel_partial_sum(N)
+    print(f"{N:>12,}  {s:>18.12f}  {exact:>18.12f}  {abs(s - exact):>14.2e}")
+
+# Output:
+#            N        Partial Sum            pi^2/6           Error
+# --------------------------------------------------------------------
+#            1    1.000000000000    1.644934066848    6.45e-01
+#            5    1.463611111111    1.644934066848    1.81e-01
+#           10    1.549767731166    1.644934066848    9.52e-02
+#          100    1.634983900185    1.644934066848    9.95e-03
+#        1,000    1.643934566682    1.644934066848    1.00e-03
+#       10,000    1.644834071848    1.644934066848    1.00e-04
+#      100,000    1.644924066898    1.644934066848    1.00e-05
+#    1,000,000    1.644933066849    1.644934066848    1.00e-06
+
+# The error decreases as ~1/N, confirming convergence
+# For an exact verification, we can use the mpmath library:
+try:
+    from mpmath import mp, mpf, pi, nsum, inf
+    mp.dps = 50  # 50 decimal places
+    result = nsum(lambda n: 1 / n**2, [1, inf])
+    target = pi**2 / 6
+    print(f"\nHigh-precision verification (50 digits):")
+    print(f"  sum 1/n^2 = {result}")
+    print(f"  pi^2/6    = {target}")
+    print(f"  Match: {str(result)[:50] == str(target)[:50]}")
+except ImportError:
+    print("\n(Install mpmath for arbitrary-precision verification)")
+```
+
+  <P>The convergence rate of the partial sums is <Eq c="O(1/N)" />, which is relatively slow — you need a million terms to get six decimal places. This is because the error in truncating the series at <Eq c="N" /> is approximately <Eq c="\int_N^{\infty} \frac{1}{x^2} \, dx = \frac{1}{N}" />. But the mathematical identity is exact. The partial sums converge to <Eq c="\frac{\pi^2}{6}" /> not approximately but precisely, to every decimal place, forever.</P>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>I keep coming back to the Basel Problem because it captures something essential about mathematics: the most profound truths are often hidden in the simplest questions. The sum <Eq c="1 + \frac{1}{4} + \frac{1}{9} + \frac{1}{16} + \cdots" /> looks like it should have a boring answer. It is just adding up fractions with square denominators. There is no circle in sight, no geometry, no trigonometry. And yet the answer is <Eq c="\frac{\pi^2}{6}" />, a quantity that encodes the circumference-to-diameter ratio of every circle that has ever existed or ever will.</P>
+  <P>This is what drew me to mathematics in the first place. As someone who spends most of my time building AI systems and studying for medical school, I sometimes get asked why I care about 18th-century number theory. The answer is that results like the Basel Problem train a specific kind of thinking: the conviction that <Highlight>hidden structure exists and can be found</Highlight>. When I am debugging a machine learning pipeline or studying a biochemical pathway, I carry the same instinct — that beneath the surface complexity, there is an elegant organizing principle waiting to be uncovered.</P>
+  <P>Euler was 28 when he proved the Basel identity. He had decades of extraordinary work ahead of him. But this was the result that announced him to the world, that showed a young mathematician could see connections invisible to his predecessors. The sum of reciprocal squares is not just a formula. It is a proof that <B>arithmetic and geometry are two languages describing the same underlying reality</B>, and that the deepest mathematical surprises come not from exotic constructions but from asking the simplest questions and refusing to stop until you find the answer.</P>
+
+  <Callout label="The lasting lesson">A sum built from integers. An answer built from the circle. The Basel Problem is a permanent reminder that mathematics is not a collection of separate subjects — it is one vast, interconnected structure, and the most beautiful results are the bridges between its parts.</Callout>
+</Section>

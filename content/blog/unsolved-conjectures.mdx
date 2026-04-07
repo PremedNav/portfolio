@@ -1,0 +1,188 @@
+---
+title: "Five Unsolved Conjectures That Shape Modern Mathematics"
+subtitle: "From the Riemann Hypothesis to the Collatz Conjecture — the open problems that define what we don't know."
+date: "2026-01-15"
+readTime: "10 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Mathematics is not a finished building. It is a construction site where the most important rooms remain unbuilt, and in some cases, we are not even sure the blueprints are possible. The unsolved problems of mathematics are not footnotes. They are <Highlight>the load-bearing walls of entire disciplines</Highlight>, and their resolution would reshape fields from cryptography to fluid dynamics to the very foundations of computation.</P>
+  <P>What makes these conjectures fascinating is not their difficulty alone. It is that each one sits at a boundary where our current tools break down. They expose the edges of mathematical knowledge, the places where intuition, computation, and proof diverge. Here are five that I think about often, why they matter, and what it would mean if someone solved them tomorrow.</P>
+
+  <Figure
+    src="/img/blog/math-formulas.jpg"
+    alt="Mathematical formulas and equations covering a surface"
+    caption="The language of unsolved problems — every symbol on a mathematician's board represents centuries of accumulated insight"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Riemann Hypothesis">
+  <P>The Riemann zeta function <Eq c="\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}" /> for complex <IC>s</IC> with real part greater than 1 extends analytically to the entire complex plane (with a pole at <Eq c="s = 1" />). It has trivial zeros at the negative even integers. The <B>Riemann Hypothesis</B>, proposed in 1859, states that all nontrivial zeros of the zeta function have real part equal to <Eq c="\frac{1}{2}" />. That is it. One line. And it has resisted proof for over 165 years.</P>
+  <P>Why should anyone outside pure mathematics care? Because the zeta function encodes the distribution of prime numbers. The Prime Number Theorem tells us that primes thin out logarithmically, but the Riemann Hypothesis gives us the <Highlight>error term</Highlight>. If true, it means the primes are distributed as regularly as they possibly can be. If false, there are wild, unpredictable fluctuations in where primes appear.</P>
+  <P>The implications cascade. Much of modern cryptography, RSA, Diffie-Hellman, elliptic curve cryptography, depends on the computational hardness of problems related to prime numbers. The Riemann Hypothesis does not break cryptography directly, but a proof (or disproof) would fundamentally change our understanding of the arithmetic landscape these systems rest on. Computational verification has confirmed that the first <Eq c="10^{13}+" /> nontrivial zeros lie on the critical line. But in mathematics, ten trillion examples prove nothing. A single counterexample would be enough.</P>
+
+  <Callout label="The stakes">A proof of the Riemann Hypothesis would instantly resolve hundreds of other theorems that currently begin with &ldquo;Assuming RH...&rdquo; and would settle deep questions about prime gaps, the distribution of primes in arithmetic progressions, and the behavior of L-functions across number theory.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="P vs NP">
+  <P>The <B>P vs NP</B> problem asks a question that sounds almost too simple: if you can verify a solution to a problem quickly, can you also find a solution quickly? More precisely, is the class <Eq c="P" /> (problems solvable in polynomial time) equal to the class <Eq c="NP" /> (problems whose solutions are verifiable in polynomial time)?</P>
+  <P>Consider the traveling salesman problem. Given a set of cities and distances, find the shortest route visiting all cities. Verifying a proposed route is trivial: add up the distances and check. But <Highlight>finding the optimal route</Highlight> appears to require checking an exponential number of possibilities. If P = NP, there exists an efficient algorithm we have not found yet. If P does not equal NP, no such algorithm can exist.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Cryptography collapses.</B> Most encryption relies on the assumption that certain NP problems (factoring, discrete logarithm) cannot be solved in polynomial time. If P = NP, every encrypted message ever sent could in principle be decrypted efficiently.</ConnectedItem>
+    <ConnectedItem><B>Optimization becomes trivial.</B> Scheduling, logistics, protein folding, circuit design. Every NP-hard optimization problem that industries spend billions on would become efficiently solvable.</ConnectedItem>
+    <ConnectedItem><B>Drug discovery accelerates.</B> Molecular docking, a key step in drug discovery, is an NP-hard optimization problem. P = NP would mean exact solutions instead of heuristic approximations, potentially revolutionizing pharmaceutical research.</ConnectedItem>
+    <ConnectedItem><B>Mathematics itself transforms.</B> Mathematical proof search is in NP: verifying a proof is mechanical, but finding one is creative. If P = NP, there exists an efficient algorithm for finding proofs, meaning mathematical discovery itself could be automated.</ConnectedItem>
+  </ConnectedList>
+
+  <P>Most computer scientists believe P does not equal NP. The intuition is that <Highlight>creation is harder than verification</Highlight>. But intuition is not proof, and after decades of effort, we cannot even prove that specific problems are not in P. The barrier techniques (relativization, natural proofs, algebrization) that have blocked progress suggest that entirely new mathematical tools are needed.</P>
+</Section>
+
+<Divider />
+
+<Section name="The Collatz Conjecture">
+  <P>Take any positive integer. If it is even, divide by 2. If it is odd, multiply by 3 and add 1. Repeat. The <B>Collatz Conjecture</B> states that no matter what number you start with, you will eventually reach 1. That is the entire statement. A child can understand the rule. No one can prove it.</P>
+  <P>The sequence for 27 illustrates why this is deceptive. Starting from 27, the sequence climbs to 9,232 before eventually descending to 1, taking 111 steps. The trajectory is erratic, showing no discernible pattern that would yield to standard proof techniques. Paul Erdos famously said that <Highlight>&ldquo;mathematics is not yet ready for such problems.&rdquo;</Highlight></P>
+  <P>The difficulty is structural. There is no algebraic framework that connects the multiplication step (3n + 1) to the division step (n / 2) in a way that admits induction or any standard proof strategy. The conjecture has been computationally verified for all integers up to approximately <Eq c="2.95 \times 10^{20}" />. In 2019, Terence Tao proved a partial result: for &ldquo;almost all&rdquo; positive integers (in the sense of logarithmic density), the Collatz sequence eventually reaches a value below any fixed function that goes to infinity. This was a significant advance, but it falls short of proving the conjecture for all integers.</P>
+
+```python
+# Verify the Collatz conjecture for a range of integers
+def collatz_sequence(n):
+    """Generate the Collatz sequence starting from n."""
+    seq = [n]
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        seq.append(n)
+    return seq
+
+def verify_collatz(start, end):
+    """Verify Collatz conjecture for all integers in [start, end]."""
+    max_steps = 0
+    max_n = start
+    for n in range(start, end + 1):
+        steps = 0
+        current = n
+        while current != 1:
+            current = current // 2 if current % 2 == 0 else 3 * current + 1
+            steps += 1
+        if steps > max_steps:
+            max_steps = steps
+            max_n = n
+    return max_n, max_steps
+
+# Example: verify for 1 to 100,000
+longest_n, longest_steps = verify_collatz(1, 100_000)
+print(f"In range [1, 100000]:")
+print(f"  Longest sequence: n = {longest_n} with {longest_steps} steps")
+print(f"  Sequence for 27: {collatz_sequence(27)[:20]}... ({len(collatz_sequence(27))} steps)")
+```
+
+  <P>The computational evidence is overwhelming, but that is precisely what makes the Collatz Conjecture a lesson in the difference between evidence and proof. Billions of examples cannot replace a single rigorous argument.</P>
+
+  <Figure
+    src="/img/blog/abstract-math.jpg"
+    alt="Abstract mathematical patterns and structures"
+    caption="Emergent patterns in mathematical structures — the Collatz sequence hints at deep order beneath apparent chaos"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="The Birch and Swinnerton-Dyer Conjecture">
+  <P>An <B>elliptic curve</B> is a curve defined by an equation of the form <Eq c="y^2 = x^3 + ax + b" />. Despite their name, they have nothing to do with ellipses. They are central objects in number theory, and the fundamental question is: how many rational points (points with rational coordinates) does a given elliptic curve have?</P>
+  <P>Some elliptic curves have finitely many rational points. Others have infinitely many. The <B>Birch and Swinnerton-Dyer Conjecture</B> (BSD) asserts that the rank of the group of rational points on an elliptic curve is equal to the order of vanishing of its associated <Eq c="L" />-function at <Eq c="s = 1" />. In plainer terms, it connects the arithmetic of the curve (how many rational solutions exist) to the analytic behavior of a complex function built from the curve.</P>
+  <P>This is not abstract formalism. Elliptic curves are the backbone of <Highlight>elliptic curve cryptography</Highlight>, which secures most modern internet traffic. The BSD conjecture, if proven, would deepen our understanding of the very objects that protect digital communication. It was also instrumental in the proof of Fermat&apos;s Last Theorem: Andrew Wiles&apos;s proof fundamentally relied on the Taniyama-Shimura conjecture, which connects elliptic curves to modular forms, a cousin of the BSD framework.</P>
+
+  <Callout label="Why it matters for computation">Elliptic curves over finite fields are the basis of ECC, used in TLS, Bitcoin, and secure messaging. The BSD conjecture addresses the deep structure of these curves over the rationals, and progress on it informs our understanding of the curves we deploy in practice.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Navier-Stokes Existence and Smoothness">
+  <P>The <B>Navier-Stokes equations</B> describe the motion of viscous fluids. They are partial differential equations that govern everything from blood flow in arteries to weather patterns to airflow over aircraft wings. The Millennium Prize problem asks: given smooth initial conditions in three dimensions, do solutions to the Navier-Stokes equations always exist, and do they remain smooth for all time?</P>
+  <P>The question is not whether the equations are useful. They are used every day in engineering, meteorology, and medicine. The question is whether the equations are <Highlight>mathematically well-behaved</Highlight>. Can the velocity of a fluid described by Navier-Stokes blow up to infinity in finite time? If it can, the equations are fundamentally incomplete as a description of fluid dynamics, and the simulations we run are, in some deep sense, unreliable.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Turbulence.</B> The unsolved nature of Navier-Stokes is directly connected to our inability to fully understand turbulence, one of the great unsolved problems in classical physics. A proof of regularity would likely require new insights into how energy cascades across scales in turbulent flow.</ConnectedItem>
+    <ConnectedItem><B>Medical applications.</B> Computational fluid dynamics models of blood flow through stenotic arteries, drug delivery through capillary networks, and airflow in diseased lungs all rely on numerical solutions to Navier-Stokes. Understanding the theoretical limits of these equations directly impacts the reliability of medical simulations.</ConnectedItem>
+    <ConnectedItem><B>Climate modeling.</B> Global climate models discretize the Navier-Stokes equations on grids spanning the entire atmosphere. The regularity question bears on whether the fine-scale phenomena these models cannot resolve (sub-grid turbulence) can fundamentally corrupt the large-scale predictions.</ConnectedItem>
+  </ConnectedList>
+
+  <P>For anyone who writes simulation code, this problem is personal. Every time you discretize a PDE and trust the output, you are making an implicit assumption that the continuous equations have well-behaved solutions. Navier-Stokes asks whether that assumption is justified.</P>
+</Section>
+
+<Divider />
+
+<Section name="The Landscape">
+  <H3>Comparing the Five Conjectures</H3>
+
+  <div className="overflow-x-auto my-8">
+    <table className="w-full text-[0.88rem] leading-[1.7] border-collapse">
+      <thead>
+        <tr>
+          <TH first>Conjecture</TH>
+          <TH>Field</TH>
+          <TH>Year Proposed</TH>
+          <TH>Prize</TH>
+          <TH last>Status</TH>
+        </tr>
+      </thead>
+      <tbody>
+        <TR>
+          <TD first bold>Riemann Hypothesis</TD>
+          <TD>Analytic Number Theory</TD>
+          <TD>1859</TD>
+          <TD>$1M (Clay)</TD>
+          <TD last>Open. 10T+ zeros verified on critical line.</TD>
+        </TR>
+        <TR>
+          <TD first bold>P vs NP</TD>
+          <TD>Computational Complexity</TD>
+          <TD>1971</TD>
+          <TD>$1M (Clay)</TD>
+          <TD last>Open. Known barrier results block current techniques.</TD>
+        </TR>
+        <TR>
+          <TD first bold>Collatz Conjecture</TD>
+          <TD>Number Theory / Dynamical Systems</TD>
+          <TD>1937</TD>
+          <TD>None (informal bounties)</TD>
+          <TD last>Open. Tao&apos;s 2019 partial result for &ldquo;almost all&rdquo; n.</TD>
+        </TR>
+        <TR>
+          <TD first bold>Birch and Swinnerton-Dyer</TD>
+          <TD>Algebraic Number Theory</TD>
+          <TD>1965</TD>
+          <TD>$1M (Clay)</TD>
+          <TD last>Open. Proven for rank 0 and 1 (Gross-Zagier, Kolyvagin).</TD>
+        </TR>
+        <TR last>
+          <TD first bold>Navier-Stokes</TD>
+          <TD>Partial Differential Equations</TD>
+          <TD>1822 (equations) / 2000 (prize)</TD>
+          <TD>$1M (Clay)</TD>
+          <TD last>Open. Regularity unknown in 3D.</TD>
+        </TR>
+      </tbody>
+    </table>
+  </div>
+</Section>
+
+<Divider />
+
+<Section name="Why These Matter">
+  <P>I am a pre-med student who builds software systems. Why do I care about unsolved conjectures in pure mathematics? Because <Highlight>every system I build rests on assumptions that trace back to these questions</Highlight>.</P>
+  <P>The cryptographic protocols protecting medical data assume P does not equal NP. The fluid dynamics simulations I use for biomedical modeling assume Navier-Stokes solutions are well-behaved. The number-theoretic primitives in my encryption libraries depend on the distribution of primes that the Riemann Hypothesis describes. These are not abstract questions. They are the <B>hidden foundations</B> of applied work.</P>
+  <P>And beyond the practical, there is something deeply compelling about problems that resist the best minds for centuries. The Collatz Conjecture is a reminder that simplicity of statement implies nothing about simplicity of proof. P vs NP asks whether the universe has a fundamental asymmetry between finding and checking. The Riemann Hypothesis suggests that the primes, the atoms of arithmetic, are governed by a hidden harmony we can detect but cannot yet prove.</P>
+
+  <Callout label="The takeaway">Unsolved problems are not failures of mathematics. They are invitations. Each one marks a place where our tools are insufficient and our understanding is incomplete. That is where the interesting work lives.</Callout>
+</Section>

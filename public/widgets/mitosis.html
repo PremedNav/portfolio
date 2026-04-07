@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cell Division</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#060610}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+#phase{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  font:600 13px/1 'Inter',-apple-system,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(120,180,255,.5);z-index:10;text-align:center;padding:8px 20px;border-radius:14px;
+  background:rgba(12,12,12,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="phase">Interphase</div>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Animated Cell Division (Mitosis)
+ * Interphase → Prophase → Metaphase → Anaphase → Telophase → Cytokinesis
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H, cx, cy;
+
+var time = 0;
+var CYCLE_DURATION = 18; // seconds per full cycle
+var phaseEl = document.getElementById('phase');
+
+var PHASES = [
+    { name: 'Interphase', start: 0, end: 0.15 },
+    { name: 'Prophase', start: 0.15, end: 0.3 },
+    { name: 'Prometaphase', start: 0.3, end: 0.4 },
+    { name: 'Metaphase', start: 0.4, end: 0.55 },
+    { name: 'Anaphase', start: 0.55, end: 0.7 },
+    { name: 'Telophase', start: 0.7, end: 0.85 },
+    { name: 'Cytokinesis', start: 0.85, end: 1.0 }
+];
+
+var NUM_CHROMOSOMES = 8;
+var chromosomes = [];
+
+function initChromosomes() {
+    chromosomes = [];
+    for (var i = 0; i < NUM_CHROMOSOMES; i++) {
+        var angle = (i / NUM_CHROMOSOMES) * Math.PI * 2 + Math.random() * 0.3;
+        var r = 15 + Math.random() * 25;
+        chromosomes.push({
+            x: Math.cos(angle) * r,
+            y: Math.sin(angle) * r,
+            angle: Math.random() * Math.PI,
+            len: 12 + Math.random() * 8,
+            hue: 200 + Math.random() * 60,
+            targetX: 0, targetY: 0,
+            separated: false
+        });
+    }
+}
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W / 2;
+    cy = H / 2;
+}
+
+function getPhase(t) {
+    for (var i = 0; i < PHASES.length; i++) {
+        if (t >= PHASES[i].start && t < PHASES[i].end) return PHASES[i];
+    }
+    return PHASES[0];
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function smoothstep(a, b, t) {
+    t = Math.max(0, Math.min(1, (t - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+}
+
+function drawCell(x, y, rx, ry, alpha, phase) {
+    // Cell membrane
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    var grad = ctx.createRadialGradient(x, y, 0, x, y, Math.max(rx, ry));
+    grad.addColorStop(0, 'rgba(15,25,60,' + (alpha * 0.5) + ')');
+    grad.addColorStop(0.7, 'rgba(20,40,80,' + (alpha * 0.3) + ')');
+    grad.addColorStop(1, 'rgba(40,80,160,' + (alpha * 0.15) + ')');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(80,140,255,' + (alpha * 0.4) + ')';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+function drawNucleus(x, y, radius, alpha) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(100,160,255,' + (alpha * 0.3) + ')';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawChromosome(x, y, angle, len, hue, condensed, alpha) {
+    var thickness = condensed ? 4 : 1.5;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    if (condensed) {
+        // X-shaped condensed chromosome
+        ctx.beginPath();
+        ctx.moveTo(-len * 0.4, -len * 0.5);
+        ctx.lineTo(0, -2);
+        ctx.lineTo(len * 0.4, -len * 0.5);
+        ctx.strokeStyle = 'hsla(' + hue + ',70%,60%,' + alpha + ')';
+        ctx.lineWidth = thickness;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-len * 0.4, len * 0.5);
+        ctx.lineTo(0, 2);
+        ctx.lineTo(len * 0.4, len * 0.5);
+        ctx.stroke();
+
+        // Centromere
+        ctx.beginPath();
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'hsla(' + hue + ',60%,70%,' + (alpha * 0.8) + ')';
+        ctx.fill();
+    } else {
+        // Loose chromatin (squiggly line)
+        ctx.beginPath();
+        for (var i = 0; i <= 20; i++) {
+            var t = i / 20;
+            var px = (t - 0.5) * len * 2;
+            var py = Math.sin(t * 8 + time) * 3;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = 'hsla(' + hue + ',50%,50%,' + (alpha * 0.4) + ')';
+        ctx.lineWidth = thickness;
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+function drawSpindle(x, y, targetX, targetY, alpha) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(targetX, targetY);
+    ctx.strokeStyle = 'rgba(100,200,100,' + (alpha * 0.15) + ')';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+}
+
+function render() {
+    ctx.fillStyle = '#060610';
+    ctx.fillRect(0, 0, W, H);
+
+    var cycle = (time % CYCLE_DURATION) / CYCLE_DURATION;
+    var phase = getPhase(cycle);
+    phaseEl.textContent = phase.name;
+
+    var cellRadius = Math.min(W, H) * 0.2;
+
+    // Phase-dependent rendering
+    if (cycle < 0.7) {
+        // Single cell phases (Interphase through Anaphase)
+        var stretch = cycle > 0.55 ? smoothstep(0.55, 0.7, cycle) * 0.4 : 0;
+        var rx = cellRadius * (1 + stretch);
+        var ry = cellRadius * (1 - stretch * 0.3);
+
+        drawCell(cx, cy, rx, ry, 1, phase);
+
+        // Nucleus (visible in interphase, breaks down in prometaphase)
+        var nucleusAlpha = cycle < 0.15 ? 1 : (1 - smoothstep(0.15, 0.35, cycle));
+        if (nucleusAlpha > 0) {
+            drawNucleus(cx, cy, cellRadius * 0.5, nucleusAlpha);
+        }
+
+        // Chromosomes
+        var condensation = smoothstep(0.15, 0.3, cycle);
+        var aligned = smoothstep(0.35, 0.45, cycle);
+        var separating = smoothstep(0.55, 0.65, cycle);
+
+        // Spindle fibers (metaphase onward)
+        var spindleAlpha = smoothstep(0.3, 0.4, cycle) * (1 - smoothstep(0.7, 0.8, cycle));
+        if (spindleAlpha > 0) {
+            var poleL = cx - cellRadius * 0.9;
+            var poleR = cx + cellRadius * 0.9;
+
+            for (var i = 0; i < NUM_CHROMOSOMES; i++) {
+                var c = chromosomes[i];
+                var chrX = cx + c.x * (1 - aligned);
+                var chrY = cy + c.y * (1 - aligned * 0.8);
+
+                if (aligned > 0.5) chrY = cy; // align at metaphase plate
+
+                drawSpindle(poleL, cy, chrX, chrY, spindleAlpha);
+                drawSpindle(poleR, cy, chrX, chrY, spindleAlpha);
+            }
+        }
+
+        // Draw chromosomes
+        for (var i = 0; i < NUM_CHROMOSOMES; i++) {
+            var c = chromosomes[i];
+            var chrX = cx + c.x * (1 - aligned);
+            var chrY = cy + c.y * (1 - aligned * 0.8);
+
+            if (aligned > 0.5) chrY = cy;
+
+            // In anaphase, separate to poles
+            if (separating > 0) {
+                var dir = i < NUM_CHROMOSOMES / 2 ? -1 : 1;
+                chrX = cx + dir * separating * cellRadius * 0.6;
+                chrY = cy + c.y * 0.3 * (1 - separating);
+            }
+
+            drawChromosome(chrX, chrY, c.angle, c.len, c.hue, condensation > 0.5, 0.8);
+        }
+
+    } else if (cycle < 0.85) {
+        // Telophase: two nuclei forming
+        var t = smoothstep(0.7, 0.85, cycle);
+        var sep = cellRadius * 0.6 * t;
+
+        // Elongated cell
+        drawCell(cx, cy, cellRadius * (1.4 - t * 0.2), cellRadius * (0.7 + t * 0.1), 1 - t * 0.3, phase);
+
+        // Two daughter nuclei
+        drawNucleus(cx - sep, cy, cellRadius * 0.35 * t, t);
+        drawNucleus(cx + sep, cy, cellRadius * 0.35 * t, t);
+
+        // Decondensing chromosomes
+        for (var i = 0; i < NUM_CHROMOSOMES; i++) {
+            var c = chromosomes[i];
+            var dir = i < NUM_CHROMOSOMES / 2 ? -1 : 1;
+            var chrX = cx + dir * sep + (Math.random() - 0.5) * 10;
+            var chrY = cy + (Math.random() - 0.5) * 10;
+            drawChromosome(chrX, chrY, c.angle, c.len, c.hue, 1 - t > 0.5, 0.6);
+        }
+
+    } else {
+        // Cytokinesis: pinching + separating
+        var t = smoothstep(0.85, 1.0, cycle);
+        var gap = cellRadius * 0.1 * t;
+        var sep = cellRadius * 0.8 + gap;
+
+        // Two daughter cells
+        var r = cellRadius * 0.65;
+        drawCell(cx - sep * 0.5, cy, r, r, 1, phase);
+        drawCell(cx + sep * 0.5, cy, r, r, 1, phase);
+
+        drawNucleus(cx - sep * 0.5, cy, r * 0.5, 1);
+        drawNucleus(cx + sep * 0.5, cy, r * 0.5, 1);
+
+        // Cleavage furrow
+        if (t < 0.8) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - r);
+            ctx.lineTo(cx, cy + r);
+            ctx.strokeStyle = 'rgba(80,140,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Chromatin in each daughter
+        for (var i = 0; i < NUM_CHROMOSOMES; i++) {
+            var c = chromosomes[i];
+            var dir = i < NUM_CHROMOSOMES / 2 ? -1 : 1;
+            var baseX = dir > 0 ? cx + sep * 0.5 : cx - sep * 0.5;
+            drawChromosome(baseX + c.x * 0.3, cy + c.y * 0.3, c.angle + time, c.len, c.hue, false, 0.5);
+        }
+    }
+}
+
+function frame() {
+    requestAnimationFrame(frame);
+    time += 1 / 60;
+    render();
+}
+
+resize();
+window.addEventListener('resize', resize);
+initChromosomes();
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

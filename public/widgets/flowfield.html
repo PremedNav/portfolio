@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Flow Field</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#050508}
+body{touch-action:none}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(function(){
+'use strict';
+
+/*
+ * Perlin Noise Flow Field
+ * Inspired by Daniel Shiffman's Coding Train flow fields
+ * and various generative art repos
+ */
+
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+
+// Simplex-like noise (compact implementation)
+var PERM = new Uint8Array(512);
+(function() {
+    var p = [];
+    for (var i = 0; i < 256; i++) p[i] = i;
+    for (var i = 255; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = p[i]; p[i] = p[j]; p[j] = t;
+    }
+    for (var i = 0; i < 512; i++) PERM[i] = p[i & 255];
+})();
+
+var GRAD = [[1,1],[-1,1],[1,-1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+
+function noise2d(x, y) {
+    var X = Math.floor(x) & 255;
+    var Y = Math.floor(y) & 255;
+    x -= Math.floor(x);
+    y -= Math.floor(y);
+    var u = x * x * x * (x * (x * 6 - 15) + 10);
+    var v = y * y * y * (y * (y * 6 - 15) + 10);
+
+    var aa = PERM[PERM[X] + Y] & 7;
+    var ab = PERM[PERM[X] + Y + 1] & 7;
+    var ba = PERM[PERM[X + 1] + Y] & 7;
+    var bb = PERM[PERM[X + 1] + Y + 1] & 7;
+
+    var g00 = GRAD[aa][0] * x + GRAD[aa][1] * y;
+    var g10 = GRAD[ba][0] * (x - 1) + GRAD[ba][1] * y;
+    var g01 = GRAD[ab][0] * x + GRAD[ab][1] * (y - 1);
+    var g11 = GRAD[bb][0] * (x - 1) + GRAD[bb][1] * (y - 1);
+
+    var nx0 = g00 + u * (g10 - g00);
+    var nx1 = g01 + u * (g11 - g01);
+    return nx0 + v * (nx1 - nx0);
+}
+
+// Particles
+var NUM = 3000;
+var particles = [];
+var noiseScale = 0.003;
+var noiseZ = 0;
+var speed = 2;
+
+function initParticles() {
+    particles = [];
+    for (var i = 0; i < NUM; i++) {
+        particles.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            hue: Math.random() * 360,
+            age: Math.floor(Math.random() * 200)
+        });
+    }
+}
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, W, H);
+}
+
+resize();
+initParticles();
+window.addEventListener('resize', function() { resize(); initParticles(); });
+
+function frame() {
+    requestAnimationFrame(frame);
+
+    // Fade trail
+    ctx.fillStyle = 'rgba(5,5,8,0.03)';
+    ctx.fillRect(0, 0, W, H);
+
+    noiseZ += 0.0008;
+
+    for (var i = 0; i < NUM; i++) {
+        var p = particles[i];
+
+        // Get angle from noise
+        var angle = noise2d(p.x * noiseScale, p.y * noiseScale + noiseZ) * Math.PI * 4;
+
+        var vx = Math.cos(angle) * speed;
+        var vy = Math.sin(angle) * speed;
+
+        // Draw line from old pos to new pos
+        var ox = p.x;
+        var oy = p.y;
+        p.x += vx;
+        p.y += vy;
+        p.age++;
+
+        // Color based on angle
+        var hue = ((angle / Math.PI) * 180 + 360) % 360;
+        var alpha = Math.min(0.4, p.age * 0.005);
+
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = 'hsla(' + hue + ',70%,55%,' + alpha + ')';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // Respawn if out of bounds or old
+        if (p.x < 0 || p.x > W || p.y < 0 || p.y > H || p.age > 300) {
+            p.x = Math.random() * W;
+            p.y = Math.random() * H;
+            p.age = 0;
+        }
+    }
+}
+
+requestAnimationFrame(frame);
+
+window.addEventListener('message', function(e) { if (e.data && e.data.theme) {} });
+try { window.parent.postMessage({type:'widget-ready'}, '*'); } catch(e) {}
+
+})();
+</script>
+</body>
+</html>

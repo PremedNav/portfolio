@@ -31,13 +31,23 @@ interface Subscriber {
   subscribedAt: string
 }
 
+interface ContactMessage {
+  key: string
+  name: string
+  email: string
+  organization: string
+  subject: string
+  message: string
+  submittedAt: string
+}
+
 interface Post {
   slug: string
   title: string
   date: string | null
 }
 
-type Tab = 'announcement' | 'subscribers' | 'posts'
+type Tab = 'announcement' | 'subscribers' | 'messages' | 'posts'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -170,6 +180,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'announcement', label: 'Announcement' },
+    { key: 'messages', label: 'Messages' },
     { key: 'subscribers', label: 'Subscribers' },
     { key: 'posts', label: 'Posts' },
   ]
@@ -210,6 +221,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       {/* Content */}
       <div className="px-6 py-6 max-w-4xl">
         {tab === 'announcement' && <AnnouncementTab />}
+        {tab === 'messages' && <MessagesTab />}
         {tab === 'subscribers' && <SubscribersTab />}
         {tab === 'posts' && <PostsTab />}
       </div>
@@ -375,6 +387,130 @@ function AnnouncementTab() {
       >
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save changes'}
       </button>
+    </div>
+  )
+}
+
+// ─── Messages Tab ─────────────────────────────────────────────────────────────
+
+function MessagesTab() {
+  const [messages, setMessages] = useState<ContactMessage[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    try {
+      const data = await apiJson<{ messages: ContactMessage[]; total: number }>('/api/admin/messages')
+      setMessages(data.messages)
+      setTotal(data.total)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const handleDelete = async (key: string) => {
+    if (!confirm('Delete this message?')) return
+    setDeleting(key)
+    try {
+      await api(`/api/admin/messages?key=${encodeURIComponent(key)}`, { method: 'DELETE' })
+      await load()
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      <p className="text-sm text-[#8a8a85] mb-4">{total} message{total !== 1 ? 's' : ''}</p>
+
+      {messages.length === 0 ? (
+        <p className="text-sm text-[#5a5a55]">No messages yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {messages.map((m) => (
+            <div key={m.key} className="border border-[#3a3a37] rounded-lg overflow-hidden">
+              {/* Header row */}
+              <button
+                onClick={() => setExpanded(expanded === m.key ? null : m.key)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-[#2a2a28] hover:bg-[#2f2f2d] transition-colors text-left"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-sm text-[#fffffc] font-medium truncate">{m.subject}</span>
+                    <span className="text-xs text-[#5a5a55]">&mdash;</span>
+                    <span className="text-xs text-[#8a8a85] truncate">{m.name}</span>
+                    {m.organization && (
+                      <span className="text-xs text-[#5a5a55] truncate">({m.organization})</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#5a5a55] mt-0.5">{new Date(m.submittedAt).toLocaleString()}</p>
+                </div>
+                <svg
+                  width="14" height="14" viewBox="0 0 16 16" fill="none"
+                  className={`text-[#5a5a55] shrink-0 ml-3 transition-transform ${expanded === m.key ? 'rotate-180' : ''}`}
+                >
+                  <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {/* Expanded content */}
+              {expanded === m.key && (
+                <div className="px-4 py-4 border-t border-[#3a3a37] space-y-3">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-xs text-[#5a5a55] uppercase tracking-wider">Name</span>
+                      <p className="text-[#fffffc] mt-0.5">{m.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-[#5a5a55] uppercase tracking-wider">Email</span>
+                      <p className="mt-0.5">
+                        <a href={`mailto:${m.email}`} className="text-[#a3b898] hover:text-[#fffffc] transition-colors">{m.email}</a>
+                      </p>
+                    </div>
+                    {m.organization && (
+                      <div>
+                        <span className="text-xs text-[#5a5a55] uppercase tracking-wider">Organization</span>
+                        <p className="text-[#fffffc] mt-0.5">{m.organization}</p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-xs text-[#5a5a55] uppercase tracking-wider">Subject</span>
+                      <p className="text-[#fffffc] mt-0.5">{m.subject}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-[#5a5a55] uppercase tracking-wider">Message</span>
+                    <p className="text-sm text-[#fffffc] mt-1 whitespace-pre-wrap leading-relaxed">{m.message}</p>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <a
+                      href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`}
+                      className="text-sm text-[#a3b898] hover:text-[#fffffc] transition-colors"
+                    >
+                      Reply
+                    </a>
+                    <button
+                      onClick={() => handleDelete(m.key)}
+                      disabled={deleting === m.key}
+                      className="text-sm text-[#5a5a55] hover:text-red-400 transition-colors disabled:opacity-50"
+                    >
+                      {deleting === m.key ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -544,7 +544,7 @@ const Hero = () => {
         </p>
 
         <div className="hero-subtext-anim mt-4 sm:mt-5 flex items-center gap-3" style={{ opacity: 0 }}>
-          <a href="mailto:navmainemail@gmail.com" className="group relative inline-block cursor-pointer">
+          <a href="/contact" className="group relative inline-block cursor-pointer">
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 56" preserveAspectRatio="none">
               <path
                 d="M8,2 L170,2 Q185,2 190,10 L198,42 Q200,50 192,54 L24,54 Q10,54 6,46 L2,14 Q0,6 8,2 Z"

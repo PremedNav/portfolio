@@ -418,7 +418,7 @@ const INITIAL_CATEGORIES: Category[] = [
     hours: 301,
     icon: <FaBriefcase />,
     activities: [
-      { title: 'Kumon Math & Reading Center of Denver — Lowry', hours: 355, role: 'Math/Reading Tutor', contact: 'Celeste Kupperbusch (Certified Instructor) · celestekupperbusch@ikumon.com · (303) 968-1025', location: '100 Spruce St, Unit 102, Denver, CO 80230', startDate: '11/01/2023', endDate: 'Done', description: '' },
+      { title: 'Kumon Math & Reading Center of Denver — Lowry', hours: 355, role: 'Math/Reading Tutor', contact: 'Celeste Kupperbusch (Certified Instructor) · celestekupperbusch@ikumon.com · (303) 968-1025', location: '100 Spruce St, Unit 102, Denver, CO 80230', startDate: '11/01/2023', endDate: '10/14/2024', description: '' },
       { title: 'Open and Affordable Dental Parker West', hours: 141, role: 'Dental Assistant', contact: 'Wesley Stanton, DDS · (303) 768-8137', location: '12501 Lincoln Ave, Englewood, CO 80112', startDate: '11/17/2023', endDate: '01/15/2024', description: '' },
     ],
   },
@@ -482,7 +482,7 @@ function gradeStyle(grade: string): string {
     case 'B+': return 'bg-yellow-300/15 text-yellow-300';
     case 'B': return 'bg-amber-300/15 text-amber-300';
     case 'IP': return 'bg-yellow-300/15 text-yellow-300';
-    default: return 'bg-white/10 text-white/40';
+    default: return 'bg-[#3a3a37] text-[#7f7f73]';
   }
 }
 
@@ -514,10 +514,10 @@ function PasswordForm({ onSubmit, password, setPassword, error, setError }: {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} className="flex w-full max-w-sm flex-col items-center gap-6">
-      <h1 className="font-fk-screamer text-3xl font-black uppercase text-white">
+      <h1 className="font-fk-screamer text-3xl font-black uppercase text-[#fffffc]">
         Password Required
       </h1>
-      <p className="font-robert-regular text-sm text-white/40 text-center">
+      <p className="font-robert-regular text-sm text-[#7f7f73] text-center">
         Enter the password to view the material.
       </p>
       <input
@@ -525,7 +525,7 @@ function PasswordForm({ onSubmit, password, setPassword, error, setError }: {
         value={password}
         onChange={(e) => { setPassword(e.target.value); setError(false); }}
         placeholder="Enter password"
-        className={`w-full rounded-lg bg-white/5 px-4 py-3 font-robert-regular text-sm text-white outline-none ring-1 transition-all duration-200 placeholder:text-white/20 ${error ? 'ring-red-500 focus:ring-red-500' : 'ring-white/10 focus:ring-yellow-300/50'}`}
+        className={`w-full rounded-lg bg-[#2a2a28] px-4 py-3 font-robert-regular text-sm text-[#fffffc] outline-none ring-1 transition-all duration-200 placeholder:text-[#5a5a55] ${error ? 'ring-red-500 focus:ring-red-500' : 'ring-[#3a3a37] focus:ring-yellow-300/50'}`}
         autoFocus
       />
       <Button
@@ -756,46 +756,46 @@ export default function RecommendationPage() {
     <div className="px-4 pb-6 sm:px-6">
       {/* Quick stats row */}
       <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
           <span className="font-fk-screamer text-2xl font-black text-yellow-300">{ACADEMICS.cumGPA}</span>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">Cumulative GPA</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">Cumulative GPA</span>
         </div>
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
           <span className="font-fk-screamer text-2xl font-black text-yellow-300">{AMCAS_GPAS.bcpm}</span>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">BCPM GPA</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">BCPM GPA</span>
         </div>
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
-          <span className="font-fk-screamer text-2xl font-black text-white">{AMCAS_GPAS.ao}</span>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">AO GPA</span>
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
+          <span className="font-fk-screamer text-2xl font-black text-[#fffffc]">{AMCAS_GPAS.ao}</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">AO GPA</span>
         </div>
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
-          <span className="font-fk-screamer text-2xl font-black text-white">{ACADEMICS.totalCredits}</span>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">Total Credits</span>
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
+          <span className="font-fk-screamer text-2xl font-black text-[#fffffc]">{ACADEMICS.totalCredits}</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">Total Credits</span>
         </div>
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
           <div className="flex items-center gap-1">
             <FaStar className="text-sm text-yellow-300" />
-            <span className="font-fk-screamer text-2xl font-black text-white">{ACADEMICS.deansListCount}</span>
+            <span className="font-fk-screamer text-2xl font-black text-[#fffffc]">{ACADEMICS.deansListCount}</span>
           </div>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">Dean&apos;s List</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">Dean&apos;s List</span>
         </div>
-        <div className="inner-card flex flex-col items-center rounded-lg bg-white/5 px-3 py-4 ring-1 ring-white/10">
-          <span className="font-fk-screamer text-2xl font-black text-white">{ACADEMICS.transferCredits}</span>
-          <span className="font-general text-[9px] uppercase tracking-wider text-white/40">Transfer Credits</span>
+        <div className="inner-card flex flex-col items-center rounded-lg bg-[#2a2a28] px-3 py-4 ring-1 ring-[#3a3a37]">
+          <span className="font-fk-screamer text-2xl font-black text-[#fffffc]">{ACADEMICS.transferCredits}</span>
+          <span className="font-general text-[9px] uppercase tracking-wider text-[#7f7f73]">Transfer Credits</span>
         </div>
       </div>
 
       {/* University info */}
-      <div className="inner-card mb-6 flex flex-wrap items-center gap-2 font-robert-regular text-xs text-white/40">
-        <span className="rounded bg-white/5 px-2 py-1 text-white/60">{ACADEMICS.university}</span>
-        <span className="rounded bg-white/5 px-2 py-1">{ACADEMICS.college}</span>
-        <span className="rounded bg-white/5 px-2 py-1">Major: {ACADEMICS.major}</span>
-        <span className="rounded bg-white/5 px-2 py-1">Minor: {ACADEMICS.minor}</span>
+      <div className="inner-card mb-6 flex flex-wrap items-center gap-2 font-robert-regular text-xs text-[#7f7f73]">
+        <span className="rounded bg-[#2a2a28] px-2 py-1 text-[#b0b0a4]">{ACADEMICS.university}</span>
+        <span className="rounded bg-[#2a2a28] px-2 py-1">{ACADEMICS.college}</span>
+        <span className="rounded bg-[#2a2a28] px-2 py-1">Major: {ACADEMICS.major}</span>
+        <span className="rounded bg-[#2a2a28] px-2 py-1">Minor: {ACADEMICS.minor}</span>
       </div>
 
       {/* AP & Transfer Credits */}
-      <div className="inner-card mb-6 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/5">
-        <h4 className="mb-3 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
+      <div className="inner-card mb-6 rounded-lg bg-[#262624] p-4 ring-1 ring-[#262624]">
+        <h4 className="mb-3 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#8a8a85]">
           AP & Transfer Credits ({ACADEMICS.transferCredits} credits)
         </h4>
         <div className="flex flex-wrap gap-2">
@@ -803,8 +803,8 @@ export default function RecommendationPage() {
             CCA Transfer: {ACADEMICS.ccaCredits}cr
           </span>
           {AP_CREDITS.map((ap) => (
-            <span key={ap.exam} className="rounded bg-white/5 px-2 py-1 font-robert-regular text-[11px] text-white/50">
-              {ap.exam} <span className="text-white/25">→ {ap.equivalent}</span> <span className="text-yellow-300/70">{ap.credits}cr</span>
+            <span key={ap.exam} className="rounded bg-[#2a2a28] px-2 py-1 font-robert-regular text-[11px] text-[#8a8a85]">
+              {ap.exam} <span className="text-[#5a5a55]">→ {ap.equivalent}</span> <span className="text-yellow-300/70">{ap.credits}cr</span>
             </span>
           ))}
         </div>
@@ -823,13 +823,13 @@ export default function RecommendationPage() {
                 ? 'bg-yellow-300/[0.03] ring-yellow-300/20'
                 : semStarred
                 ? 'bg-yellow-300/[0.04] ring-yellow-300/20'
-                : 'bg-white/[0.03] ring-white/8'
+                : 'bg-[#262624] ring-[#3a3a37]'
             }`}
           >
             {/* Semester header */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h4 className="font-fk-screamer text-sm font-black uppercase tracking-wide text-white">
+                <h4 className="font-fk-screamer text-sm font-black uppercase tracking-wide text-[#fffffc]">
                   {sem.term}
                 </h4>
                 {sem.inProgress && (
@@ -844,18 +844,18 @@ export default function RecommendationPage() {
                     <FaStar className="text-[8px]" /> Dean&apos;s List
                   </span>
                 )}
-                <span className="font-robert-regular text-[11px] text-white/30">
+                <span className="font-robert-regular text-[11px] text-[#5a5a55]">
                   {sem.credits}cr
                 </span>
                 {!sem.inProgress && (
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                    sem.gpa === 4.0 ? 'bg-green-400/15 text-green-400' : 'bg-white/10 text-white/60'
+                    sem.gpa === 4.0 ? 'bg-green-400/15 text-green-400' : 'bg-[#3a3a37] text-[#b0b0a4]'
                   }`}>
                     {sem.gpa.toFixed(3)}
                   </span>
                 )}
                 <button onClick={() => toggleStar(sem.term)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                  {semStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                  {semStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                 </button>
               </div>
             </div>
@@ -863,11 +863,11 @@ export default function RecommendationPage() {
             {/* Course rows */}
             <div className="flex flex-col gap-1.5">
               {sem.courses.map((course, i) => (
-                <div key={i} className="flex items-center gap-2 rounded bg-white/[0.02] px-2 py-1.5">
-                  <span className="w-[5.5rem] shrink-0 font-general text-[10px] tracking-wide text-white/30">
+                <div key={i} className="flex items-center gap-2 rounded bg-[#232321] px-2 py-1.5">
+                  <span className="w-[5.5rem] shrink-0 font-general text-[10px] tracking-wide text-[#5a5a55]">
                     {course.code}
                   </span>
-                  <span className="min-w-0 flex-1 flex items-center gap-1.5 truncate font-robert-regular text-xs text-white/60">
+                  <span className="min-w-0 flex-1 flex items-center gap-1.5 truncate font-robert-regular text-xs text-[#b0b0a4]">
                     <span className="truncate">{course.title}</span>
                     {course.honors && (
                       <span className="shrink-0 rounded bg-yellow-300/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">
@@ -878,7 +878,7 @@ export default function RecommendationPage() {
                   <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${gradeStyle(course.grade)}`}>
                     {gradeLabel(course.grade)}
                   </span>
-                  <span className="w-6 shrink-0 text-right font-general text-[10px] text-white/20">
+                  <span className="w-6 shrink-0 text-right font-general text-[10px] text-[#5a5a55]">
                     {course.credits}
                   </span>
                 </div>
@@ -900,28 +900,28 @@ export default function RecommendationPage() {
     const psStarred = starred.has('personal-statement');
     return (
       <div className="px-4 pb-6 sm:px-6">
-        <div className={`inner-card rounded-lg p-5 ring-1 transition-all duration-200 ${psStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/[0.03] ring-white/10'}`}>
+        <div className={`inner-card rounded-lg p-5 ring-1 transition-all duration-200 ${psStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-[#262624] ring-[#3a3a37]'}`}>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">
+              <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-[#8a8a85]">
                 AMCAS Personal Statement
               </span>
               <button onClick={() => toggleStar('personal-statement')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                {psStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                {psStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
               </button>
             </div>
             <span className={`font-general text-[10px] tracking-wider ${
-              charCount > maxChars ? 'text-red-400' : charCount > maxChars * 0.9 ? 'text-amber-300/50' : 'text-white/20'
+              charCount > maxChars ? 'text-red-400' : charCount > maxChars * 0.9 ? 'text-amber-300/50' : 'text-[#5a5a55]'
             }`}>
               {charCount.toLocaleString()}/{maxChars.toLocaleString()}
             </span>
           </div>
           {hasText ? (
-            <p className="font-robert-regular text-sm leading-relaxed text-white/60 whitespace-pre-wrap">
+            <p className="font-robert-regular text-sm leading-relaxed text-[#b0b0a4] whitespace-pre-wrap">
               {PERSONAL_STATEMENT.text}
             </p>
           ) : (
-            <p className="font-robert-regular text-sm italic text-white/15">
+            <p className="font-robert-regular text-sm italic text-[#3a3a37]">
               Not written yet
             </p>
           )}
@@ -942,7 +942,7 @@ export default function RecommendationPage() {
             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${tier.bgPill} ${tier.textPill}`}>
               {tier.label}
             </span>
-            <span className="font-robert-regular text-xs text-white/30">
+            <span className="font-robert-regular text-xs text-[#5a5a55]">
               {tier.schools.length} {tier.schools.length === 1 ? 'school' : 'schools'}
             </span>
           </div>
@@ -955,7 +955,7 @@ export default function RecommendationPage() {
               return (
               <div
                 key={school.name}
-                className={`inner-card flex flex-col gap-2 rounded-lg p-3 ring-1 transition-all duration-200 ${schoolStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/[0.03] ring-white/10'}`}
+                className={`inner-card flex flex-col gap-2 rounded-lg p-3 ring-1 transition-all duration-200 ${schoolStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-[#262624] ring-[#3a3a37]'}`}
               >
                 <div className="flex items-center gap-2">
                   {school.logo && (
@@ -965,7 +965,7 @@ export default function RecommendationPage() {
                       className="h-6 w-6 shrink-0 rounded object-contain"
                     />
                   )}
-                  <span className="min-w-0 flex-1 font-robert-medium text-xs text-white leading-tight">
+                  <span className="min-w-0 flex-1 font-robert-medium text-xs text-[#fffffc] leading-tight">
                     {school.name}
                   </span>
                   {school.name === 'Harvard Medical School' && (
@@ -974,10 +974,10 @@ export default function RecommendationPage() {
                     </span>
                   )}
                   <button onClick={() => toggleStar(school.name)} className="group shrink-0 rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {schoolStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {schoolStarred ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
-                <span className="font-robert-regular text-[11px] text-white/50">
+                <span className="font-robert-regular text-[11px] text-[#8a8a85]">
                   {school.location}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -1007,9 +1007,9 @@ export default function RecommendationPage() {
         <div key={name} className={`relative rounded-md transition-all duration-200 ${s ? 'ring-2 ring-yellow-300/30' : ''}`}>
           <button
             onClick={() => toggleStar(name)}
-            className="absolute top-3 right-3 z-20 group rounded-full bg-black/50 backdrop-blur-sm p-2 transition-all hover:bg-yellow-300/20"
+            className="absolute top-3 right-3 z-20 group rounded-full bg-[#21211f]/50 backdrop-blur-sm p-2 transition-all hover:bg-yellow-300/20"
           >
-            {s ? <FaStar className="text-sm text-yellow-300" /> : <FaRegStar className="text-sm text-white/30 group-hover:text-yellow-300/60" />}
+            {s ? <FaStar className="text-sm text-yellow-300" /> : <FaRegStar className="text-sm text-[#5a5a55] group-hover:text-yellow-300/60" />}
           </button>
           {content}
         </div>
@@ -1019,7 +1019,7 @@ export default function RecommendationPage() {
     return (
       <div className="flex flex-col gap-5 px-4 pb-6 sm:px-6">
         {pc('Studyur', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               riveSrc="/rive/hero_section.riv"
               title={<img src="/img/studyur-logo-white.svg" alt="Studyur" className="h-28 md:h-36 w-auto pointer-events-none" style={{ marginTop: '-40px', marginBottom: '-40px', marginLeft: '-25px' }} />}
@@ -1032,7 +1032,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Clover', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               title={<img src="/img/clover-logo-white.svg" alt="Clover" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A proprietary 12-billion parameter AI model. Not available to the public — built on the belief that LLMs aren't the future, and other AI models will benefit humankind more."
@@ -1045,7 +1045,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Zoov', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               title={<img src="/img/zoov-logo-white.svg" alt="Zoov" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A proprietary medical AI transcription platform to help healthcare providers spend more time with patients and less on paperwork. Discontinued after Doximity launched a free AI scribe."
@@ -1058,7 +1058,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('PreMeder', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/feature-4.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1072,7 +1072,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Trovex', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/trovex.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1086,7 +1086,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Pangroup', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/feature-5.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1099,22 +1099,22 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Synthr', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               title={<img src="/img/synthr-logo-white.svg" alt="Synthr" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A programming language purpose-built for ML pipelines. Tensor-native syntax, auto-differentiation, and GPU-first execution."
               ribbon="Complete"
               isComingSoon
             >
-              <div className="size-full bg-black overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
-                <pre className="text-white/90 max-w-3xl" dangerouslySetInnerHTML={{ __html: synthrCodeHTML }} />
+              <div className="size-full bg-[#21211f] overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
+                <pre className="text-[#fffffc] max-w-3xl" dangerouslySetInnerHTML={{ __html: synthrCodeHTML }} />
               </div>
             </BentoCard>
           </BentoTilt>
         ))}
 
         {pc('Histia', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/histia.mp4"
               videoClassName="!left-auto !top-auto !right-6 !bottom-6 !w-[80%] !h-[80%] !object-contain"
@@ -1127,7 +1127,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Topographify', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/topographify.mp4"
               title={<img src="/img/topographify-logo-white.svg" alt="Topographify" className="h-12 md:h-16 w-auto pointer-events-none" />}
@@ -1139,7 +1139,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Aethon', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/aethon.mp4"
               videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
@@ -1152,7 +1152,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Rivex', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
             <BentoCard
               src="/videos/rivex.mp4"
               videoClassName="!object-contain scale-[1.1]"
@@ -1171,10 +1171,10 @@ export default function RecommendationPage() {
 
   if (!unlocked) {
     return (
-      <div className="relative min-h-screen w-screen bg-black">
+      <div className="relative min-h-screen w-screen bg-[#21211f]">
         <NavBar />
         <div
-          className={`fixed bottom-8 left-1/2 z-[200] -translate-x-1/2 rounded-lg bg-red-500/90 px-5 py-3 font-robert-regular text-sm text-white shadow-lg backdrop-blur-sm transition-all duration-300 ${toast ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+          className={`fixed bottom-8 left-1/2 z-[200] -translate-x-1/2 rounded-lg bg-red-500/90 px-5 py-3 font-robert-regular text-sm text-[#fffffc] shadow-lg backdrop-blur-sm transition-all duration-300 ${toast ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         >
           Incorrect password. Please try again.
         </div>
@@ -1189,7 +1189,7 @@ export default function RecommendationPage() {
   // ── Unlocked content ─────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen w-screen flex-col bg-black">
+    <div className="flex min-h-screen w-screen flex-col bg-[#21211f]">
       <NavBar />
 
       <div ref={contentRef} className="flex-1 px-4 pb-20 pt-32 sm:px-8 md:px-16 lg:px-24">
@@ -1199,28 +1199,28 @@ export default function RecommendationPage() {
             title="Rec<b>o</b>mmendation <br /> Mat<b>e</b>rial"
             containerClass="!text-left"
           />
-          <div className="hero-sub mt-6 max-w-3xl font-robert-regular text-sm leading-relaxed text-white/50 space-y-3" style={{ opacity: 0 }}>
+          <div className="hero-sub mt-6 max-w-3xl font-robert-regular text-sm leading-relaxed text-[#8a8a85] space-y-3" style={{ opacity: 0 }}>
             {recipient === 'maron' && (
-              <p><strong className="text-white/70">Hi Dr. Maron</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
+              <p><strong className="text-[#b0b0a4]">Hi Dr. Maron</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
             )}
 
             {recipient === 'kim' && (
-              <p><strong className="text-white/70">Hi Dr. Kim</strong> — I really appreciate your understanding when I absolutely failed my first biochem test. On top of that, thank you for letting me into your research and being a part of something meaningful.</p>
+              <p><strong className="text-[#b0b0a4]">Hi Dr. Kim</strong> — I really appreciate your understanding when I absolutely failed my first biochem test. On top of that, thank you for letting me into your research and being a part of something meaningful.</p>
             )}
 
             {recipient === 'bull' && (
-              <p><strong className="text-white/70">Hi Dr. Bull</strong> — You have been an immensely fantastic mentor. I really appreciate you letting me shadow once a month, which most people aren't able to do. You confirmed that I wanted to become a physician and made me realize I would love to be a medical director myself. Seeing what you do in that role has really made me appreciate that kind of work.</p>
+              <p><strong className="text-[#b0b0a4]">Hi Dr. Bull</strong> — You have been an immensely fantastic mentor. I really appreciate you letting me shadow once a month, which most people aren't able to do. You confirmed that I wanted to become a physician and made me realize I would love to be a medical director myself. Seeing what you do in that role has really made me appreciate that kind of work.</p>
             )}
 
             {recipient === 'hadee' && (
-              <p><strong className="text-white/70">Hi Hadee</strong> — Thank you for letting me in without any hesitation, for talking to me kindly, and being understanding about my schedule. You've been one of the best mentors I've ever had. Seeing you as a provider for so many and being really understanding of patients and their situations will stick with me. I've learned lessons from you that I'll pass on to others as I continue my journey as a physician.</p>
+              <p><strong className="text-[#b0b0a4]">Hi Hadee</strong> — Thank you for letting me in without any hesitation, for talking to me kindly, and being understanding about my schedule. You've been one of the best mentors I've ever had. Seeing you as a provider for so many and being really understanding of patients and their situations will stick with me. I've learned lessons from you that I'll pass on to others as I continue my journey as a physician.</p>
             )}
 
             {recipient === 'shelby-breck' && (
               <>
-                <p><strong className="text-white/70">Hi Breck</strong> — Thank you for trying something new and letting me into your lab when you'd never had an undergrad before, and for trusting that I would be more benefit than not. I appreciate you meeting with me to talk about my research and being so understanding.</p>
+                <p><strong className="text-[#b0b0a4]">Hi Breck</strong> — Thank you for trying something new and letting me into your lab when you'd never had an undergrad before, and for trusting that I would be more benefit than not. I appreciate you meeting with me to talk about my research and being so understanding.</p>
 
-                <p><strong className="text-white/70">Hi Shelby</strong> — Thank you for letting me onto your project and helping me so many times, even with the silliest questions. You were always there to support me through my research journey and I'm really grateful for all you've done for me. I really hope the best for you after graduation, after you get your PhD, and that you do something you really want to do.</p>
+                <p><strong className="text-[#b0b0a4]">Hi Shelby</strong> — Thank you for letting me onto your project and helping me so many times, even with the silliest questions. You were always there to support me through my research journey and I'm really grateful for all you've done for me. I really hope the best for you after graduation, after you get your PhD, and that you do something you really want to do.</p>
               </>
             )}
           </div>
@@ -1231,15 +1231,15 @@ export default function RecommendationPage() {
               <span className="font-fk-screamer text-5xl font-black text-yellow-300">
                 {ACADEMICS.cumGPA}
               </span>
-              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-[#7f7f73]">
                 GPA
               </span>
             </div>
             <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
-              <span className="font-fk-screamer text-5xl font-black text-white">
+              <span className="font-fk-screamer text-5xl font-black text-[#fffffc]">
                 {formatHours(TOTAL_HOURS)}
               </span>
-              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-[#7f7f73]">
                 Total Hours
               </span>
             </div>
@@ -1247,21 +1247,21 @@ export default function RecommendationPage() {
               <span className="font-fk-screamer text-5xl font-black text-yellow-300">
                 {ACTIVITY_COUNT}
               </span>
-              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-[#7f7f73]">
                 Activities
               </span>
             </div>
             <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
-              <span className="font-fk-screamer text-5xl font-black text-white">
+              <span className="font-fk-screamer text-5xl font-black text-[#fffffc]">
                 {SCHOOL_COUNT}
               </span>
-              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-[#7f7f73]">
                 Schools
               </span>
             </div>
             <div className="hero-highlight flex items-baseline gap-3" style={{ opacity: 0 }}>
               <span className="font-fk-screamer text-5xl font-black text-yellow-300">MCAT</span>
-              <span className="font-robert-regular text-sm uppercase tracking-widest text-white/40">
+              <span className="font-robert-regular text-sm uppercase tracking-widest text-[#7f7f73]">
                 {(() => {
                   const now = new Date();
                   const testDate = new Date('2026-05-22');
@@ -1273,7 +1273,7 @@ export default function RecommendationPage() {
                   return 'Score Available';
                 })()}
               </span>
-              <span className="mx-2 text-white/10">|</span>
+              <span className="mx-2 text-[#3a3a37]">|</span>
               <span className="font-fk-screamer text-5xl font-black text-red-400">LETTERS DUE</span>
               <span className="font-robert-regular text-sm uppercase tracking-widest text-red-400/60">
                 {(() => {
@@ -1290,7 +1290,7 @@ export default function RecommendationPage() {
         </div>
 
         {/* Starred section */}
-        <div className="section-wrapper mx-auto mt-16 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
+        <div className="section-wrapper mx-auto mt-16 max-w-6xl rounded-xl bg-[#232321] ring-1 ring-[#3a3a37]">
           {/* Collapsible header */}
           <button
             type="button"
@@ -1298,7 +1298,7 @@ export default function RecommendationPage() {
             className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
           >
             <FaStar className="text-lg text-yellow-300" />
-            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
+            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-[#fffffc]">
               Quick Reference
             </h3>
             {starred.size > 0 && (
@@ -1307,17 +1307,17 @@ export default function RecommendationPage() {
               </span>
             )}
             <span className="ml-auto flex items-center gap-3">
-              <span className="hidden font-robert-regular text-xs text-white/30 sm:inline">
+              <span className="hidden font-robert-regular text-xs text-[#5a5a55] sm:inline">
                 {starred.size === 0 ? 'Star items below to save them here' : `${starred.size} item${starred.size === 1 ? '' : 's'} starred`}
               </span>
-              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${qrOpen ? 'rotate-180' : ''}`} />
+              <FaChevronDown className={`text-sm text-[#5a5a55] transition-transform duration-300 ${qrOpen ? 'rotate-180' : ''}`} />
             </span>
           </button>
 
           {/* Collapsible body */}
           <div ref={qrContentRef} style={{ height: 0, overflow: 'hidden', opacity: 0 }}>
             <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-              <p className="panel-card mb-4 max-w-xl font-robert-regular text-sm leading-relaxed text-white/40">
+              <p className="panel-card mb-4 max-w-xl font-robert-regular text-sm leading-relaxed text-[#7f7f73]">
                 Star anything that stands out — activities, semesters, schools, projects, or my personal statement. Starred items appear here for quick reference as you write.
               </p>
 
@@ -1330,7 +1330,7 @@ export default function RecommendationPage() {
                 if (!items.length) return null;
                 return (
                   <div>
-                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                       <FaGraduationCap className="text-sm text-yellow-300/60" /> Semesters
                     </h4>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -1338,13 +1338,13 @@ export default function RecommendationPage() {
                         <div key={sem.term} className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20">
                           <div className="mb-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-fk-screamer text-sm font-black uppercase tracking-wide text-white">{sem.term}</h4>
+                              <h4 className="font-fk-screamer text-sm font-black uppercase tracking-wide text-[#fffffc]">{sem.term}</h4>
                               {sem.inProgress && <span className="rounded-full bg-yellow-300/15 px-2 py-0.5 text-[10px] font-medium text-yellow-300">In Progress</span>}
                             </div>
                             <div className="flex items-center gap-2">
                               {sem.deanslist && <span className="flex items-center gap-1 rounded-full bg-yellow-300/10 px-2 py-0.5 text-[10px] font-medium text-yellow-300"><FaStar className="text-[8px]" /> Dean&apos;s List</span>}
-                              <span className="font-robert-regular text-[11px] text-white/30">{sem.credits}cr</span>
-                              {!sem.inProgress && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${sem.gpa === 4.0 ? 'bg-green-400/15 text-green-400' : 'bg-white/10 text-white/60'}`}>{sem.gpa.toFixed(3)}</span>}
+                              <span className="font-robert-regular text-[11px] text-[#5a5a55]">{sem.credits}cr</span>
+                              {!sem.inProgress && <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${sem.gpa === 4.0 ? 'bg-green-400/15 text-green-400' : 'bg-[#3a3a37] text-[#b0b0a4]'}`}>{sem.gpa.toFixed(3)}</span>}
                               <button onClick={() => toggleStar(sem.term)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
                                 <FaStar className="text-xs text-yellow-300" />
                               </button>
@@ -1352,14 +1352,14 @@ export default function RecommendationPage() {
                           </div>
                           <div className="flex flex-col gap-1.5">
                             {sem.courses.map((course, i) => (
-                              <div key={i} className="flex items-center gap-2 rounded bg-white/[0.02] px-2 py-1.5">
-                                <span className="w-[5.5rem] shrink-0 font-general text-[10px] tracking-wide text-white/30">{course.code}</span>
-                                <span className="min-w-0 flex-1 flex items-center gap-1.5 truncate font-robert-regular text-xs text-white/60">
+                              <div key={i} className="flex items-center gap-2 rounded bg-[#232321] px-2 py-1.5">
+                                <span className="w-[5.5rem] shrink-0 font-general text-[10px] tracking-wide text-[#5a5a55]">{course.code}</span>
+                                <span className="min-w-0 flex-1 flex items-center gap-1.5 truncate font-robert-regular text-xs text-[#b0b0a4]">
                                   <span className="truncate">{course.title}</span>
                                   {course.honors && <span className="shrink-0 rounded bg-yellow-300/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Honors</span>}
                                 </span>
                                 <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${gradeStyle(course.grade)}`}>{gradeLabel(course.grade)}</span>
-                                <span className="w-6 shrink-0 text-right font-general text-[10px] text-white/20">{course.credits}</span>
+                                <span className="w-6 shrink-0 text-right font-general text-[10px] text-[#5a5a55]">{course.credits}</span>
                               </div>
                             ))}
                           </div>
@@ -1373,14 +1373,14 @@ export default function RecommendationPage() {
               {/* ── Starred Personal Statement ── */}
               {starred.has('personal-statement') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> Personal Statement
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20">
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-white/50">AMCAS Personal Statement</span>
+                      <span className="font-fk-screamer text-xs font-black uppercase tracking-wider text-[#8a8a85]">AMCAS Personal Statement</span>
                       <div className="flex items-center gap-2">
-                        <span className={`font-general text-[10px] tracking-wider ${PERSONAL_STATEMENT.text.replace(/\n/g, '').length > PERSONAL_STATEMENT.maxChars ? 'text-red-400' : 'text-white/20'}`}>
+                        <span className={`font-general text-[10px] tracking-wider ${PERSONAL_STATEMENT.text.replace(/\n/g, '').length > PERSONAL_STATEMENT.maxChars ? 'text-red-400' : 'text-[#5a5a55]'}`}>
                           {PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/{PERSONAL_STATEMENT.maxChars.toLocaleString()}
                         </span>
                         <button onClick={() => toggleStar('personal-statement')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
@@ -1388,7 +1388,7 @@ export default function RecommendationPage() {
                         </button>
                       </div>
                     </div>
-                    <p className="font-robert-regular text-sm leading-relaxed text-white/60 whitespace-pre-wrap">{PERSONAL_STATEMENT.text}</p>
+                    <p className="font-robert-regular text-sm leading-relaxed text-[#b0b0a4] whitespace-pre-wrap">{PERSONAL_STATEMENT.text}</p>
                   </div>
                 </div>
               )}
@@ -1399,7 +1399,7 @@ export default function RecommendationPage() {
                 if (!items.length) return null;
                 return (
                   <div>
-                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                       <FaUniversity className="text-sm text-yellow-300/60" /> Schools
                     </h4>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1407,12 +1407,12 @@ export default function RecommendationPage() {
                         <div key={school.name} className="flex flex-col gap-2 rounded-lg bg-yellow-300/[0.04] p-3 ring-1 ring-yellow-300/20">
                           <div className="flex items-center gap-2">
                             {school.logo && <img src={`/img/school-icons/${school.logo}`} alt="" className="h-6 w-6 shrink-0 rounded object-contain" />}
-                            <span className="min-w-0 flex-1 font-robert-medium text-xs text-white leading-tight">{school.name}</span>
+                            <span className="min-w-0 flex-1 font-robert-medium text-xs text-[#fffffc] leading-tight">{school.name}</span>
                             <button onClick={() => toggleStar(school.name)} className="group shrink-0 rounded-full p-1 transition-all hover:bg-yellow-300/10">
                               <FaStar className="text-xs text-yellow-300" />
                             </button>
                           </div>
-                          <span className="font-robert-regular text-[11px] text-white/50">{school.location}</span>
+                          <span className="font-robert-regular text-[11px] text-[#8a8a85]">{school.location}</span>
                           <div className="flex flex-wrap gap-1.5">
                             <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${school.tier.bgPill} ${school.tier.textPill}`}>{school.mcat} MCAT</span>
                             <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${school.tier.bgPill} ${school.tier.textPill}`}>{school.gpa.toFixed(2)} GPA</span>
@@ -1431,7 +1431,7 @@ export default function RecommendationPage() {
                 if (!items.length) return null;
                 return (
                   <div>
-                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                       <FaCode className="text-sm text-yellow-300/60" /> Projects
                     </h4>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1441,15 +1441,15 @@ export default function RecommendationPage() {
                         return (
                           <div key={name} className="flex flex-col gap-2 rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-robert-medium text-sm text-white">{name}</span>
+                              <span className="font-robert-medium text-sm text-[#fffffc]">{name}</span>
                               <div className="flex items-center gap-1.5">
-                                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-medium text-white/50">{info.ribbon}</span>
+                                <span className="rounded-full bg-[#3a3a37] px-2 py-0.5 text-[9px] font-medium text-[#8a8a85]">{info.ribbon}</span>
                                 <button onClick={() => toggleStar(name)} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
                                   <FaStar className="text-xs text-yellow-300" />
                                 </button>
                               </div>
                             </div>
-                            <p className="font-robert-regular text-xs leading-relaxed text-white/50">{info.desc}</p>
+                            <p className="font-robert-regular text-xs leading-relaxed text-[#8a8a85]">{info.desc}</p>
                           </div>
                         );
                       })}
@@ -1466,7 +1466,7 @@ export default function RecommendationPage() {
                 if (!items.length) return null;
                 return (
                   <div>
-                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                    <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                       <FaHeart className="text-sm text-yellow-300/60" /> Activities
                     </h4>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -1474,8 +1474,8 @@ export default function RecommendationPage() {
                         <div key={activity.title} className="flex flex-col gap-3 rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h3 className="font-robert-medium text-sm font-semibold text-white">{activity.title}</h3>
-                              <span className="mt-0.5 inline-block font-robert-regular text-[10px] text-white/30">{activity.categoryName}</span>
+                              <h3 className="font-robert-medium text-sm font-semibold text-[#fffffc]">{activity.title}</h3>
+                              <span className="mt-0.5 inline-block font-robert-regular text-[10px] text-[#5a5a55]">{activity.categoryName}</span>
                             </div>
                             <div className="flex shrink-0 items-center gap-1.5">
                               {activity.hours > 0 && (
@@ -1489,28 +1489,28 @@ export default function RecommendationPage() {
                             </div>
                           </div>
                           {activity.role && (
-                            <div className="flex items-center gap-1.5 text-white/50">
+                            <div className="flex items-center gap-1.5 text-[#8a8a85]">
                               <FaUserTie className="shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.role}</span>
                             </div>
                           )}
                           {activity.contact && (
-                            <div className="flex items-start gap-1.5 text-white/40">
+                            <div className="flex items-start gap-1.5 text-[#7f7f73]">
                               <FaUserMd className="mt-0.5 shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.contact}</span>
                             </div>
                           )}
                           {activity.location && (
-                            <div className="flex items-center gap-1.5 text-white/40">
+                            <div className="flex items-center gap-1.5 text-[#7f7f73]">
                               <FaMapMarkerAlt className="shrink-0 text-[10px]" /><span className="font-robert-regular text-xs">{activity.location}</span>
                             </div>
                           )}
                           {(() => {
                             const descCount = (activity.description || '').length;
                             return (
-                              <div className="mt-1 rounded bg-white/[0.02] p-2.5">
+                              <div className="mt-1 rounded bg-[#232321] p-2.5">
                                 {descCount > 0
-                                  ? <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.description}</p>
-                                  : <p className="font-robert-regular text-[11px] italic text-white/15">No description yet</p>}
-                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-white/15'}`}>{descCount}/700</span></div>
+                                  ? <p className="font-robert-regular text-xs leading-relaxed text-[#8a8a85]">{activity.description}</p>
+                                  : <p className="font-robert-regular text-[11px] italic text-[#3a3a37]">No description yet</p>}
+                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-[#3a3a37]'}`}>{descCount}/700</span></div>
                               </div>
                             );
                           })()}
@@ -1520,20 +1520,20 @@ export default function RecommendationPage() {
                               <div className="mt-2 rounded bg-yellow-300/[0.03] p-2.5 ring-1 ring-yellow-300/10">
                                 <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>
                                 {essayCount > 0
-                                  ? <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.meaningfulEssay}</p>
-                                  : <p className="font-robert-regular text-[11px] italic text-white/15">No most meaningful essay yet</p>}
-                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-white/15'}`}>{essayCount}/1325</span></div>
+                                  ? <p className="font-robert-regular text-xs leading-relaxed text-[#8a8a85]">{activity.meaningfulEssay}</p>
+                                  : <p className="font-robert-regular text-[11px] italic text-[#3a3a37]">No most meaningful essay yet</p>}
+                                <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-[#3a3a37]'}`}>{essayCount}/1325</span></div>
                               </div>
                             );
                           })()}
                           <div className="mt-auto flex items-center justify-between pt-2">
                             {dateRange(activity) && (
-                              <div className="flex items-center gap-1.5 text-white/30">
+                              <div className="flex items-center gap-1.5 text-[#5a5a55]">
                                 <FaCalendarAlt className="text-[10px]" /><span className="font-robert-regular text-[11px]">{dateRange(activity)}</span>
                               </div>
                             )}
                             {activity.ongoing !== undefined && (
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${activity.ongoing ? 'bg-green-400/15 text-green-400' : 'bg-white/10 text-white/40'}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${activity.ongoing ? 'bg-green-400/15 text-green-400' : 'bg-[#3a3a37] text-[#7f7f73]'}`}>
                                 {activity.ongoing ? 'Ongoing' : 'Completed'}
                               </span>
                             )}
@@ -1548,21 +1548,21 @@ export default function RecommendationPage() {
               {/* ── Starred Letter Requirement Items ── */}
               {starred.has('submission-details') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> Submission Details
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
                     <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
                       <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
                     </div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-white/45">
-                      <p><span className="text-white/60">Submit via:</span> Interfolio</p>
-                      <p><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
-                      <p><span className="text-white/60">Format:</span> Institutional letterhead</p>
-                      <p><span className="text-white/60">Written for:</span> Navtej Singh</p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-[#7f7f73]">
+                      <p><span className="text-[#b0b0a4]">Submit via:</span> Interfolio</p>
+                      <p><span className="text-[#b0b0a4]">Length:</span> 1.5–2 single-spaced pages</p>
+                      <p><span className="text-[#b0b0a4]">Format:</span> Institutional letterhead</p>
+                      <p><span className="text-[#b0b0a4]">Written for:</span> Navtej Singh</p>
                     </div>
-                    <div className="mt-3 rounded bg-white/[0.03] px-3 py-2 ring-1 ring-white/5">
-                      <p className="text-[11px] text-white/35"><span className="text-white/50">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
+                    <div className="mt-3 rounded bg-[#262624] px-3 py-2 ring-1 ring-[#262624]">
+                      <p className="text-[11px] text-[#6a6a65]"><span className="text-[#8a8a85]">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
                     </div>
                   </div>
                 </div>
@@ -1570,25 +1570,25 @@ export default function RecommendationPage() {
 
               {starred.has('letter-format') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> Letter Format
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-5 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
-                    <div className="space-y-4 text-white/35">
+                    <div className="space-y-4 text-[#6a6a65]">
                       <div>
-                        <p className="text-white/50">[Your Institutional Letterhead]</p>
-                        <p className="text-white/30">[Date]</p>
+                        <p className="text-[#8a8a85]">[Your Institutional Letterhead]</p>
+                        <p className="text-[#5a5a55]">[Date]</p>
                       </div>
-                      <p className="text-white/50">Dear Admissions Committee, <span className="text-white/20">or</span> Dear Members of the Admissions Committee, <span className="text-white/20">or</span> To Whom It May Concern,</p>
-                      <p className="py-3 text-center text-white/20 italic">[All the awesome stuff you have to say about me]</p>
-                    <p className="mt-3 text-white/30 italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
+                      <p className="text-[#8a8a85]">Dear Admissions Committee, <span className="text-[#5a5a55]">or</span> Dear Members of the Admissions Committee, <span className="text-[#5a5a55]">or</span> To Whom It May Concern,</p>
+                      <p className="py-3 text-center text-[#5a5a55] italic">[All the awesome stuff you have to say about me]</p>
+                    <p className="mt-3 text-[#5a5a55] italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
                       <div>
-                        <p className="text-white/50">Sincerely, <span className="text-white/20">or</span> Respectfully, <span className="text-white/20">or</span> With highest regards, <span className="text-white/20">or</span> Warmly, <span className="text-white/20">or</span> Best,</p>
-                        <p className="mt-2 text-white/30">[Signature]</p>
-                        <p className="text-white/30">[Full Name], [Degree(s)]</p>
-                        <p className="text-white/30">[Title / Position]</p>
-                        <p className="text-white/30">[Department &amp; Institution]</p>
-                        <p className="text-white/30">[Email] · [Phone]</p>
+                        <p className="text-[#8a8a85]">Sincerely, <span className="text-[#5a5a55]">or</span> Respectfully, <span className="text-[#5a5a55]">or</span> With highest regards, <span className="text-[#5a5a55]">or</span> Warmly, <span className="text-[#5a5a55]">or</span> Best,</p>
+                        <p className="mt-2 text-[#5a5a55]">[Signature]</p>
+                        <p className="text-[#5a5a55]">[Full Name], [Degree(s)]</p>
+                        <p className="text-[#5a5a55]">[Title / Position]</p>
+                        <p className="text-[#5a5a55]">[Department &amp; Institution]</p>
+                        <p className="text-[#5a5a55]">[Email] · [Phone]</p>
                       </div>
                     </div>
                   </div>
@@ -1597,14 +1597,14 @@ export default function RecommendationPage() {
 
               {starred.has('committees-value') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> What Admissions Committees Value
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
-                    <p className="text-[11px] text-white/30 mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
+                    <p className="text-[11px] text-[#5a5a55] mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
                     <div className="flex flex-wrap gap-2">
                       {['Specific moments you witnessed','How they handled challenges','Growth over time','Intellectual curiosity','How they work with others','Maturity & self-awareness','Comparison to peers','Integrity & reliability'].map(topic => (
-                        <span key={topic} className="rounded-full bg-yellow-300/10 px-3 py-1 text-[11px] text-white/40 ring-1 ring-yellow-300/20">{topic}</span>
+                        <span key={topic} className="rounded-full bg-yellow-300/10 px-3 py-1 text-[11px] text-[#7f7f73] ring-1 ring-yellow-300/20">{topic}</span>
                       ))}
                     </div>
                   </div>
@@ -1613,19 +1613,19 @@ export default function RecommendationPage() {
 
               {starred.has('aamc-guidelines') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> AAMC Guidelines
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
-                    <ol className="list-decimal list-inside space-y-2 text-white/45">
-                      <li>Provide an <span className="text-white/60">accurate assessment</span> of suitability rather than advocate.</li>
-                      <li>Explain your <span className="text-white/60">relationship</span> — how long, what capacity, direct or indirect.</li>
-                      <li><span className="text-white/60">Quality over quantity</span> — focus on the applicant.</li>
-                      <li>Only include grades/GPA/MCAT with <span className="text-white/60">context</span>.</li>
-                      <li>Focus on <span className="text-white/60">behaviors observed directly</span>.</li>
-                      <li>Ask permission for <span className="text-white/60">sensitive information</span>.</li>
-                      <li>Include <span className="text-white/60">unique contributions</span> and growth.</li>
-                      <li>Provide <span className="text-white/60">comparison context</span> if comparing.</li>
+                    <ol className="list-decimal list-inside space-y-2 text-[#7f7f73]">
+                      <li>Provide an <span className="text-[#b0b0a4]">accurate assessment</span> of suitability rather than advocate.</li>
+                      <li>Explain your <span className="text-[#b0b0a4]">relationship</span> — how long, what capacity, direct or indirect.</li>
+                      <li><span className="text-[#b0b0a4]">Quality over quantity</span> — focus on the applicant.</li>
+                      <li>Only include grades/GPA/MCAT with <span className="text-[#b0b0a4]">context</span>.</li>
+                      <li>Focus on <span className="text-[#b0b0a4]">behaviors observed directly</span>.</li>
+                      <li>Ask permission for <span className="text-[#b0b0a4]">sensitive information</span>.</li>
+                      <li>Include <span className="text-[#b0b0a4]">unique contributions</span> and growth.</li>
+                      <li>Provide <span className="text-[#b0b0a4]">comparison context</span> if comparing.</li>
                     </ol>
                   </div>
                 </div>
@@ -1633,7 +1633,7 @@ export default function RecommendationPage() {
 
               {starred.has('aamc-competencies') && (
                 <div>
-                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-white/40">
+                  <h4 className="mb-3 flex items-center gap-2 font-fk-screamer text-xs font-black uppercase tracking-wider text-[#7f7f73]">
                     <FaPen className="text-sm text-yellow-300/60" /> AAMC Core Competencies
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
@@ -1642,7 +1642,7 @@ export default function RecommendationPage() {
                         <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Thinking &amp; Reasoning</p>
                         <div className="flex flex-wrap gap-1.5">
                           {['Critical Thinking','Quantitative Reasoning','Scientific Inquiry','Written Communication'].map(c => (
-                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-[#7f7f73]">{c}</span>
                           ))}
                         </div>
                       </div>
@@ -1650,7 +1650,7 @@ export default function RecommendationPage() {
                         <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Science</p>
                         <div className="flex flex-wrap gap-1.5">
                           {['Living Systems','Human Behavior'].map(c => (
-                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-[#7f7f73]">{c}</span>
                           ))}
                         </div>
                       </div>
@@ -1658,7 +1658,7 @@ export default function RecommendationPage() {
                         <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-yellow-300/40">Pre-Professional</p>
                         <div className="flex flex-wrap gap-1.5">
                           {['Service Orientation','Social Skills','Cultural Competence','Teamwork','Oral Communication','Ethical Responsibility','Reliability & Dependability','Resilience & Adaptability','Capacity for Improvement'].map(c => (
-                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-white/40">{c}</span>
+                            <span key={c} className="rounded bg-yellow-300/10 px-2 py-0.5 text-[10px] text-[#7f7f73]">{c}</span>
                           ))}
                         </div>
                       </div>
@@ -1668,9 +1668,9 @@ export default function RecommendationPage() {
               )}
             </div>
           ) : (
-            <div className="panel-card mt-4 rounded-lg border border-dashed border-white/10 px-4 py-3">
-              <p className="font-robert-regular text-xs text-white/20">
-                No items starred yet. Click the <FaRegStar className="inline text-[10px] text-white/30" /> icon on any item below to save it here.
+            <div className="panel-card mt-4 rounded-lg border border-dashed border-[#3a3a37] px-4 py-3">
+              <p className="font-robert-regular text-xs text-[#5a5a55]">
+                No items starred yet. Click the <FaRegStar className="inline text-[10px] text-[#5a5a55]" /> icon on any item below to save it here.
               </p>
             </div>
           )}
@@ -1680,18 +1680,18 @@ export default function RecommendationPage() {
 
 
         {/* Letter Requirements & Topics */}
-        <div className="section-wrapper mx-auto mt-4 max-w-6xl rounded-xl bg-white/[0.02] ring-1 ring-white/10">
+        <div className="section-wrapper mx-auto mt-4 max-w-6xl rounded-xl bg-[#232321] ring-1 ring-[#3a3a37]">
           <button
             type="button"
             onClick={() => togglePanel(letterContentRef, letterGuideOpen, setLetterGuideOpen)}
             className="flex w-full cursor-pointer items-center gap-3 p-5 sm:p-6 focus:outline-none focus-visible:ring-1 focus-visible:ring-yellow-300/30 focus-visible:rounded-xl"
           >
             <FaPen className="text-lg text-yellow-300" />
-            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white">
+            <h3 className="font-fk-screamer text-lg font-black uppercase tracking-wide text-[#fffffc]">
               Letter Requirements
             </h3>
             <span className="ml-auto">
-              <FaChevronDown className={`text-sm text-white/30 transition-transform duration-300 ${letterGuideOpen ? 'rotate-180' : ''}`} />
+              <FaChevronDown className={`text-sm text-[#5a5a55] transition-transform duration-300 ${letterGuideOpen ? 'rotate-180' : ''}`} />
             </span>
           </button>
 
@@ -1699,67 +1699,67 @@ export default function RecommendationPage() {
             <div className="px-5 pb-6 pt-1 sm:px-6 font-robert-regular text-xs leading-relaxed">
 
               {/* Submission Requirements */}
-              <div className="panel-card relative rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+              <div className="panel-card relative rounded-lg bg-[#262624] p-4 ring-1 ring-[#3a3a37]">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">Submission Details</h4>
                   <button onClick={() => toggleStar('submission-details')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {starred.has('submission-details') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {starred.has('submission-details') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
                 <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
                   <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
                 </div>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-white/45">
-                  <p><span className="text-white/60">Submit via:</span> Interfolio</p>
-                  <p><span className="text-white/60">Length:</span> 1.5–2 single-spaced pages</p>
-                  <p><span className="text-white/60">Format:</span> Institutional letterhead</p>
-                  <p><span className="text-white/60">Written for:</span> Navtej Singh</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-[#7f7f73]">
+                  <p><span className="text-[#b0b0a4]">Submit via:</span> Interfolio</p>
+                  <p><span className="text-[#b0b0a4]">Length:</span> 1.5–2 single-spaced pages</p>
+                  <p><span className="text-[#b0b0a4]">Format:</span> Institutional letterhead</p>
+                  <p><span className="text-[#b0b0a4]">Written for:</span> Navtej Singh</p>
                 </div>
-                <div className="mt-3 rounded bg-white/[0.03] px-3 py-2 ring-1 ring-white/5">
-                  <p className="text-[11px] text-white/35"><span className="text-white/50">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
+                <div className="mt-3 rounded bg-[#262624] px-3 py-2 ring-1 ring-[#262624]">
+                  <p className="text-[11px] text-[#6a6a65]"><span className="text-[#8a8a85]">FERPA Waiver:</span> I have waived my right to view this letter of recommendation. Please do not send the letter to me — submit only through Interfolio.</p>
                 </div>
               </div>
 
               {/* Letter Format Skeleton */}
-              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-5 ring-1 ring-white/8">
+              <div className="panel-card relative mt-3 rounded-lg bg-[#262624] p-5 ring-1 ring-[#3a3a37]">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">Letter Format</h4>
                   <button onClick={() => toggleStar('letter-format')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {starred.has('letter-format') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {starred.has('letter-format') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
-                <div className="space-y-4 text-white/35">
+                <div className="space-y-4 text-[#6a6a65]">
                   <div>
-                    <p className="text-white/50">[Your Institutional Letterhead]</p>
-                    <p className="text-white/30">[Date]</p>
+                    <p className="text-[#8a8a85]">[Your Institutional Letterhead]</p>
+                    <p className="text-[#5a5a55]">[Date]</p>
                   </div>
                   <div>
-                    <p className="text-white/50">Dear Admissions Committee, <span className="text-white/20">or</span> Dear Members of the Admissions Committee, <span className="text-white/20">or</span> To Whom It May Concern,</p>
+                    <p className="text-[#8a8a85]">Dear Admissions Committee, <span className="text-[#5a5a55]">or</span> Dear Members of the Admissions Committee, <span className="text-[#5a5a55]">or</span> To Whom It May Concern,</p>
                   </div>
                   <div className="py-3">
-                    <p className="text-center text-white/20 italic">[All the awesome stuff you have to say about me]</p>
-                    <p className="mt-3 text-white/30 italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
+                    <p className="text-center text-[#5a5a55] italic">[All the awesome stuff you have to say about me]</p>
+                    <p className="mt-3 text-[#5a5a55] italic text-[11px]">I would be incredibly grateful for the strongest, most detailed letter you can write. A specific, personal letter makes all the difference in this process — I&apos;ve worked very hard to get here and a thoughtful letter that speaks to who I am beyond my numbers would mean the world to me. Thank you so much for your time and support.</p>
                   </div>
                   <div>
-                    <p className="text-white/50">Sincerely, <span className="text-white/20">or</span> Respectfully, <span className="text-white/20">or</span> With highest regards, <span className="text-white/20">or</span> Warmly, <span className="text-white/20">or</span> Best,</p>
-                    <p className="mt-2 text-white/30">[Signature]</p>
-                    <p className="text-white/30">[Full Name], [Degree(s)]</p>
-                    <p className="text-white/30">[Title / Position]</p>
-                    <p className="text-white/30">[Department &amp; Institution]</p>
-                    <p className="text-white/30">[Email] · [Phone]</p>
+                    <p className="text-[#8a8a85]">Sincerely, <span className="text-[#5a5a55]">or</span> Respectfully, <span className="text-[#5a5a55]">or</span> With highest regards, <span className="text-[#5a5a55]">or</span> Warmly, <span className="text-[#5a5a55]">or</span> Best,</p>
+                    <p className="mt-2 text-[#5a5a55]">[Signature]</p>
+                    <p className="text-[#5a5a55]">[Full Name], [Degree(s)]</p>
+                    <p className="text-[#5a5a55]">[Title / Position]</p>
+                    <p className="text-[#5a5a55]">[Department &amp; Institution]</p>
+                    <p className="text-[#5a5a55]">[Email] · [Phone]</p>
                   </div>
                 </div>
               </div>
 
               {/* Topics admissions committees value */}
-              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+              <div className="panel-card relative mt-3 rounded-lg bg-[#262624] p-4 ring-1 ring-[#3a3a37]">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">What Admissions Committees Value</h4>
                   <button onClick={() => toggleStar('committees-value')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {starred.has('committees-value') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {starred.has('committees-value') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-white/30 mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
+                <p className="text-[11px] text-[#5a5a55] mb-3">Topics that tend to strengthen letters — feel free to write about whatever you feel best represents your experience with Navtej.</p>
                 <div className="flex flex-wrap gap-2">
                   {[
                     'Specific moments you witnessed',
@@ -1771,64 +1771,64 @@ export default function RecommendationPage() {
                     'Comparison to peers',
                     'Integrity & reliability',
                   ].map(topic => (
-                    <span key={topic} className="rounded-full bg-white/5 px-3 py-1 text-[11px] text-white/40 ring-1 ring-white/8">{topic}</span>
+                    <span key={topic} className="rounded-full bg-[#2a2a28] px-3 py-1 text-[11px] text-[#7f7f73] ring-1 ring-[#3a3a37]">{topic}</span>
                   ))}
                 </div>
               </div>
 
               {/* AAMC Guidelines */}
-              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+              <div className="panel-card relative mt-3 rounded-lg bg-[#262624] p-4 ring-1 ring-[#3a3a37]">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">AAMC Guidelines</h4>
                   <button onClick={() => toggleStar('aamc-guidelines')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {starred.has('aamc-guidelines') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {starred.has('aamc-guidelines') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-white/25 mb-3">From the AAMC &quot;Guidelines for Writing a Letter of Evaluation for a Medical School Applicant&quot;</p>
-                <ol className="list-decimal list-inside space-y-2 text-white/45">
-                  <li>Provide an <span className="text-white/60">accurate assessment</span> of suitability for medical school rather than advocate for the applicant.</li>
-                  <li>Briefly explain your <span className="text-white/60">relationship</span> — how long you&apos;ve known them, in what capacity, and whether your observations are direct or indirect.</li>
-                  <li><span className="text-white/60">Quality over quantity</span> — focus on the applicant, not details of the lab, course, or institution.</li>
-                  <li>Only include grades, GPA, or MCAT if you also provide <span className="text-white/60">context to interpret them</span>. These are already in the application.</li>
-                  <li>Focus on <span className="text-white/60">behaviors you observed directly</span>. Describe the situation, the behavior, and any consequences.</li>
-                  <li>Ask the applicant&apos;s permission before including <span className="text-white/60">private or sensitive information</span>.</li>
-                  <li>Consider including <span className="text-white/60">unique contributions</span> — obstacles overcome, growth from challenges, or contributions to diversity.</li>
-                  <li>If making <span className="text-white/60">comparisons</span>, provide context — the comparison group and your rationale.</li>
+                <p className="text-[11px] text-[#5a5a55] mb-3">From the AAMC &quot;Guidelines for Writing a Letter of Evaluation for a Medical School Applicant&quot;</p>
+                <ol className="list-decimal list-inside space-y-2 text-[#7f7f73]">
+                  <li>Provide an <span className="text-[#b0b0a4]">accurate assessment</span> of suitability for medical school rather than advocate for the applicant.</li>
+                  <li>Briefly explain your <span className="text-[#b0b0a4]">relationship</span> — how long you&apos;ve known them, in what capacity, and whether your observations are direct or indirect.</li>
+                  <li><span className="text-[#b0b0a4]">Quality over quantity</span> — focus on the applicant, not details of the lab, course, or institution.</li>
+                  <li>Only include grades, GPA, or MCAT if you also provide <span className="text-[#b0b0a4]">context to interpret them</span>. These are already in the application.</li>
+                  <li>Focus on <span className="text-[#b0b0a4]">behaviors you observed directly</span>. Describe the situation, the behavior, and any consequences.</li>
+                  <li>Ask the applicant&apos;s permission before including <span className="text-[#b0b0a4]">private or sensitive information</span>.</li>
+                  <li>Consider including <span className="text-[#b0b0a4]">unique contributions</span> — obstacles overcome, growth from challenges, or contributions to diversity.</li>
+                  <li>If making <span className="text-[#b0b0a4]">comparisons</span>, provide context — the comparison group and your rationale.</li>
                 </ol>
               </div>
 
               {/* AAMC Core Competencies */}
-              <div className="panel-card relative mt-3 rounded-lg bg-white/[0.03] p-4 ring-1 ring-white/8">
+              <div className="panel-card relative mt-3 rounded-lg bg-[#262624] p-4 ring-1 ring-[#3a3a37]">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-fk-screamer text-[11px] font-black uppercase tracking-widest text-yellow-300/60">AAMC Core Competencies</h4>
                   <button onClick={() => toggleStar('aamc-competencies')} className="group rounded-full p-1 transition-all hover:bg-yellow-300/10">
-                    {starred.has('aamc-competencies') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-white/20 group-hover:text-yellow-300/60" />}
+                    {starred.has('aamc-competencies') ? <FaStar className="text-xs text-yellow-300" /> : <FaRegStar className="text-xs text-[#5a5a55] group-hover:text-yellow-300/60" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-white/25 mb-4">Entry-level competencies admissions committees look for. You don&apos;t need to address all of these — just the ones you&apos;ve observed.</p>
+                <p className="text-[11px] text-[#5a5a55] mb-4">Entry-level competencies admissions committees look for. You don&apos;t need to address all of these — just the ones you&apos;ve observed.</p>
 
                 <div className="space-y-3">
                   <div>
-                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Thinking &amp; Reasoning</p>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-[#5a5a55]">Thinking &amp; Reasoning</p>
                     <div className="flex flex-wrap gap-1.5">
                       {['Critical Thinking', 'Quantitative Reasoning', 'Scientific Inquiry', 'Written Communication'].map(c => (
-                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                        <span key={c} className="rounded bg-[#2a2a28] px-2 py-0.5 text-[10px] text-[#6a6a65]">{c}</span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Science</p>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-[#5a5a55]">Science</p>
                     <div className="flex flex-wrap gap-1.5">
                       {['Living Systems', 'Human Behavior'].map(c => (
-                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                        <span key={c} className="rounded bg-[#2a2a28] px-2 py-0.5 text-[10px] text-[#6a6a65]">{c}</span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-white/25">Pre-Professional</p>
+                    <p className="mb-1.5 font-fk-screamer text-[10px] font-black uppercase tracking-widest text-[#5a5a55]">Pre-Professional</p>
                     <div className="flex flex-wrap gap-1.5">
                       {['Service Orientation', 'Social Skills', 'Cultural Competence', 'Teamwork', 'Oral Communication', 'Ethical Responsibility', 'Reliability & Dependability', 'Resilience & Adaptability', 'Capacity for Improvement'].map(c => (
-                        <span key={c} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/35">{c}</span>
+                        <span key={c} className="rounded bg-[#2a2a28] px-2 py-0.5 text-[10px] text-[#6a6a65]">{c}</span>
                       ))}
                     </div>
                   </div>
@@ -1864,7 +1864,7 @@ export default function RecommendationPage() {
                 className={`section-wrapper rounded-xl ring-1 transition-all duration-200 ${
                   isDragTarget
                     ? 'ring-yellow-300/60 bg-yellow-300/5'
-                    : 'ring-white/10 bg-white/[0.02]'
+                    : 'ring-[#3a3a37] bg-[#232321]'
                 } ${draggedId === cat.id ? 'opacity-50' : ''}`}
                 onDragOver={(e) => onDragOver(e, cat.id)}
                 onDragLeave={onDragLeave}
@@ -1880,7 +1880,7 @@ export default function RecommendationPage() {
                     draggable
                     onDragStart={(e) => { e.stopPropagation(); onDragStart(cat.id); }}
                     onDragEnd={onDragEnd}
-                    className="cursor-grab text-white/20 hover:text-white/50 active:cursor-grabbing"
+                    className="cursor-grab text-[#5a5a55] hover:text-[#8a8a85] active:cursor-grabbing"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <FaGripVertical className="text-sm" />
@@ -1888,7 +1888,7 @@ export default function RecommendationPage() {
 
                   <span className="text-lg text-yellow-300">{cat.icon}</span>
 
-                  <span className="font-fk-screamer text-lg font-black uppercase tracking-wide text-white sm:text-xl">
+                  <span className="font-fk-screamer text-lg font-black uppercase tracking-wide text-[#fffffc] sm:text-xl">
                     {cat.name}
                   </span>
 
@@ -1897,7 +1897,7 @@ export default function RecommendationPage() {
                     {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
                   </span>
 
-                  <span className="hidden font-robert-regular text-xs text-white/30 sm:inline">
+                  <span className="hidden font-robert-regular text-xs text-[#5a5a55] sm:inline">
                     {isAcademics
                       ? `${SEMESTERS.length} semesters · ${ACADEMICS.totalCredits} credits`
                       : isPS
@@ -1911,7 +1911,7 @@ export default function RecommendationPage() {
 
                   <span className="ml-auto">
                     <FaChevronDown
-                      className={`text-sm text-white/30 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                      className={`text-sm text-[#5a5a55] transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </span>
                 </button>
@@ -1930,10 +1930,10 @@ export default function RecommendationPage() {
                         return (
                         <BentoTilt key={idx} className="inner-card h-full">
                           <div className={`flex h-full flex-col gap-3 rounded-lg p-5 ring-1 transition-all duration-200 ${
-                            isStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-white/5 ring-white/10'
+                            isStarred ? 'bg-yellow-300/[0.04] ring-yellow-300/20' : 'bg-[#2a2a28] ring-[#3a3a37]'
                           }`}>
                             <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-robert-medium text-sm font-semibold text-white">
+                              <h3 className="font-robert-medium text-sm font-semibold text-[#fffffc]">
                                 {activity.title}
                               </h3>
                               <div className="flex shrink-0 items-center gap-1.5">
@@ -1949,27 +1949,27 @@ export default function RecommendationPage() {
                                 >
                                   {isStarred
                                     ? <FaStar className="text-sm text-yellow-300 transition-transform duration-200 group-hover:scale-110" />
-                                    : <FaRegStar className="text-sm text-white/20 transition-all duration-200 group-hover:text-yellow-300/60 group-hover:scale-110" />}
+                                    : <FaRegStar className="text-sm text-[#5a5a55] transition-all duration-200 group-hover:text-yellow-300/60 group-hover:scale-110" />}
                                 </button>
                               </div>
                             </div>
 
                             {activity.role && (
-                              <div className="flex items-center gap-1.5 text-white/50">
+                              <div className="flex items-center gap-1.5 text-[#8a8a85]">
                                 <FaUserTie className="shrink-0 text-[10px]" />
                                 <span className="font-robert-regular text-xs">{activity.role}</span>
                               </div>
                             )}
 
                             {activity.contact && (
-                              <div className="flex items-start gap-1.5 text-white/40">
+                              <div className="flex items-start gap-1.5 text-[#7f7f73]">
                                 <FaUserMd className="mt-0.5 shrink-0 text-[10px]" />
                                 <span className="font-robert-regular text-xs">{activity.contact}</span>
                               </div>
                             )}
 
                             {activity.location && (
-                              <div className="flex items-center gap-1.5 text-white/40">
+                              <div className="flex items-center gap-1.5 text-[#7f7f73]">
                                 <FaMapMarkerAlt className="shrink-0 text-[10px]" />
                                 <span className="font-robert-regular text-xs">{activity.location}</span>
                               </div>
@@ -1979,13 +1979,13 @@ export default function RecommendationPage() {
                             {(() => {
                               const descCount = (activity.description || '').length;
                               return (
-                                <div className="mt-1 rounded bg-white/[0.02] p-2.5">
+                                <div className="mt-1 rounded bg-[#232321] p-2.5">
                                   {descCount > 0 ? (
-                                    <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.description}</p>
+                                    <p className="font-robert-regular text-xs leading-relaxed text-[#8a8a85]">{activity.description}</p>
                                   ) : (
-                                    <p className="font-robert-regular text-[11px] italic text-white/15">No description yet</p>
+                                    <p className="font-robert-regular text-[11px] italic text-[#3a3a37]">No description yet</p>
                                   )}
-                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-white/15'}`}>{descCount}/700</span></div>
+                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${descCount > 700 ? 'text-red-400' : 'text-[#3a3a37]'}`}>{descCount}/700</span></div>
                                 </div>
                               );
                             })()}
@@ -1995,18 +1995,18 @@ export default function RecommendationPage() {
                                 <div className="mt-2 rounded bg-yellow-300/[0.03] p-2.5 ring-1 ring-yellow-300/10">
                                   <span className="mb-1.5 inline-block rounded-full bg-yellow-300/15 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-yellow-300">Most Meaningful</span>
                                   {essayCount > 0 ? (
-                                    <p className="font-robert-regular text-xs leading-relaxed text-white/50">{activity.meaningfulEssay}</p>
+                                    <p className="font-robert-regular text-xs leading-relaxed text-[#8a8a85]">{activity.meaningfulEssay}</p>
                                   ) : (
-                                    <p className="font-robert-regular text-[11px] italic text-white/15">No most meaningful essay yet</p>
+                                    <p className="font-robert-regular text-[11px] italic text-[#3a3a37]">No most meaningful essay yet</p>
                                   )}
-                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-white/15'}`}>{essayCount}/1325</span></div>
+                                  <div className="mt-1.5 flex items-center justify-end"><span className={`font-general text-[9px] tracking-wider ${essayCount > 1325 ? 'text-red-400' : 'text-[#3a3a37]'}`}>{essayCount}/1325</span></div>
                                 </div>
                               );
                             })()}
 
                             <div className="mt-auto flex items-center justify-between pt-2">
                               {dateRange(activity) && (
-                                <div className="flex items-center gap-1.5 text-white/30">
+                                <div className="flex items-center gap-1.5 text-[#5a5a55]">
                                   <FaCalendarAlt className="text-[10px]" />
                                   <span className="font-robert-regular text-[11px]">
                                     {dateRange(activity)}
@@ -2018,7 +2018,7 @@ export default function RecommendationPage() {
                                   className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                                     activity.ongoing
                                       ? 'bg-green-400/15 text-green-400'
-                                      : 'bg-white/10 text-white/40'
+                                      : 'bg-[#3a3a37] text-[#7f7f73]'
                                   }`}
                                 >
                                   {activity.ongoing ? 'Ongoing' : 'Completed'}

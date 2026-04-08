@@ -2,3 +2,7 @@ name = "navtej-portfolio"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "out"
+
+[[kv_namespaces]]
+binding = "LIKES"
+id = "40494d8efedd452a8daeffe7f8aa6311"

@@ -112,7 +112,7 @@ export default function LabListContent({ experiments }: LabListContentProps) {
       <main>
         {/* ── Featured Experiment ─────────────────────────────────────────── */}
         <Link href={`/lab/${featured.slug}`}>
-          <section className="flex flex-col md:flex-row group cursor-pointer overflow-hidden pt-24">
+          <section className="flex flex-col md:flex-row group cursor-pointer overflow-hidden pt-36">
             <div ref={featuredLeftRef} className="flex-1 flex flex-col justify-between px-8 md:px-14 lg:px-16 pt-10 pb-10 md:pt-14 md:pb-14" style={{ opacity: 0 }}>
               <div>
                 <div className="flex items-center gap-3 mb-8 md:mb-10">

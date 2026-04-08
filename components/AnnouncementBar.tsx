@@ -121,7 +121,7 @@ export { COLOR_THEMES }
 export default function AnnouncementBar() {
   const [visible, setVisible] = useState(false)
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
-  const barRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
     async function load() {

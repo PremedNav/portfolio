@@ -7,6 +7,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { generateCardArt, generateHeroArt } from '@/lib/blog-art'
+import { getBaseCount } from '@/lib/likes'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -45,13 +46,21 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
   const articleRef = useRef<HTMLDivElement>(null)
   const relatedRef = useRef<HTMLDivElement>(null)
 
-  // Load like count from server + liked state from localStorage
+  // Load like count: base (deterministic client-side) + real (from Cloudflare KV)
   useEffect(() => {
     const savedLiked = localStorage.getItem(`blog-likes-${slug}-liked`) === 'true'
     setLiked(savedLiked)
+
+    // Deterministic base count — identical for all visitors
+    const base = getBaseCount(slug)
+    setLikeCount(base)
+
+    // Fetch real likes from Cloudflare KV and add on top
     fetch(`/api/likes?slug=${encodeURIComponent(slug)}`)
       .then((r) => r.json())
-      .then((data) => { if (data.count != null) setLikeCount(data.count) })
+      .then((data) => {
+        if (data.count != null) setLikeCount(base + data.count)
+      })
       .catch(() => {})
   }, [slug])
 
@@ -207,7 +216,7 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
 
       <main className="font-robert-regular">
         {/* ── Header: Two-column with continuous vertical dashed border ── */}
-        <div ref={headerRef} className="px-8 md:px-14 lg:px-16 pt-24 pb-10" style={{ opacity: 0 }}>
+        <div ref={headerRef} className="px-8 md:px-14 lg:px-16 pt-36 pb-10" style={{ opacity: 0 }}>
           <div className="flex">
             {/* Left column: breadcrumb, share icons, title, subtitle */}
             <div className="flex-1 lg:pr-12">

@@ -7,7 +7,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const navItems = ['Projects', 'Blog', 'Contact', 'Recommendation Letter'];
+const navItems = ['Projects', 'Lab', 'Blog', 'Contact', 'Recommendation Letter'];
 
 const Footer = () => {
   const footerRef = useRef(null);
@@ -142,7 +142,7 @@ const Footer = () => {
             {navItems.map((item) => (
               <a
                 key={item}
-                href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
+                href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : item === 'Lab' ? '/lab' : `#${item.toLowerCase()}`}
                 className="nav-hover-btn nav-hover-btn-dark !ms-0 !text-[10px] tracking-[0.2em] !text-[#7f7f73]"
               >
                 {item}

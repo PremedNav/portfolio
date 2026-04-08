@@ -42,6 +42,7 @@ const TAG_PALETTES: Record<string, { hueMin: number; hueMax: number; satMin: num
   '3D':       { hueMin: 190, hueMax: 230, satMin: 10, satMax: 18 },
   Particles:  { hueMin: 240, hueMax: 280, satMin: 12, satMax: 20 },
   Compute:    { hueMin: 210, hueMax: 250, satMin: 10, satMax: 18 },
+  AI:         { hueMin: 150, hueMax: 190, satMin: 14, satMax: 24 },
 }
 
 const DEFAULT_PALETTE = { hueMin: 210, hueMax: 250, satMin: 10, satMax: 20 }

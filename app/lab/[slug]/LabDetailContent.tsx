@@ -175,7 +175,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
 
       <main className="font-robert-regular">
         {/* ── Header: Two-column with dashed border sidebar ──────────── */}
-        <div ref={headerRef} className="px-8 md:px-14 lg:px-16 pt-24 pb-10" style={{ opacity: 0 }}>
+        <div ref={headerRef} className="px-8 md:px-14 lg:px-16 pt-36 pb-10" style={{ opacity: 0 }}>
           <div className="flex">
             {/* Left column */}
             <div className="flex-1 lg:pr-12">

@@ -246,12 +246,12 @@ function AnnouncementTab() {
 
   const applyTemplate = (post: Post, template: typeof TEMPLATES[number]) => {
     setData({
-      ...data,
       id: `blog-${post.slug}`,
       text: template.text(post.title),
       link: `/blog/${post.slug}`,
       linkLabel: template.linkLabel,
       active: true,
+      color: data.color || 'midnight',
     })
   }
 

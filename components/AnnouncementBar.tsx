@@ -148,9 +148,7 @@ export default function AnnouncementBar() {
   }, [])
 
   useEffect(() => {
-    if (visible) {
-      document.documentElement.style.setProperty('--announcement-height', '44px')
-    } else {
+    if (!visible) {
       document.documentElement.style.setProperty('--announcement-height', '0px')
     }
     return () => {
@@ -160,10 +158,22 @@ export default function AnnouncementBar() {
 
   useEffect(() => {
     if (!visible || !barRef.current) return
+    // Animate bar in and set --announcement-height at the same time
+    // so navbar slides down in sync with the bar appearing
     gsap.fromTo(
       barRef.current,
       { y: -50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, delay: 2, ease: 'power3.out' }
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        delay: 1.8,
+        ease: 'power3.out',
+        onStart: () => {
+          // Navbar shifts down at the same moment the bar starts sliding in
+          document.documentElement.style.setProperty('--announcement-height', '44px')
+        },
+      }
     )
   }, [visible])
 

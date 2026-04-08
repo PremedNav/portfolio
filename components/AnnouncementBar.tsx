@@ -138,6 +138,14 @@ export default function AnnouncementBar() {
 
       if (!data || !data.active) return
 
+      // Clear stale dismiss keys from previous announcements
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith('announcement-') && key !== `announcement-${data.id}`) {
+          localStorage.removeItem(key)
+        }
+      }
+
       const dismissed = localStorage.getItem(`announcement-${data.id}`)
       if (dismissed) return
 

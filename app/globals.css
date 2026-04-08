@@ -472,3 +472,22 @@ body {
     -webkit-text-stroke-width: 4px;
   }
 }
+
+/* KaTeX — match blog dark theme */
+.katex,
+.katex .mord,
+.katex .mbin,
+.katex .mrel,
+.katex .mopen,
+.katex .mclose,
+.katex .mpunct,
+.katex .minner,
+.katex .mop {
+  color: #e0e0d8;
+}
+.katex .mfrac .frac-line {
+  border-color: #e0e0d8;
+}
+.katex .sqrt > .root {
+  color: #e0e0d8;
+}

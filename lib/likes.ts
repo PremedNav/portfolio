@@ -20,6 +20,7 @@ const POSTS: Record<string, { date: string; weight: number }> = {
   'godel-incompleteness':          { date: '2026-01-10', weight: 0.36 },
   'topology-medicine':             { date: '2026-01-05', weight: 0.20 },
   'basel-problem':                 { date: '2026-02-20', weight: 0.25 },
+  'linear-algebra-ai':             { date: '2026-04-07', weight: 0.72 },
 }
 
 function seededRng(seed: number) {

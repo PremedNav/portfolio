@@ -1,0 +1,271 @@
+---
+title: "Linear Algebra Is All You Need: The Math Behind Every AI Model"
+subtitle: "From matrix multiplications to attention heads — why vectors and transformations are the actual language of artificial intelligence."
+date: "2026-04-07"
+readTime: "14 min"
+category: "Research"
+author: "Navtej Singh"
+featured: false
+---
+
+<Section name="Introduction">
+  <P>Every AI paper you read, every model you train, every inference you run reduces to the same thing: <B>linear algebra</B>. Not calculus, not probability, not information theory. Those matter, but they are not the substrate. The substrate is vectors, matrices, and the transformations between them.</P>
+  <P>A neural network&apos;s forward pass is a sequence of matrix multiplications interleaved with nonlinearities. Backpropagation computes gradients through those same matrices. Attention, the mechanism that made transformers dominant, is a structured dot product. Embeddings are vectors. Loss landscapes are surfaces in high-dimensional vector spaces. The entire edifice of modern AI is built on operations that a second-year linear algebra student could, in principle, perform by hand.</P>
+  <P>This post is not a textbook review. It is a guided tour of the specific linear algebra concepts that <Highlight>actually run inside every AI model</Highlight>, from the simplest feedforward network to GPT-scale transformers. If you understand these operations, you understand what the machine is doing. If you do not, no amount of API calls will give you that understanding.</P>
+
+  <Figure
+    src="/img/blog/gpu-cluster.jpg"
+    alt="High-performance GPU hardware powering matrix operations at scale"
+    caption="Every GPU cycle spent on AI training is a matrix operation — linear algebra is the computational bedrock"
+    source="Photo on Unsplash"
+  />
+</Section>
+
+<Divider />
+
+<Section name="Vectors: The Language of Data">
+  <P>Before anything can be processed by a neural network, it must become a <B>vector</B>: an ordered list of numbers in <Eq c="\mathbb{R}^n" />. This is not a metaphor. It is a literal requirement. Every input to every AI model is a point in some high-dimensional vector space.</P>
+  <P>A word becomes a vector through an embedding table. The word &ldquo;king&rdquo; might map to a vector in <Eq c="\mathbb{R}^{768}" />: 768 floating-point numbers that encode the word&apos;s semantic identity. An image becomes a vector (or a tensor of vectors) by reading pixel intensities into arrays. An audio waveform becomes a vector by sampling amplitudes at discrete time steps.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Text:</B> Each token maps to an embedding vector <Eq c="\mathbf{x} \in \mathbb{R}^d" /> via a learned lookup table <Eq c="E \in \mathbb{R}^{V \times d}" />, where <Eq c="V" /> is vocabulary size and <Eq c="d" /> is embedding dimension.</ConnectedItem>
+    <ConnectedItem><B>Images:</B> A 224x224 RGB image is a tensor in <Eq c="\mathbb{R}^{3 \times 224 \times 224}" />. Vision transformers patch this into a sequence of vectors, each patch a flattened <Eq c="\mathbb{R}^{768}" /> vector.</ConnectedItem>
+    <ConnectedItem><B>Audio:</B> A spectrogram converts waveforms into a 2D matrix of frequency magnitudes over time, which is then treated as a sequence of feature vectors.</ConnectedItem>
+  </ConnectedList>
+
+  <P>The key insight is that once data is in vector form, <Highlight>the same mathematical operations apply regardless of modality</Highlight>. A matrix multiply does not care whether the input vector represents a word, a pixel patch, or an audio frame. This is why the same transformer architecture works for text, images, and audio. The architecture operates on vectors. The embedding layer is the only part that knows what the data originally was.</P>
+
+  <Callout label="Why this matters">The universality of AI architectures is not a design choice. It is a consequence of representing everything as vectors. Once you are in vector space, the geometry of linear algebra provides a universal language for similarity, transformation, and composition.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Matrix Multiplication: The Core Operation">
+  <P>If there is one operation that defines neural networks, it is matrix multiplication. A single layer of a neural network computes:</P>
+
+  <EqBlock c="\mathbf{y} = W\mathbf{x} + \mathbf{b}" />
+
+  <P>where <Eq c="\mathbf{x} \in \mathbb{R}^n" /> is the input vector, <Eq c="W \in \mathbb{R}^{m \times n}" /> is the weight matrix, and <Eq c="\mathbf{b} \in \mathbb{R}^m" /> is a bias vector. The output <Eq c="\mathbf{y} \in \mathbb{R}^m" /> is a new vector in a potentially different-dimensional space. This is a <B>linear transformation</B>: the matrix <Eq c="W" /> rotates, scales, and projects the input.</P>
+  <P>A feedforward neural network is just this operation applied repeatedly with nonlinear activation functions between layers:</P>
+
+  <EqBlock c="\mathbf{h}_1 = \sigma(W_1\mathbf{x} + \mathbf{b}_1)" />
+  <EqBlock c="\mathbf{h}_2 = \sigma(W_2\mathbf{h}_1 + \mathbf{b}_2)" />
+  <EqBlock c="\hat{\mathbf{y}} = W_3\mathbf{h}_2 + \mathbf{b}_3" />
+
+  <P>Without the activation function <Eq c="\sigma" />, the entire stack of layers would collapse into a single matrix multiplication: <Eq c="W_3 W_2 W_1 \mathbf{x}" /> is still a linear transformation. The nonlinearity is what gives depth its power. But the <Highlight>skeleton of every forward pass is matrix multiplication</Highlight>.</P>
+
+  <H3>Dimensions Tell the Story</H3>
+
+  <P>Reading a neural network&apos;s architecture is really reading a chain of matrix dimensions. A transformer block with hidden dimension <Eq c="d = 768" /> and MLP intermediate size <Eq c="4d = 3072" /> has weight matrices <Eq c="W_1 \in \mathbb{R}^{3072 \times 768}" /> and <Eq c="W_2 \in \mathbb{R}^{768 \times 3072}" />. The first expands the representation into a higher-dimensional space where the nonlinearity can separate features. The second projects it back. Every matrix shape is a design decision about how information flows.</P>
+
+  <Callout label="The computational bottleneck">A GPT-3-scale model (175B parameters) performs roughly <Eq c="3.5 \times 10^{14}" /> floating-point multiply-accumulate operations per forward pass. Almost all of them are matrix multiplications. This is why AI progress tracks GPU FLOPS, and why NVIDIA is the most valuable company in the world.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Dot Products and Similarity">
+  <P>The dot product of two vectors <Eq c="\mathbf{a}" /> and <Eq c="\mathbf{b}" /> is defined as:</P>
+
+  <EqBlock c="\mathbf{a} \cdot \mathbf{b} = \sum_{i=1}^{n} a_i b_i = \|\mathbf{a}\| \|\mathbf{b}\| \cos\theta" />
+
+  <P>where <Eq c="\theta" /> is the angle between the vectors. This single operation is the foundation of similarity in AI. When two embedding vectors have a high dot product, they point in roughly the same direction in the embedding space. When the dot product is near zero, they are orthogonal, meaning unrelated.</P>
+  <P><B>Cosine similarity</B> normalizes the dot product by the magnitudes of both vectors:</P>
+
+  <EqBlock c="\text{cos\_sim}(\mathbf{a}, \mathbf{b}) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|}" />
+
+  <P>This gives a value between <Eq c="-1" /> and <Eq c="1" />, independent of vector magnitude. It measures <Highlight>direction, not scale</Highlight>, which is exactly what you want when comparing semantic meaning.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Search engines:</B> Encode the query and every document as vectors. Return documents with the highest cosine similarity to the query. This is how semantic search works at every major tech company.</ConnectedItem>
+    <ConnectedItem><B>Recommendation systems:</B> User preferences and item features are vectors. The dot product between them predicts how much a user will like an item. Netflix, Spotify, and Amazon all use variants of this.</ConnectedItem>
+    <ConnectedItem><B>Word analogies:</B> The famous result <Eq c="\text{king} - \text{man} + \text{woman} \approx \text{queen}" /> is vector arithmetic. The relationships between words are encoded as directions in embedding space, and the dot product measures alignment with those directions.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The geometric intuition">Every time you use a search engine, a recommendation system, or a chatbot with retrieval, the system is computing dot products in a high-dimensional space. Similarity is geometry. Relevance is proximity. The dot product is how machines measure both.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Eigenvalues and Eigenvectors">
+  <P>An <B>eigenvector</B> of a matrix <Eq c="A" /> is a nonzero vector <Eq c="\mathbf{v}" /> that, when multiplied by <Eq c="A" />, only gets scaled, not rotated:</P>
+
+  <EqBlock c="A\mathbf{v} = \lambda\mathbf{v}" />
+
+  <P>The scalar <Eq c="\lambda" /> is the <B>eigenvalue</B>. In plain terms: eigenvectors are the directions along which a linear transformation acts as simple scaling. Every other vector gets both scaled and rotated. Eigenvectors are the special directions where the matrix&apos;s action is maximally simple.</P>
+  <P>Why does this matter for AI? Because of <B>Principal Component Analysis (PCA)</B>. Given a dataset of <Eq c="n" /> vectors in <Eq c="\mathbb{R}^d" />, the covariance matrix <Eq c="C \in \mathbb{R}^{d \times d}" /> captures how features vary together. The eigenvectors of <Eq c="C" /> are the <Highlight>principal components</Highlight>, the directions along which the data varies most.</P>
+
+  <EqBlock c="C = \frac{1}{n} \sum_{i=1}^{n} (\mathbf{x}_i - \boldsymbol{\mu})(\mathbf{x}_i - \boldsymbol{\mu})^\top" />
+
+  <P>The eigenvalues of <Eq c="C" /> tell you how much variance lies along each principal component. If the first 50 eigenvalues capture 95% of the total variance, you can project your data onto those 50 eigenvectors and discard the rest. You have reduced dimensionality from <Eq c="d" /> to 50 with only 5% information loss.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Dimensionality reduction:</B> PCA on high-dimensional embeddings compresses them to a manageable size while preserving the most informative structure.</ConnectedItem>
+    <ConnectedItem><B>Data visualization:</B> Project 768-dimensional embeddings to 2D or 3D using the top eigenvectors of the covariance matrix. This is how t-SNE and UMAP start (before their nonlinear refinements).</ConnectedItem>
+    <ConnectedItem><B>Noise removal:</B> Small eigenvalues correspond to directions of minimal variance, which are often noise. Discarding these components denoises the data.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="Eigenvalues as a lens">When you compute eigenvalues, you are asking: what are the natural axes of this data? Where does it stretch, and where does it compress? The eigenvalue spectrum of a dataset&apos;s covariance matrix is a fingerprint of its internal structure.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Singular Value Decomposition">
+  <P>The Singular Value Decomposition (SVD) generalizes eigendecomposition to <B>any</B> matrix, not just square ones. Every matrix <Eq c="A \in \mathbb{R}^{m \times n}" /> can be decomposed as:</P>
+
+  <EqBlock c="A = U \Sigma V^\top" />
+
+  <P>where <Eq c="U \in \mathbb{R}^{m \times m}" /> and <Eq c="V \in \mathbb{R}^{n \times n}" /> are orthogonal matrices (rotations/reflections), and <Eq c="\Sigma \in \mathbb{R}^{m \times n}" /> is a diagonal matrix of <B>singular values</B> <Eq c="\sigma_1 \geq \sigma_2 \geq \cdots \geq 0" />. The decomposition says: every linear transformation is a rotation, followed by axis-aligned scaling, followed by another rotation.</P>
+
+  <H3>Low-Rank Approximation</H3>
+
+  <P>The power of SVD lies in truncation. If you keep only the top <Eq c="k" /> singular values and their corresponding columns of <Eq c="U" /> and <Eq c="V" />, you get the best rank-<Eq c="k" /> approximation of the original matrix:</P>
+
+  <EqBlock c="A_k = U_k \Sigma_k V_k^\top" />
+
+  <P>This is the <B>Eckart-Young theorem</B>: no other rank-<Eq c="k" /> matrix is closer to <Eq c="A" /> in the Frobenius norm. This result is everywhere in AI:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>Image compression:</B> An image is a matrix of pixel values. SVD decomposes it into a sum of rank-1 matrices. Keeping the top 50 components often captures 95% of the visual information at a fraction of the storage.</ConnectedItem>
+    <ConnectedItem><B>Latent spaces:</B> Variational autoencoders and diffusion models learn compressed representations. The bottleneck is essentially a learned low-rank approximation of the data manifold.</ConnectedItem>
+    <ConnectedItem><B>LoRA (Low-Rank Adaptation):</B> Instead of fine-tuning all parameters of a large model, LoRA decomposes weight updates as <Eq c="\Delta W = BA" /> where <Eq c="B \in \mathbb{R}^{d \times r}" /> and <Eq c="A \in \mathbb{R}^{r \times d}" /> with <Eq c="r \ll d" />. This is a <Highlight>direct application of low-rank matrix factorization</Highlight>.</ConnectedItem>
+  </ConnectedList>
+
+  <Callout label="The compression principle">SVD reveals that most real-world data matrices are approximately low-rank. The information content is concentrated in a small number of singular values. This is not a mathematical trick. It is a statement about the structure of the world: high-dimensional data almost always lives on a much lower-dimensional manifold.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="The Transformer Is Pure Linear Algebra">
+  <P>The transformer architecture, the foundation of GPT, BERT, and every modern language model, is a carefully orchestrated sequence of linear algebra operations. The core mechanism is <B>scaled dot-product attention</B>, and understanding it requires no concept beyond what we have already covered.</P>
+  <P>Given an input sequence of <Eq c="n" /> token embeddings packed into a matrix <Eq c="X \in \mathbb{R}^{n \times d}" />, the attention mechanism first computes three matrices through linear projections:</P>
+
+  <EqBlock c="Q = XW_Q, \quad K = XW_K, \quad V = XW_V" />
+
+  <P>where <Eq c="W_Q, W_K, W_V \in \mathbb{R}^{d \times d_k}" /> are learned weight matrices. <Eq c="Q" /> is the <B>query</B> (what each token is looking for), <Eq c="K" /> is the <B>key</B> (what each token advertises about itself), and <Eq c="V" /> is the <B>value</B> (the actual information each token carries).</P>
+  <P>Attention is then computed as:</P>
+
+  <EqBlock c="\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) V" />
+
+  <P>Let me unpack this operation by operation:</P>
+
+  <ConnectedList>
+    <ConnectedItem><B><Eq c="QK^\top" /></B> computes a dot product between every query and every key. The result is an <Eq c="n \times n" /> matrix where entry <Eq c="(i, j)" /> measures how much token <Eq c="i" /> should attend to token <Eq c="j" />. This is a <Highlight>similarity matrix built from dot products</Highlight>.</ConnectedItem>
+    <ConnectedItem><B>Scaling by <Eq c="\frac{1}{\sqrt{d_k}}" /></B> prevents dot products from growing too large in high dimensions. Without this, the softmax would saturate and produce near-one-hot distributions, killing gradient flow.</ConnectedItem>
+    <ConnectedItem><B>Softmax</B> normalizes each row to a probability distribution. Token <Eq c="i" />&apos;s attention weights over all tokens sum to 1. This is the only nonlinear operation in the attention mechanism.</ConnectedItem>
+    <ConnectedItem><B>Multiplying by <Eq c="V" /></B> produces a weighted sum of value vectors for each token. Each token&apos;s output is a mixture of all other tokens&apos; values, weighted by attention scores. This is how information flows between positions.</ConnectedItem>
+  </ConnectedList>
+
+  <H3>Multi-Head Attention</H3>
+
+  <P>In practice, attention is computed in parallel across <Eq c="h" /> heads, each with its own projection matrices <Eq c="W_Q^i, W_K^i, W_V^i \in \mathbb{R}^{d \times d_k}" /> where <Eq c="d_k = d / h" />. The outputs are concatenated and projected back:</P>
+
+  <EqBlock c="\text{MultiHead}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W_O" />
+
+  <P>Each head learns to attend to different types of relationships: syntactic, semantic, positional. The concatenation and final projection <Eq c="W_O \in \mathbb{R}^{d \times d}" /> combine these perspectives into a single representation. The entire operation is <B>matrix multiplications and a softmax</B>. Nothing more.</P>
+
+  <Callout label="The attention insight">Attention is not a mysterious neural mechanism. It is a lookup table built from dot products. The queries ask questions, the keys provide addresses, and the values supply answers. The softmax just normalizes the addressing. Every breakthrough in large language models is, at its core, an improvement to this dot-product addressing scheme.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Why GPUs Exist for This">
+  <P>Matrix multiplication is <B>embarrassingly parallel</B>. To compute <Eq c="C = AB" /> where <Eq c="A \in \mathbb{R}^{m \times k}" /> and <Eq c="B \in \mathbb{R}^{k \times n}" />, each element <Eq c="C_{ij}" /> is an independent dot product:</P>
+
+  <EqBlock c="C_{ij} = \sum_{l=1}^{k} A_{il} B_{lj}" />
+
+  <P>All <Eq c="m \times n" /> elements of <Eq c="C" /> can be computed simultaneously. A CPU with 16 cores can compute 16 dot products at once. An NVIDIA H100 GPU has <B>16,896 CUDA cores</B> and can execute thousands of dot products per clock cycle through SIMD (Single Instruction, Multiple Data) parallelism.</P>
+
+  <ConnectedList>
+    <ConnectedItem><B>SIMD parallelism:</B> Every CUDA core applies the same multiply-accumulate instruction to different data elements simultaneously. Matrix multiplication is the ideal workload because every element requires the same operation pattern.</ConnectedItem>
+    <ConnectedItem><B>Memory bandwidth:</B> The H100 has 3.35 TB/s of HBM3 bandwidth. Large matrix multiplications are compute-bound (not memory-bound), meaning the GPU can keep its cores fed with data. This is why larger batch sizes improve GPU utilization.</ConnectedItem>
+    <ConnectedItem><B>Tensor Cores:</B> Specialized hardware units that compute <Eq c="4 \times 4" /> matrix multiplications in a single cycle. The H100&apos;s Tensor Cores deliver nearly 1,000 TFLOPS of FP16 throughput, roughly 100x faster than general-purpose CUDA cores for matrix math.</ConnectedItem>
+  </ConnectedList>
+
+  <P>This is not a coincidence. GPUs were originally designed for rendering 3D graphics, which requires transforming millions of vertices through <Eq c="4 \times 4" /> transformation matrices every frame. <Highlight>The same hardware that rotates polygons in video games multiplies weight matrices in neural networks</Highlight>. When NVIDIA pivoted to AI compute, they were not building new capability. They were repurposing existing capability for a structurally identical workload.</P>
+
+  <Callout label="The hardware-math alignment">AI did not become practical when algorithms improved. It became practical when hardware caught up to the math. The algorithms, backpropagation, gradient descent, attention, existed for decades. What changed was the availability of massively parallel hardware purpose-built for the only operation that matters: matrix multiplication.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Python Verification">
+  <P>Theory is convincing. Code is conclusive. Let us verify the core linear algebra operations that run inside a neural network using NumPy. First, a minimal forward pass through a two-layer network:</P>
+
+```python
+import numpy as np
+
+# Seed for reproducibility
+np.random.seed(42)
+
+# Two-layer feedforward network
+d_in, d_hidden, d_out = 4, 8, 3
+W1 = np.random.randn(d_hidden, d_in) * 0.5
+b1 = np.zeros(d_hidden)
+W2 = np.random.randn(d_out, d_hidden) * 0.5
+b2 = np.zeros(d_out)
+
+def relu(x):
+    return np.maximum(0, x)
+
+def forward(x):
+    h = relu(W1 @ x + b1)   # Linear transform + activation
+    y = W2 @ h + b2          # Output projection
+    return y
+
+x = np.array([1.0, 0.5, -0.3, 0.8])
+output = forward(x)
+print(f"Input:  {x}")
+print(f"Output: {output}")
+print(f"Shape:  {x.shape} → {output.shape}")
+# The entire forward pass is two matrix multiplications
+```
+
+  <P>Every line of the forward pass is a matrix-vector product. The <IC>@</IC> operator in NumPy is matrix multiplication. The ReLU is applied elementwise between the two linear transformations. That is the entire computation.</P>
+  <P>Now, the attention mechanism. This is a complete, working implementation of scaled dot-product attention in 15 lines:</P>
+
+```python
+import numpy as np
+
+def softmax(x, axis=-1):
+    e = np.exp(x - x.max(axis=axis, keepdims=True))
+    return e / e.sum(axis=axis, keepdims=True)
+
+def attention(X, W_Q, W_K, W_V):
+    """Scaled dot-product attention from scratch."""
+    Q = X @ W_Q               # Queries:  (n, d_k)
+    K = X @ W_K               # Keys:     (n, d_k)
+    V = X @ W_V               # Values:   (n, d_v)
+    d_k = Q.shape[-1]
+    scores = Q @ K.T / np.sqrt(d_k)  # Similarity matrix: (n, n)
+    weights = softmax(scores)          # Attention weights:  (n, n)
+    return weights @ V                 # Weighted values:    (n, d_v)
+
+# Simulate a 6-token sequence with d=8
+n_tokens, d_model, d_k = 6, 8, 4
+X = np.random.randn(n_tokens, d_model)
+W_Q = np.random.randn(d_model, d_k) * 0.5
+W_K = np.random.randn(d_model, d_k) * 0.5
+W_V = np.random.randn(d_model, d_k) * 0.5
+
+output = attention(X, W_Q, W_K, W_V)
+print(f"Input shape:   {X.shape}")          # (6, 8)
+print(f"Output shape:  {output.shape}")     # (6, 4)
+print(f"Attention out:\n{output.round(3)}")
+# 3 matrix multiplications + softmax = attention
+```
+
+  <P>Count the linear algebra operations: three matrix multiplications to compute <Eq c="Q" />, <Eq c="K" />, <Eq c="V" />; one matrix multiplication for the scores <Eq c="QK^\top" />; one matrix multiplication for the output <Eq c="\text{weights} \times V" />. Five matrix multiplications and a softmax. That is the attention mechanism. There is nothing else hiding underneath.</P>
+
+  <Callout label="The verification">Both examples are runnable as-is. Copy them into a Python file or notebook. The forward pass demonstrates that neural network inference is chained matrix multiplications. The attention function demonstrates that the transformer&apos;s core innovation is a dot-product similarity lookup. No frameworks, no abstractions, just NumPy doing linear algebra.</Callout>
+</Section>
+
+<Divider />
+
+<Section name="Conclusion">
+  <P>Every concept in this post, vectors, matrix multiplication, dot products, eigenvalues, SVD, attention, maps directly to operations running inside AI models right now. These are not background theory. They are the <B>actual computation</B>.</P>
+  <P>When a language model generates a sentence, it is multiplying matrices. When an image model recognizes a face, it is computing dot products. When a recommendation engine suggests a song, it is measuring cosine similarity in a vector space. When a fine-tuned model adapts to a new task through LoRA, it is exploiting low-rank matrix structure. The math is not an abstraction over the computation. <Highlight>The math is the computation</Highlight>.</P>
+  <P>This is why I find linear algebra more illuminating than any framework tutorial. PyTorch and TensorFlow are interfaces. The operations beneath them are the same ones Euler, Gauss, and Sylvester studied centuries ago. Understanding those operations, not just calling functions that execute them, is what separates someone who uses AI from someone who understands it.</P>
+  <P>If you want to go deeper, the path is clear: implement things from scratch. Write a forward pass by hand. Build attention with nothing but NumPy. Compute an SVD and reconstruct an image from truncated singular values. The linear algebra will stop being abstract the moment you see it produce real outputs. And once it does, every AI paper you read will make more sense, because you will recognize the operations underneath the notation.</P>
+
+  <Callout label="The substrate of intelligence">Linear algebra is not a prerequisite for AI. It is not a tool used by AI. It is the substrate of AI. Vectors are the representation. Matrices are the transformation. Dot products are the similarity measure. Eigenvalues are the structure detector. Every advance in artificial intelligence is, at bottom, an advance in how we multiply matrices. Understand the math, and you understand the machine.</Callout>
+</Section>

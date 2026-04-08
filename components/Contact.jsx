@@ -13,9 +13,9 @@ const ImageClipBox = ({ src, clipClass }) => (
 const Contact = () => {
   return (
     <div id="contact" className="mt-20 mb-0 min-h-96 w-screen  px-10">
-      <div className="relative rounded-lg bg-[#f8f8f6] py-24 text-[#181816] sm:overflow-hidden">
+      <div className="relative rounded-lg py-24 text-[#fffffc] sm:overflow-hidden">
         <div className="flex flex-col items-center text-center">
-          <p className="mb-10 font-general text-[10px] uppercase text-[#8a8a7e]">
+          <p className="mb-10 font-general text-[10px] uppercase text-[#7f7f73]">
             Get In Touch
           </p>
 
@@ -33,11 +33,11 @@ const Contact = () => {
             </svg>
             <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-black">
               <TiLocationArrow />
-              <span className="relative inline-flex overflow-hidden">
+              <span className="relative inline-flex overflow-hidden leading-tight py-px">
                 <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
                   Get in touch
                 </span>
-                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                <span className="absolute inset-0 translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
                   Get in touch
                 </span>
               </span>

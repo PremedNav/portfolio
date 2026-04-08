@@ -247,18 +247,18 @@ const Features = () => {
   }, { scope: sectionRef });
 
   return (
-  <section id="projects" className="bg-[#f8f8f6] pb-52" ref={sectionRef}>
+  <section id="projects" className="pb-52" ref={sectionRef}>
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
         <div className="relative overflow-hidden inline-block">
           <span className="ln-block absolute -inset-1 bg-yellow-300" />
-          <p className="font-circular-web text-lg text-[#181816]">
+          <p className="font-circular-web text-lg text-[#fffffc]">
             What I&apos;m Building
           </p>
         </div>
         <div className="relative overflow-hidden mt-1 max-w-md">
           <span className="ln-block absolute -inset-1 bg-yellow-300" />
-          <p className="font-circular-web text-lg text-[#8a8a7e]">
+          <p className="font-circular-web text-lg text-[#7f7f73]">
             A collection of projects spanning medical AI, ML infrastructure,
             edtech, and industrial intelligence. Each one solving a different hard problem.
           </p>

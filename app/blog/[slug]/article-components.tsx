@@ -10,7 +10,7 @@ export function Section({ name, children }: { name: string; children: React.Reac
   return (
     <section data-section={name} className="mb-14">
       <h2
-        className="text-[1.45rem] md:text-[1.7rem] font-semibold text-[#181816] mb-6 tracking-[-0.02em]"
+        className="text-[1.45rem] md:text-[1.7rem] font-semibold text-[#fffffc] mb-6 tracking-[-0.02em]"
         style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
       >
         {name}
@@ -23,28 +23,28 @@ export function Section({ name, children }: { name: string; children: React.Reac
 // ─── Typography ─────────────────────────────────────────────────────────────────
 
 export function P({ children }: { children: React.ReactNode }) {
-  return <p className="text-[1rem] leading-[1.85] text-[#2a2a24] mb-6 last:mb-0">{children}</p>
+  return <p className="text-[1rem] leading-[1.85] text-[#b0b0a4] mb-6 last:mb-0">{children}</p>
 }
 
 export function B({ children }: { children: React.ReactNode }) {
-  return <strong className="font-semibold text-[#181816]">{children}</strong>
+  return <strong className="font-semibold text-[#fffffc]">{children}</strong>
 }
 
 export function A({ children }: { children: React.ReactNode }) {
-  return <a href="#" className="text-[#181816] underline underline-offset-2 decoration-[#a3b898] hover:decoration-[#6a8a5c] transition-colors">{children}</a>
+  return <a href="#" className="text-[#fffffc] underline underline-offset-2 decoration-[#a3b898] hover:decoration-[#6a8a5c] transition-colors">{children}</a>
 }
 
 export function Highlight({ children }: { children: React.ReactNode }) {
-  return <span className="bg-[#eef2e8] text-[#3a5a30] px-1 py-0.5 rounded-[4px] font-medium">{children}</span>
+  return <span className="bg-[#2a3328] text-[#a3b898] px-1 py-0.5 rounded-[4px] font-medium">{children}</span>
 }
 
 export function IC({ children }: { children: React.ReactNode }) {
-  return <code className="text-[0.9em] font-mono bg-[#f0efe8] text-[#5a4a3a] px-1.5 py-0.5 rounded-md border border-[#e0ddd0]">{children}</code>
+  return <code className="text-[0.9em] font-mono bg-[#2a2a28] text-[#b0a898] px-1.5 py-0.5 rounded-md border border-[#3a3a38]">{children}</code>
 }
 
 export function H3({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[1.1rem] font-semibold text-[#181816] mb-6 tracking-[-0.01em]" style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}>
+    <h3 className="text-[1.1rem] font-semibold text-[#fffffc] mb-6 tracking-[-0.01em]" style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}>
       {children}
     </h3>
   )
@@ -88,7 +88,7 @@ export function Callout({ children, label = 'Insight' }: { children: React.React
   return (
     <div className="my-8 pl-5 border-l border-dashed" style={{ borderColor: c.border }}>
       <span className="text-[11px] uppercase tracking-widest mb-1.5 block" style={{ color: c.label }}>{label}</span>
-      <p className="text-[0.95rem] leading-[1.85] text-[#5a5a50] italic">{children}</p>
+      <p className="text-[0.95rem] leading-[1.85] text-[#9a9a8e] italic">{children}</p>
     </div>
   )
 }
@@ -98,11 +98,11 @@ export function Callout({ children, label = 'Insight' }: { children: React.React
 export function Figure({ src, alt, caption, source }: { src: string; alt: string; caption?: string; source?: string }) {
   return (
     <figure className="my-10">
-      <div className="rounded-lg overflow-hidden border border-[#e8e8e0]">
+      <div className="rounded-lg overflow-hidden border border-[#3a3a38]">
         <img src={src} alt={alt} className="w-full h-auto" loading="lazy" />
       </div>
       {(caption || source) && (
-        <figcaption className="mt-3 text-[0.82rem] leading-[1.6] text-[#8a8a7e]">
+        <figcaption className="mt-3 text-[0.82rem] leading-[1.6] text-[#7f7f73]">
           {caption}{caption && source && ' — '}{source && <span className="italic">{source}</span>}
         </figcaption>
       )}
@@ -113,7 +113,7 @@ export function Figure({ src, alt, caption, source }: { src: string; alt: string
 // ─── Divider ────────────────────────────────────────────────────────────────────
 
 export function Divider() {
-  return <div className="border-b border-dashed border-[#d0d0c6] mb-14" />
+  return <div className="border-b border-dashed border-[#262624] mb-14" />
 }
 
 // ─── Connected List (children-based for MDX) ────────────────────────────────────
@@ -128,10 +128,10 @@ export function ConnectedList({ children }: { children: React.ReactNode }) {
     <div className="mt-8 space-y-6">
       {validItems.map((child, i) => (
         <div key={i} className="flex gap-4">
-          <div className="flex-shrink-0 w-6 h-6 rounded-full border border-[#d0d0c6] flex items-center justify-center mt-[10px]">
-            <span className="text-[11px] font-medium text-[#8a8a7e] tabular-nums">{i + 1}</span>
+          <div className="flex-shrink-0 w-6 h-6 rounded-full border border-[#262624] flex items-center justify-center mt-[10px]">
+            <span className="text-[11px] font-medium text-[#7f7f73] tabular-nums">{i + 1}</span>
           </div>
-          <div className="text-[1rem] leading-[1.85] text-[#2a2a24]">{child}</div>
+          <div className="text-[1rem] leading-[1.85] text-[#b0b0a4]">{child}</div>
         </div>
       ))}
     </div>
@@ -228,7 +228,7 @@ export function CodeBlock({ code = '', language = '' }: { code?: string; languag
 
 export function TH({ children, first, last }: { children: React.ReactNode; first?: boolean; last?: boolean }) {
   return (
-    <th className={`text-left py-4 font-semibold text-[#181816] border-b border-dashed border-[#b8b8ae] ${!last ? 'pr-6 border-r border-dashed border-[#d4d4cc]' : ''} ${!first ? 'pl-6' : ''}`}>
+    <th className={`text-left py-4 font-semibold text-[#fffffc] border-b border-dashed border-[#3a3a38] ${!last ? 'pr-6 border-r border-dashed border-[#3a3a38]' : ''} ${!first ? 'pl-6' : ''}`}>
       {children}
     </th>
   )
@@ -236,7 +236,7 @@ export function TH({ children, first, last }: { children: React.ReactNode; first
 
 export function TR({ children, last }: { children: React.ReactNode; last?: boolean }) {
   return (
-    <tr className={!last ? 'border-b border-dashed border-[#d8d8d0]' : ''}>
+    <tr className={!last ? 'border-b border-dashed border-[#3a3a38]' : ''}>
       {children}
     </tr>
   )
@@ -244,7 +244,7 @@ export function TR({ children, last }: { children: React.ReactNode; last?: boole
 
 export function TD({ children, first, last, bold }: { children: React.ReactNode; first?: boolean; last?: boolean; bold?: boolean }) {
   return (
-    <td className={`py-5 align-top ${bold ? 'font-semibold text-[#181816]' : 'text-[#3a3a30]'} ${!last ? 'pr-6 border-r border-dashed border-[#d8d8d0]' : ''} ${!first ? 'pl-6' : ''}`}>
+    <td className={`py-5 align-top ${bold ? 'font-semibold text-[#fffffc]' : 'text-[#9a9a8e]'} ${!last ? 'pr-6 border-r border-dashed border-[#3a3a38]' : ''} ${!first ? 'pl-6' : ''}`}>
       {children}
     </td>
   )

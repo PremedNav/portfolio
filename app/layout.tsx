@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollbarProvider from "@/components/ScrollbarProvider";
 import LenisProvider from "@/components/LenisProvider";
+import AnnouncementBar from "@/components/AnnouncementBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,9 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="relative min-h-screen w-screen overflow-x-hidden bg-black" data-overlayscrollbars-initialize="">
+      <body className="relative min-h-screen w-screen overflow-x-hidden bg-[#21211f]" data-overlayscrollbars-initialize="">
         <ScrollbarProvider>
-          <LenisProvider>{children}</LenisProvider>
+          <LenisProvider>
+            <AnnouncementBar />
+            {children}
+          </LenisProvider>
         </ScrollbarProvider>
       </body>
     </html>

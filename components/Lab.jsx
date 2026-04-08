@@ -53,7 +53,7 @@ const LabCard = ({ experiment }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent pointer-events-none" />
         <div className="relative z-10 p-5 md:p-6">
           <h3
-            className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-transform duration-300 group-hover:translate-y-[-2px]"
+            className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-all duration-300 group-hover:translate-y-[-2px] group-hover:text-[#c0c0b4]"
             style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
           >
             {experiment.title}
@@ -66,7 +66,7 @@ const LabCard = ({ experiment }) => {
               <span className="text-[12px] text-white/40">· Interactive</span>
             </div>
             <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/25 transition-all duration-300 group-hover:bg-white group-hover:border-white">
-              <ArrowIcon className="text-white group-hover:text-[#181816] transition-all duration-300 group-hover:translate-x-0.5" />
+              <ArrowIcon className="text-white group-hover:text-[#21211f] transition-all duration-300 group-hover:translate-x-0.5" />
             </div>
           </div>
         </div>
@@ -115,22 +115,22 @@ const Lab = () => {
   }, { scope: sectionRef });
 
   return (
-    <section id="lab" ref={sectionRef} className="bg-[#f8f8f6] pb-32 pt-10">
+    <section id="lab" ref={sectionRef} className="pb-32 pt-10">
       <div className="container mx-auto px-3 md:px-10">
         {/* Dashed divider */}
-        <div className="mx-5 mb-20 border-t border-dashed border-[#d0d0c6]" />
+        <div className="mx-5 mb-20 border-t border-dashed border-[#262624]" />
 
         {/* Title — yellow reveal blocks */}
         <div className="px-5 pb-16">
           <div className="relative overflow-hidden inline-block">
             <span className="lab-block absolute -inset-1 bg-yellow-300" />
-            <p className="font-circular-web text-lg text-[#181816]">
+            <p className="font-circular-web text-lg text-[#fffffc]">
               The Lab
             </p>
           </div>
           <div className="relative overflow-hidden mt-1 max-w-md">
             <span className="lab-block absolute -inset-1 bg-yellow-300" />
-            <p className="font-circular-web text-lg text-[#8a8a7e]">
+            <p className="font-circular-web text-lg text-[#7f7f73]">
               Interactive toys I build for fun and to explain concepts to
               others. Click into any to play with it.
             </p>
@@ -145,11 +145,11 @@ const Lab = () => {
             </svg>
             <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-black">
               <TiLocationArrow />
-              <span className="relative inline-flex overflow-hidden">
+              <span className="relative inline-flex overflow-hidden leading-tight py-px">
                 <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
                   Explore all experiments
                 </span>
-                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                <span className="absolute inset-0 translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
                   Explore all experiments
                 </span>
               </span>
@@ -167,17 +167,17 @@ const Lab = () => {
         {/* View more — stretched card */}
         <div className="lab-card px-5 mt-4 md:mt-5">
           <Link href="/lab" className="group block">
-            <div className="relative rounded-2xl border border-dashed border-[#c8c8bc] overflow-hidden px-6 py-5 flex items-center justify-between transition-all duration-300 hover:border-[#181816]/30 hover:bg-[#f0f0ec]">
+            <div className="relative rounded-2xl border border-dashed border-[#262624] overflow-hidden px-6 py-5 flex items-center justify-between transition-all duration-300 hover:border-[#fffffc]/30 hover:bg-[#2a2a28]">
               <div className="flex items-center gap-3">
-                <span className="font-circular-web text-[15px] text-[#181816]">
+                <span className="font-circular-web text-[15px] text-[#fffffc]">
                   Explore all experiments
                 </span>
-                <span className="font-circular-web text-[13px] text-[#8a8a7e]">
+                <span className="font-circular-web text-[13px] text-[#7f7f73]">
                   — {LAB_EXPERIMENTS.length - 3} more to play with
                 </span>
               </div>
-              <div className="flex items-center justify-center w-8 h-8 rounded-full border border-[#c8c8bc] transition-all duration-300 group-hover:bg-[#181816] group-hover:border-[#181816]">
-                <ArrowIcon size={12} className="text-[#8a8a7e] transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-full border border-[#262624] transition-all duration-300 group-hover:bg-[#fffffc] group-hover:border-[#fffffc]">
+                <ArrowIcon size={12} className="text-[#7f7f73] transition-all duration-300 group-hover:text-[#21211f] group-hover:translate-x-0.5" />
               </div>
             </div>
           </Link>

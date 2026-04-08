@@ -320,10 +320,10 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
   useEffect(() => {
     const mat = contourMatRef.current;
     if (!mat) return;
-    const lightBg = new THREE.Vector3(0.973, 0.973, 0.965);     // #f8f8f6 — blog bg
+    const lightBg = new THREE.Vector3(0.973, 0.973, 0.965);     // #21211f — blog bg
     const lightLine = new THREE.Vector3(0.910, 0.906, 0.894);   // subtle contour lines
-    const darkBg = new THREE.Vector3(0.11, 0.122, 0.149);
-    const darkLine = new THREE.Vector3(0.22, 0.24, 0.28);
+    const darkBg = new THREE.Vector3(0.129, 0.129, 0.122);
+    const darkLine = new THREE.Vector3(0.18, 0.18, 0.17);
     // Ink colors: dark mode → white brush, light mode → warm subtle brush
     const lightInkBg = new THREE.Vector3(0.82, 0.812, 0.796);   // warm muted cream
     const lightInkLine = new THREE.Vector3(0.75, 0.741, 0.725); // visible but blog-themed
@@ -612,8 +612,8 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
       uniforms: {
         uTime: { value: 0 },
         uAspect: { value: cw / ch },
-        uBgColor: { value: new THREE.Vector3(0.11, 0.122, 0.149) },        // dark initial
-        uLineColor: { value: new THREE.Vector3(0.22, 0.24, 0.28) },      // dark lines
+        uBgColor: { value: new THREE.Vector3(0.129, 0.129, 0.122) },        // #21211f
+        uLineColor: { value: new THREE.Vector3(0.18, 0.18, 0.17) },      // warm dark lines
         uInkBg: { value: new THREE.Vector3(0.92, 0.91, 0.88) },          // dark mode ink
         uInkLine: { value: new THREE.Vector3(0.98, 0.97, 0.95) },        // dark mode ink lines
         uFluidMask: { value: dye.read.texture },
@@ -794,7 +794,7 @@ const HelmetReveal = ({ dark = false }: { dark?: boolean }) => {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-0"
+      className="absolute inset-0 z-0 helmet-reveal-canvas"
       style={{ pointerEvents: 'auto' }}
     />
   );

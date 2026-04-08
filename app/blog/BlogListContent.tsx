@@ -110,7 +110,7 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
   )
 
   return (
-    <div ref={pageRef} className="relative min-h-screen bg-[#f8f8f6]">
+    <div ref={pageRef} className="relative min-h-screen bg-[#21211f]">
       <NavBar variant="light" />
 
       <main>
@@ -124,23 +124,23 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
                     <span className="text-[13px] font-semibold tracking-wide text-[#4a6741]">
                       Featured
                     </span>
-                    <span className="text-[13px] text-[#8a8a7e]">
+                    <span className="text-[13px] text-[#7f7f73]">
                       {featuredPost.readTime} read
                     </span>
                   </div>
                   <h1
-                    className="text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] leading-[1.08] tracking-[-0.025em] text-[#181816] max-w-[580px] group-hover:text-[#3a3a2e] transition-colors"
+                    className="text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] leading-[1.08] tracking-[-0.025em] text-[#fffffc] max-w-[580px] group-hover:text-[#c0c0b4] transition-colors"
                     style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
                   >
                     {featuredPost.title}
                   </h1>
                 </div>
                 <div className="flex items-center justify-between mt-14 md:mt-0 pt-8">
-                  <span className="text-[13px] text-[#8a8a7e]">
+                  <span className="text-[13px] text-[#7f7f73]">
                     Posted {featuredPost.date}
                   </span>
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#d0d0c6] group-hover:bg-[#181816] group-hover:border-[#181816] transition-all duration-300">
-                    <ArrowIcon className="text-[#181816] group-hover:text-white transition-all duration-300 group-hover:translate-x-0.5" />
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#262624] group-hover:bg-[#fffffc] group-hover:border-[#fffffc] transition-all duration-300">
+                    <ArrowIcon className="text-[#fffffc] group-hover:text-[#21211f] transition-all duration-300 group-hover:translate-x-0.5" />
                   </div>
                 </div>
               </div>
@@ -170,10 +170,10 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
         )}
 
         {/* Animated divider line */}
-        <div ref={borderRef} className="h-px bg-[#d0d0c6] origin-left" style={{ transform: 'scaleX(0)' }} />
+        <div ref={borderRef} className="h-px bg-[#262624] origin-left" style={{ transform: 'scaleX(0)' }} />
 
         {/* ── Category Filters ───────────────────────────────────────────── */}
-        <nav ref={filtersRef} className="px-8 md:px-14 lg:px-16 py-5 border-t border-dashed border-[#d0d0c6]">
+        <nav ref={filtersRef} className="px-8 md:px-14 lg:px-16 py-5 border-t border-dashed border-[#262624]">
           <div className="flex items-center gap-1 overflow-x-auto">
             {categories.map((cat) => (
               <button
@@ -181,14 +181,14 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
                 onClick={() => setActiveCategory(cat.name)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-all duration-200 ${
                   activeCategory === cat.name
-                    ? 'bg-[#181816] text-white'
-                    : 'text-[#5a5a50] hover:text-[#181816]'
+                    ? 'bg-[#fffffc] text-[#21211f]'
+                    : 'text-[#9a9a8e] hover:text-[#fffffc]'
                 }`}
               >
                 <span>{cat.name}</span>
                 <span
                   className={`text-[11px] ${
-                    activeCategory === cat.name ? 'text-white/50' : 'text-[#aaa89c]'
+                    activeCategory === cat.name ? 'text-[#21211f]/50' : 'text-[#aaa89c]'
                   }`}
                 >
                   {cat.count}
@@ -220,7 +220,7 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent pointer-events-none" />
                   <div className="relative z-10 p-5 md:p-6">
                     <h2
-                      className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-transform duration-300 group-hover:translate-y-[-2px]"
+                      className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-all duration-300 group-hover:translate-y-[-2px] group-hover:text-[#c0c0b4]"
                       style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
                     >
                       {post.title}
@@ -230,7 +230,7 @@ export default function BlogListContent({ posts, categories }: BlogListContentPr
                       <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/25 transition-all duration-300 group-hover:bg-white group-hover:border-white">
                         <ArrowIcon
                           size={13}
-                          className="text-white group-hover:text-[#181816] transition-all duration-300 group-hover:translate-x-0.5"
+                          className="text-white group-hover:text-[#21211f] transition-all duration-300 group-hover:translate-x-0.5"
                         />
                       </div>
                     </div>
@@ -317,15 +317,15 @@ function NewsletterSection() {
 
   return (
     <section className="px-8 md:px-14 lg:px-16 pb-16 pt-4">
-      <div className="border-t border-dashed border-[#d0d0c6] pt-14">
+      <div className="border-t border-dashed border-[#262624] pt-14">
         <div className="max-w-xl mx-auto text-center">
           <h2
-            className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#181816] mb-3"
+            className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#fffffc] mb-3"
             style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
           >
             Stay in the loop
           </h2>
-          <p className="text-[14px] text-[#8a8a7e] mb-8">
+          <p className="text-[14px] text-[#7f7f73] mb-8">
             Follow along as I explore the intersection of medicine, AI, and engineering.
           </p>
 
@@ -336,8 +336,8 @@ function NewsletterSection() {
                   <path ref={checkRef} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-[15px] font-medium text-[#181816]">You&apos;re in!</p>
-              <p className="text-[13px] text-[#8a8a7e]">I&apos;ll send you a note when something new drops.</p>
+              <p className="text-[15px] font-medium text-[#fffffc]">You&apos;re in!</p>
+              <p className="text-[13px] text-[#7f7f73]">I&apos;ll send you a note when something new drops.</p>
             </div>
           ) : (
             <>
@@ -352,17 +352,17 @@ function NewsletterSection() {
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); if (status === 'error') { setStatus('idle'); setErrorMsg('') } }}
                   placeholder="your@email.com"
-                  className={`flex-1 px-4 py-3 rounded-xl border bg-white text-[14px] text-[#181816] placeholder:text-[#b0b0a4] outline-none transition-all duration-200 ${
-                    status === 'error' ? 'border-[#c4544d]/40 bg-[#fdf8f8]' : 'border-[#d0d0c6] focus:border-[#181816]'
+                  className={`flex-1 px-4 py-3 rounded-xl border bg-[#2a2a28] text-[14px] text-[#fffffc] placeholder:text-[#b0b0a4] outline-none transition-all duration-200 ${
+                    status === 'error' ? 'border-[#c4544d]/40 bg-[#2a2220]' : 'border-[#262624] focus:border-[#fffffc]'
                   }`}
                 />
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="px-6 py-3 rounded-xl bg-[#181816] text-white text-[13px] font-medium tracking-wide hover:bg-[#2a2a24] active:scale-[0.97] transition-all duration-150 disabled:opacity-50 min-w-[105px] flex items-center justify-center"
+                  className="px-6 py-3 rounded-xl bg-[#fffffc] text-[#21211f] text-[13px] font-medium tracking-wide hover:bg-[#e0e0d8] active:scale-[0.97] transition-all duration-150 disabled:opacity-50 min-w-[105px] flex items-center justify-center"
                 >
                   {status === 'loading' ? (
-                    <span className="w-4 h-4 border-2 border-white/25 border-t-white rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-[#21211f]/25 border-t-[#21211f] rounded-full animate-spin" />
                   ) : (
                     'Subscribe'
                   )}
@@ -488,7 +488,7 @@ function BlogFooter({ heroArt }: { heroArt: string }) {
   )
 
   return (
-    <footer ref={footerRef} className="relative w-screen bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-8 pt-4">
+    <footer ref={footerRef} className="relative w-screen bg-[#21211f] px-8 md:px-14 lg:px-16 pb-8 pt-4">
       <div
         className="mx-auto max-w-7xl rounded-2xl overflow-hidden relative px-6 pt-20 pb-8"
         style={{ background: heroArt }}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import { encrypt, hmacHash } from '@/lib/crypto'
 
 export const runtime = 'nodejs'
 
@@ -23,7 +24,13 @@ function recordAttempt(ip: string) {
   rateMap.set(ip, attempts)
 }
 
-function readSubscribers(): { email: string; date: string }[] {
+interface EncryptedSubscriber {
+  encryptedEmail: string
+  emailHash: string
+  subscribedAt: string
+}
+
+function readSubscribers(): EncryptedSubscriber[] {
   try {
     const data = fs.readFileSync(DATA_FILE, 'utf-8')
     return JSON.parse(data)
@@ -32,7 +39,7 @@ function readSubscribers(): { email: string; date: string }[] {
   }
 }
 
-function writeSubscribers(subscribers: { email: string; date: string }[]) {
+function writeSubscribers(subscribers: EncryptedSubscriber[]) {
   const dir = path.dirname(DATA_FILE)
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(DATA_FILE, JSON.stringify(subscribers, null, 2))
@@ -62,15 +69,21 @@ export async function POST(request: NextRequest) {
     }
 
     const subscribers = readSubscribers()
+    const emailHash = hmacHash(email)
 
-    if (subscribers.some((s) => s.email === email)) {
+    // Dedup check using HMAC hash (can't compare encrypted values)
+    if (subscribers.some((s) => s.emailHash === emailHash)) {
       return NextResponse.json(
         { error: 'This email is already subscribed.' },
         { status: 409 }
       )
     }
 
-    subscribers.push({ email, date: new Date().toISOString() })
+    subscribers.push({
+      encryptedEmail: encrypt(email),
+      emailHash,
+      subscribedAt: new Date().toISOString(),
+    })
     writeSubscribers(subscribers)
     recordAttempt(ip)
 

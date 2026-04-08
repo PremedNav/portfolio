@@ -202,7 +202,7 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
   }
 
   return (
-    <div ref={pageRef} className="relative min-h-screen bg-[#f8f8f6]">
+    <div ref={pageRef} className="relative min-h-screen bg-[#21211f]">
       <NavBar variant="light" />
 
       <main className="font-robert-regular">
@@ -214,55 +214,55 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
               {/* Breadcrumb row */}
               <div className="flex items-center mb-8">
                 <div className="flex items-center gap-2 text-[13px]">
-                  <Link href="/blog" className="text-[#7a7a6e] hover:text-[#181816] transition-colors">
+                  <Link href="/blog" className="text-[#9a9a8e] hover:text-[#fffffc] transition-colors">
                     Blog
                   </Link>
-                  <span className="text-[#c0c0b4]">/</span>
-                  <span className="text-[#3a3a2e]">{meta.category}</span>
+                  <span className="text-[#3a3a38]">/</span>
+                  <span className="text-[#c0c0b4]">{meta.category}</span>
                 </div>
               </div>
 
               {/* Title */}
               <h1
-                className="text-[2.2rem] md:text-[3rem] lg:text-[3.5rem] leading-[1.06] tracking-[-0.03em] text-[#181816] mb-8"
+                className="text-[2.2rem] md:text-[3rem] lg:text-[3.5rem] leading-[1.06] tracking-[-0.03em] text-[#fffffc] mb-8"
                 style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
               >
                 {meta.title}
               </h1>
 
               {/* Subtitle */}
-              <p className="text-[1.05rem] leading-relaxed text-[#4a4a40] max-w-[620px]">
+              <p className="text-[1.05rem] leading-relaxed text-[#b0b0a4] max-w-[620px]">
                 {meta.subtitle}
               </p>
             </div>
 
             {/* Right column: meta info (continuous dashed border) */}
-            <div className="hidden lg:block w-[240px] flex-shrink-0 border-l border-dashed border-[#d0d0c6] pl-10 text-[13px]">
+            <div className="hidden lg:block w-[240px] flex-shrink-0 border-l border-dashed border-[#262624] pl-10 text-[13px]">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <span className="text-[#8a8a7e]">By </span>
-                  <span className="text-[#181816] font-medium">{meta.author}</span>
+                  <span className="text-[#7f7f73]">By </span>
+                  <span className="text-[#fffffc] font-medium">{meta.author}</span>
                 </div>
-                <span className="text-[#8a8a7e]">{meta.date}</span>
+                <span className="text-[#7f7f73]">{meta.date}</span>
               </div>
-              <div className="space-y-3 border-t border-dashed border-[#d0d0c6] pt-5">
+              <div className="space-y-3 border-t border-dashed border-[#262624] pt-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#8a8a7e]">Category</span>
-                  <span className="text-[#181816] font-medium">{meta.category}</span>
+                  <span className="text-[#7f7f73]">Category</span>
+                  <span className="text-[#fffffc] font-medium">{meta.category}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#8a8a7e]">Reading time</span>
-                  <span className="text-[#181816] font-medium">{meta.readTime}</span>
+                  <span className="text-[#7f7f73]">Reading time</span>
+                  <span className="text-[#fffffc] font-medium">{meta.readTime}</span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#d0d0c6]">
-                  <span className="text-[#8a8a7e]">Share</span>
-                  <button onClick={copyLink} className="text-[#181816] font-medium hover:text-[#5a5a50] transition-colors underline underline-offset-2 decoration-[#c0c0b4]">
+                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#262624]">
+                  <span className="text-[#7f7f73]">Share</span>
+                  <button onClick={copyLink} className="text-[#fffffc] font-medium hover:text-[#9a9a8e] transition-colors underline underline-offset-2 decoration-[#3a3a38]">
                     {copied ? 'Copied!' : 'Copy link'}
                   </button>
                 </div>
                 {/* Heart / Like counter */}
-                <div className="flex items-center justify-between pt-3 border-t border-dashed border-[#d0d0c6]">
-                  <span className="text-[#8a8a7e]">Like</span>
+                <div className="flex items-center justify-between pt-3 border-t border-dashed border-[#262624]">
+                  <span className="text-[#7f7f73]">Like</span>
                   <button
                     onClick={toggleLike}
                     className="flex items-center gap-1.5 group transition-colors"
@@ -273,12 +273,12 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
                       viewBox="0 0 24 24"
                       className={`transition-all duration-300 ${liked ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}
                       fill={liked ? '#e05252' : 'none'}
-                      stroke={liked ? '#e05252' : '#8a8a7e'}
+                      stroke={liked ? '#e05252' : '#7f7f73'}
                       strokeWidth="1.8"
                     >
                       <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span className={`text-[13px] font-medium tabular-nums transition-colors duration-200 ${liked ? 'text-[#e05252]' : 'text-[#181816]'}`}>
+                    <span className={`text-[13px] font-medium tabular-nums transition-colors duration-200 ${liked ? 'text-[#e05252]' : 'text-[#fffffc]'}`}>
                       {likeCount}
                     </span>
                   </button>
@@ -323,8 +323,8 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
               onClick={() => scrollToSection(item)}
               className={`block text-left text-[13px] leading-snug transition-all duration-200 ${
                 activeSection === item
-                  ? 'text-[#181816] font-semibold translate-x-1'
-                  : 'text-[#9a9a8e] hover:text-[#181816]'
+                  ? 'text-[#fffffc] font-semibold translate-x-1'
+                  : 'text-[#9a9a8e] hover:text-[#fffffc]'
               }`}
             >
               {item}
@@ -333,7 +333,7 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
         </div>
 
         {/* Radial progress ring */}
-        <div className="mt-6 pt-5 border-t border-dashed border-[#d0d0c6] flex items-center gap-3">
+        <div className="mt-6 pt-5 border-t border-dashed border-[#262624] flex items-center gap-3">
           <div className="relative w-[44px] h-[44px] flex-shrink-0">
             <svg width="44" height="44" viewBox="0 0 44 44" className="rotate-[-90deg]">
               {/* Background ring */}
@@ -351,14 +351,14 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
               />
               <defs>
                 <linearGradient id="progressGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#181816" />
+                  <stop offset="0%" stopColor="#fffffc" />
                   <stop offset="100%" stopColor="#6a6a5e" />
                 </linearGradient>
               </defs>
             </svg>
             {/* Center text */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[11px] font-semibold text-[#181816] tabular-nums leading-none">
+              <span className="text-[11px] font-semibold text-[#fffffc] tabular-nums leading-none">
                 {Math.round(readProgress * 100)}%
               </span>
             </div>
@@ -372,18 +372,18 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
       </nav>
 
       {/* ── Related Posts ────────────────────────────────────────────── */}
-      <section ref={relatedRef} className="relative bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-16 pt-8">
+      <section ref={relatedRef} className="relative bg-[#21211f] px-8 md:px-14 lg:px-16 pb-16 pt-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <h2
-              className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#181816]"
+              className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#fffffc]"
               style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
             >
               More posts
             </h2>
             <Link
               href="/blog"
-              className="text-[13px] text-[#8a8a7e] hover:text-[#181816] transition-colors underline underline-offset-2 decoration-[#c0c0b4]"
+              className="text-[13px] text-[#7f7f73] hover:text-[#fffffc] transition-colors underline underline-offset-2 decoration-[#3a3a38]"
             >
               View all posts
             </Link>
@@ -406,8 +406,8 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
                 </div>
 
                 {/* Meta */}
-                <div className="flex items-center gap-3 mb-3 text-[12px] text-[#8a8a7e]">
-                  <span className="px-2.5 py-0.5 rounded-full border border-[#d0d0c6]">
+                <div className="flex items-center gap-3 mb-3 text-[12px] text-[#7f7f73]">
+                  <span className="px-2.5 py-0.5 rounded-full border border-[#262624]">
                     {rp.category}
                   </span>
                   <span>{rp.readTime} read</span>
@@ -415,7 +415,7 @@ export default function BlogPostContent({ meta, toc, allPosts, children }: BlogP
 
                 {/* Title */}
                 <h3
-                  className="text-[1.05rem] leading-[1.35] text-[#181816] group-hover:text-[#4a4a40] transition-colors duration-300"
+                  className="text-[1.05rem] leading-[1.35] text-[#fffffc] group-hover:text-[#b0b0a4] transition-colors duration-300"
                   style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
                 >
                   {rp.title}
@@ -501,16 +501,16 @@ function NewsletterSection() {
   }, { dependencies: [status] })
 
   return (
-    <section className="relative bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-16 pt-4">
-      <div className="border-t border-dashed border-[#d0d0c6] pt-14">
+    <section className="relative bg-[#21211f] px-8 md:px-14 lg:px-16 pb-16 pt-4">
+      <div className="border-t border-dashed border-[#262624] pt-14">
         <div className="max-w-xl mx-auto text-center">
           <h2
-            className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#181816] mb-3"
+            className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#fffffc] mb-3"
             style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
           >
             Stay in the loop
           </h2>
-          <p className="text-[14px] text-[#8a8a7e] mb-8">
+          <p className="text-[14px] text-[#7f7f73] mb-8">
             Follow along as I explore the intersection of medicine, AI, and engineering.
           </p>
 
@@ -521,8 +521,8 @@ function NewsletterSection() {
                   <path ref={checkRef} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-[15px] font-medium text-[#181816]">You&apos;re in!</p>
-              <p className="text-[13px] text-[#8a8a7e]">I&apos;ll send you a note when something new drops.</p>
+              <p className="text-[15px] font-medium text-[#fffffc]">You&apos;re in!</p>
+              <p className="text-[13px] text-[#7f7f73]">I&apos;ll send you a note when something new drops.</p>
             </div>
           ) : (
             <>
@@ -537,17 +537,17 @@ function NewsletterSection() {
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); if (status === 'error') { setStatus('idle'); setErrorMsg('') } }}
                   placeholder="your@email.com"
-                  className={`flex-1 px-4 py-3 rounded-xl border bg-white text-[14px] text-[#181816] placeholder:text-[#b0b0a4] outline-none transition-all duration-200 ${
-                    status === 'error' ? 'border-[#c4544d]/40 bg-[#fdf8f8]' : 'border-[#d0d0c6] focus:border-[#181816]'
+                  className={`flex-1 px-4 py-3 rounded-xl border bg-[#2a2a28] text-[14px] text-[#fffffc] placeholder:text-[#b0b0a4] outline-none transition-all duration-200 ${
+                    status === 'error' ? 'border-[#c4544d]/40 bg-[#3a2020]' : 'border-[#262624] focus:border-[#fffffc]'
                   }`}
                 />
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="px-6 py-3 rounded-xl bg-[#181816] text-white text-[13px] font-medium tracking-wide hover:bg-[#2a2a24] active:scale-[0.97] transition-all duration-150 disabled:opacity-50 min-w-[105px] flex items-center justify-center"
+                  className="px-6 py-3 rounded-xl bg-[#fffffc] text-[#21211f] text-[13px] font-medium tracking-wide hover:bg-[#e0e0d8] active:scale-[0.97] transition-all duration-150 disabled:opacity-50 min-w-[105px] flex items-center justify-center"
                 >
                   {status === 'loading' ? (
-                    <span className="w-4 h-4 border-2 border-white/25 border-t-white rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-[#21211f]/25 border-t-[#21211f] rounded-full animate-spin" />
                   ) : (
                     'Subscribe'
                   )}
@@ -647,7 +647,7 @@ function BlogFooter({ heroArt }: { heroArt: string }) {
   )
 
   return (
-    <footer ref={footerRef} className="relative w-screen bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-8 pt-4">
+    <footer ref={footerRef} className="relative w-screen bg-[#21211f] px-8 md:px-14 lg:px-16 pb-8 pt-4">
       <div
         className="mx-auto max-w-7xl rounded-2xl overflow-hidden relative px-6 pt-20 pb-8"
         style={{ background: heroArt }}

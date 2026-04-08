@@ -170,7 +170,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
   }
 
   return (
-    <div ref={pageRef} className="relative min-h-screen bg-[#f8f8f6]">
+    <div ref={pageRef} className="relative min-h-screen bg-[#21211f]">
       <NavBar variant="light" />
 
       <main className="font-robert-regular">
@@ -182,57 +182,57 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
               {/* Breadcrumb */}
               <div className="flex items-center mb-8">
                 <div className="flex items-center gap-2 text-[13px]">
-                  <Link href="/lab" className="text-[#7a7a6e] hover:text-[#181816] transition-colors">
+                  <Link href="/lab" className="text-[#9a9a8e] hover:text-[#fffffc] transition-colors">
                     Lab
                   </Link>
-                  <span className="text-[#c0c0b4]">/</span>
-                  <span className="text-[#3a3a2e]">{experiment.tags[0]}</span>
+                  <span className="text-[#3a3a38]">/</span>
+                  <span className="text-[#c0c0b4]">{experiment.tags[0]}</span>
                 </div>
               </div>
 
               {/* Title */}
               <h1
-                className="text-[2.2rem] md:text-[3rem] lg:text-[3.5rem] leading-[1.06] tracking-[-0.03em] text-[#181816] mb-8"
+                className="text-[2.2rem] md:text-[3rem] lg:text-[3.5rem] leading-[1.06] tracking-[-0.03em] text-[#fffffc] mb-8"
                 style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
               >
                 {experiment.title}
               </h1>
 
               {/* Description */}
-              <p className="text-[1.05rem] leading-relaxed text-[#4a4a40] max-w-[620px]">
+              <p className="text-[1.05rem] leading-relaxed text-[#b0b0a4] max-w-[620px]">
                 {experiment.description}
               </p>
             </div>
 
             {/* Right column — metadata sidebar */}
-            <div className="hidden lg:block w-[240px] flex-shrink-0 border-l border-dashed border-[#d0d0c6] pl-10 text-[13px]">
+            <div className="hidden lg:block w-[240px] flex-shrink-0 border-l border-dashed border-[#262624] pl-10 text-[13px]">
               <div className="flex items-center justify-between mb-5">
-                <span className="text-[#8a8a7e]">Type</span>
-                <span className="text-[#181816] font-medium">Interactive</span>
+                <span className="text-[#7f7f73]">Type</span>
+                <span className="text-[#fffffc] font-medium">Interactive</span>
               </div>
-              <div className="space-y-3 border-t border-dashed border-[#d0d0c6] pt-5">
+              <div className="space-y-3 border-t border-dashed border-[#262624] pt-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#8a8a7e]">Tech</span>
+                  <span className="text-[#7f7f73]">Tech</span>
                   <div className="flex items-center gap-1.5">
                     {experiment.tags.map((tag) => (
-                      <span key={tag} className="text-[#181816] font-medium">{tag}</span>
+                      <span key={tag} className="text-[#fffffc] font-medium">{tag}</span>
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#d0d0c6]">
-                  <span className="text-[#8a8a7e]">Share</span>
+                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#262624]">
+                  <span className="text-[#7f7f73]">Share</span>
                   <button
                     onClick={copyLink}
-                    className="text-[#181816] font-medium hover:text-[#5a5a50] transition-colors underline underline-offset-2 decoration-[#c0c0b4]"
+                    className="text-[#fffffc] font-medium hover:text-[#9a9a8e] transition-colors underline underline-offset-2 decoration-[#3a3a38]"
                   >
                     {copied ? 'Copied!' : 'Copy link'}
                   </button>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#d0d0c6]">
-                  <span className="text-[#8a8a7e]">View</span>
+                <div className="flex items-center justify-between pt-2 border-t border-dashed border-[#262624]">
+                  <span className="text-[#7f7f73]">View</span>
                   <button
                     onClick={() => setIsFullscreen(true)}
-                    className="text-[#181816] font-medium hover:text-[#5a5a50] transition-colors underline underline-offset-2 decoration-[#c0c0b4] flex items-center gap-1.5"
+                    className="text-[#fffffc] font-medium hover:text-[#9a9a8e] transition-colors underline underline-offset-2 decoration-[#3a3a38] flex items-center gap-1.5"
                   >
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4" />
@@ -277,9 +277,9 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
           <div ref={hintsRef} className="px-8 md:px-14 lg:px-16 pb-14" style={{ opacity: 0 }}>
             <div className="flex items-center gap-6 flex-wrap">
               <span className="text-[12px] uppercase tracking-[0.15em] text-[#9a9a8e]">How to interact</span>
-              <span className="hidden sm:block w-px h-3 bg-[#d0d0c6]" />
+              <span className="hidden sm:block w-px h-3 bg-[#262624]" />
               {hints.map((hint, i) => (
-                <span key={i} className="text-[13px] text-[#5a5a50]">{hint}</span>
+                <span key={i} className="text-[13px] text-[#9a9a8e]">{hint}</span>
               ))}
             </div>
           </div>
@@ -289,20 +289,20 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
         <div className="lg:hidden px-8 md:px-14 pb-12">
           <div className="flex items-center gap-4 flex-wrap text-[13px]">
             <div className="flex items-center gap-2">
-              <span className="text-[#8a8a7e]">Tech:</span>
+              <span className="text-[#7f7f73]">Tech:</span>
               {experiment.tags.map((tag) => (
-                <span key={tag} className="px-2.5 py-0.5 rounded-full border border-[#d0d0c6] text-[#181816] text-[12px]">{tag}</span>
+                <span key={tag} className="px-2.5 py-0.5 rounded-full border border-[#262624] text-[#fffffc] text-[12px]">{tag}</span>
               ))}
             </div>
             <button
               onClick={copyLink}
-              className="text-[#181816] hover:text-[#5a5a50] transition-colors underline underline-offset-2 decoration-[#c0c0b4]"
+              className="text-[#fffffc] hover:text-[#9a9a8e] transition-colors underline underline-offset-2 decoration-[#3a3a38]"
             >
               {copied ? 'Copied!' : 'Share'}
             </button>
             <button
               onClick={() => setIsFullscreen(true)}
-              className="text-[#181816] hover:text-[#5a5a50] transition-colors underline underline-offset-2 decoration-[#c0c0b4]"
+              className="text-[#fffffc] hover:text-[#9a9a8e] transition-colors underline underline-offset-2 decoration-[#3a3a38]"
             >
               Fullscreen
             </button>
@@ -311,18 +311,18 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
       </main>
 
       {/* ── More Experiments ──────────────────────────────────────────── */}
-      <section ref={relatedRef} className="relative bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-16 pt-8">
+      <section ref={relatedRef} className="relative bg-[#21211f] px-8 md:px-14 lg:px-16 pb-16 pt-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <h2
-              className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#181816]"
+              className="text-[1.6rem] md:text-[2rem] tracking-[-0.03em] text-[#fffffc]"
               style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
             >
               More experiments
             </h2>
             <Link
               href="/lab"
-              className="text-[13px] text-[#8a8a7e] hover:text-[#181816] transition-colors underline underline-offset-2 decoration-[#c0c0b4]"
+              className="text-[13px] text-[#7f7f73] hover:text-[#fffffc] transition-colors underline underline-offset-2 decoration-[#3a3a38]"
             >
               View all experiments
             </Link>
@@ -355,9 +355,9 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
                 </div>
 
                 {/* Meta */}
-                <div className="flex items-center gap-3 mb-3 text-[12px] text-[#8a8a7e]">
+                <div className="flex items-center gap-3 mb-3 text-[12px] text-[#7f7f73]">
                   {exp.tags.map((tag) => (
-                    <span key={tag} className="px-2.5 py-0.5 rounded-full border border-[#d0d0c6]">
+                    <span key={tag} className="px-2.5 py-0.5 rounded-full border border-[#262624]">
                       {tag}
                     </span>
                   ))}
@@ -366,7 +366,7 @@ export default function LabDetailContent({ experiment, allExperiments }: Props) 
 
                 {/* Title */}
                 <h3
-                  className="text-[1.05rem] leading-[1.35] text-[#181816] group-hover:text-[#4a4a40] transition-colors duration-300"
+                  className="text-[1.05rem] leading-[1.35] text-[#fffffc] group-hover:text-[#b0b0a4] transition-colors duration-300"
                   style={{ fontFamily: "'robert-medium', 'general', sans-serif" }}
                 >
                   {exp.title}
@@ -483,7 +483,7 @@ function LabDetailFooter({ heroArt }: { heroArt: string }) {
   )
 
   return (
-    <footer ref={footerRef} className="relative w-screen bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-8 pt-4">
+    <footer ref={footerRef} className="relative w-screen bg-[#21211f] px-8 md:px-14 lg:px-16 pb-8 pt-4">
       <div
         className="mx-auto max-w-7xl rounded-2xl overflow-hidden relative px-6 pt-20 pb-8"
         style={{ background: heroArt }}

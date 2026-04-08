@@ -12,8 +12,8 @@ const navItems = ["Projects", "Lab", "Blog", "Contact", "Recommendation Letter"]
 
 const NavBar = ({ variant = 'dark' }) => {
   const isLight = variant === 'light'
-  const textColor = isLight ? '#181816' : '#FFFFFF'
-  const floatingBg = isLight ? 'bg-white/80 backdrop-blur-md border-[#e0e0d8]' : 'bg-black rounded-lg border'
+  const textColor = isLight ? '#fffffc' : '#FFFFFF'
+  const floatingBg = isLight ? 'bg-[#151514]/80 backdrop-blur-md border-[#262624]' : 'bg-black rounded-lg border'
   // State for toggling audio and visual indicator
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isIndicatorActive, setIsIndicatorActive] = useState(false);
@@ -148,7 +148,8 @@ const NavBar = ({ variant = 'dark' }) => {
   return (
     <div
       ref={navContainerRef}
-      className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
+      className="fixed inset-x-0 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
+      style={{ top: 'calc(1rem + var(--announcement-height, 0px))' }}
     >
       <header className="absolute top-1/2 w-full -translate-y-1/2">
         <nav className="flex size-full items-center justify-between p-4">

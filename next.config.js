@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  ...(process.env.NODE_ENV === 'production' ? { output: 'export' } : {}),
+  ...(process.env.STATIC_EXPORT === '1' ? { output: 'export' } : {}),
   async headers() {
     return [
       {

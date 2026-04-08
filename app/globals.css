@@ -17,7 +17,7 @@
 body {
   width: 100dvw;
   overflow-x: hidden;
-  background-color: #f8f8f6;
+  background-color: #21211f;
   font-family: "General Sans", sans-serif;
 }
 
@@ -74,7 +74,7 @@ body {
 
 @layer utilities {
   .border-hsla {
-    @apply border border-[#d0d0c6];
+    @apply border border-[#262624];
   }
 
   .nav-hover-btn {
@@ -86,11 +86,11 @@ body {
   }
 
   .floating-nav-light {
-    @apply bg-white/80 backdrop-blur-md rounded-lg border border-[#e0e0d8];
+    @apply bg-[#151514]/80 backdrop-blur-md rounded-lg border border-[#262624];
   }
 
   .nav-hover-btn-dark {
-    @apply text-[#181816] after:bg-[#181816];
+    @apply text-[#fffffc] after:bg-[#fffffc];
   }
 
   .absolute-center {
@@ -123,7 +123,7 @@ body {
   }
 
   .animated-title {
-    @apply flex flex-col gap-1 text-7xl uppercase leading-[.8] text-[#181816] sm:px-32 md:text-[6rem];
+    @apply flex flex-col gap-1 text-7xl uppercase leading-[.8] text-[#fffffc] sm:px-32 md:text-[6rem];
   }
 
   .animated-word {
@@ -191,7 +191,7 @@ body {
 }
 
 .indicator-line-dark {
-  @apply bg-[#181816];
+  @apply bg-[#fffffc];
 }
 
 .indicator-line.active {
@@ -388,7 +388,7 @@ body {
 /* Zoov — minimal waveform bars */
 .zoov-bar {
   height: var(--bar-h);
-  background: rgba(24, 24, 22, 0.35);
+  background: rgba(255, 255, 252, 0.35);
   animation: zoov-pulse 0.7s ease-in-out infinite alternate;
   animation-delay: var(--i);
 }
@@ -411,43 +411,53 @@ body {
   --os-padding-perpendicular: 3px;
   --os-padding-axis: 8px;
   --os-track-border-radius: 10px;
-  --os-track-bg: rgba(0, 0, 0, 0.04);
-  --os-track-bg-hover: rgba(0, 0, 0, 0.07);
+  --os-track-bg: rgba(255, 255, 255, 0.04);
+  --os-track-bg-hover: rgba(255, 255, 255, 0.07);
   --os-handle-border-radius: 10px;
-  --os-handle-bg: rgba(0, 0, 0, 0.25);
-  --os-handle-bg-hover: rgba(0, 0, 0, 0.4);
-  --os-handle-bg-active: rgba(0, 0, 0, 0.55);
-  --os-handle-border: 1px solid rgba(0, 0, 0, 0.08);
-  --os-handle-border-hover: 1px solid rgba(0, 0, 0, 0.15);
-  --os-handle-border-active: 1px solid rgba(0, 0, 0, 0.25);
+  --os-handle-bg: rgba(255, 255, 255, 0.15);
+  --os-handle-bg-hover: rgba(255, 255, 255, 0.25);
+  --os-handle-bg-active: rgba(255, 255, 255, 0.35);
+  --os-handle-border: 1px solid rgba(255, 255, 255, 0.08);
+  --os-handle-border-hover: 1px solid rgba(255, 255, 255, 0.15);
+  --os-handle-border-active: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .os-theme-custom .os-scrollbar-handle {
   box-shadow:
-    0 0 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(0, 0, 0, 0.1);
+    0 0 8px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
 }
 
 .os-theme-custom .os-scrollbar-handle:hover {
   box-shadow:
-    0 0 16px rgba(0, 0, 0, 0.1),
-    0 0 32px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(0, 0, 0, 0.15);
+    0 0 16px rgba(255, 255, 255, 0.1),
+    0 0 32px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .os-theme-custom .os-scrollbar-handle:active {
   box-shadow:
-    0 0 22px rgba(0, 0, 0, 0.15),
-    0 0 44px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(0, 0, 0, 0.2);
+    0 0 22px rgba(255, 255, 255, 0.15),
+    0 0 44px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ── Hero marquee — continuous auto-scroll ── */
+@keyframes marqueeLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 }
 
 /* Footer — outlined name text */
 .footer-name-outlined {
   color: transparent;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 2px #181816;
+  -webkit-text-stroke: 2px #fffffc;
   paint-order: stroke fill;
 }
 

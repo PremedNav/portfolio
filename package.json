@@ -8,9 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "pages:build": "next build",
-    "pages:deploy": "next build && npx wrangler pages deploy out --project-name=navtej-portfolio",
-    "preview": "next build && npx wrangler pages dev out"
+    "pages:build": "STATIC_EXPORT=1 next build",
+    "pages:deploy": "STATIC_EXPORT=1 next build && npx wrangler pages deploy out --project-name=navtej-portfolio",
+    "preview": "STATIC_EXPORT=1 next build && npx wrangler pages dev out"
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",

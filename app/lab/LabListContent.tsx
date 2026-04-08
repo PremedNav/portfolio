@@ -106,7 +106,7 @@ export default function LabListContent({ experiments }: LabListContentProps) {
   )
 
   return (
-    <div ref={pageRef} className="relative min-h-screen bg-[#f8f8f6]">
+    <div ref={pageRef} className="relative min-h-screen bg-[#21211f]">
       <NavBar variant="light" />
 
       <main>
@@ -119,12 +119,12 @@ export default function LabListContent({ experiments }: LabListContentProps) {
                   <span className="text-[13px] font-semibold tracking-wide text-[#4a6741]">
                     Featured
                   </span>
-                  <span className="text-[13px] text-[#8a8a7e]">
+                  <span className="text-[13px] text-[#7f7f73]">
                     Interactive
                   </span>
                 </div>
                 <h1
-                  className="text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] leading-[1.08] tracking-[-0.025em] text-[#181816] max-w-[580px] group-hover:text-[#3a3a2e] transition-colors"
+                  className="text-[2rem] md:text-[2.75rem] lg:text-[3.25rem] leading-[1.08] tracking-[-0.025em] text-[#fffffc] max-w-[580px] group-hover:text-[#c0c0b4] transition-colors"
                   style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
                 >
                   {featured.title}
@@ -133,13 +133,13 @@ export default function LabListContent({ experiments }: LabListContentProps) {
               <div className="flex items-center justify-between mt-14 md:mt-0 pt-8">
                 <div className="flex items-center gap-2">
                   {featured.tags.map((tag) => (
-                    <span key={tag} className="text-[13px] text-[#8a8a7e]">
+                    <span key={tag} className="text-[13px] text-[#7f7f73]">
                       {tag}
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#d0d0c6] group-hover:bg-[#181816] group-hover:border-[#181816] transition-all duration-300">
-                  <ArrowIcon className="text-[#181816] group-hover:text-white transition-all duration-300 group-hover:translate-x-0.5" />
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#262624] group-hover:bg-[#fffffc] group-hover:border-[#fffffc] transition-all duration-300">
+                  <ArrowIcon className="text-[#fffffc] group-hover:text-[#21211f] transition-all duration-300 group-hover:translate-x-0.5" />
                 </div>
               </div>
             </div>
@@ -169,10 +169,10 @@ export default function LabListContent({ experiments }: LabListContentProps) {
         </Link>
 
         {/* Animated divider line */}
-        <div ref={borderRef} className="h-px bg-[#d0d0c6] origin-left" style={{ transform: 'scaleX(0)' }} />
+        <div ref={borderRef} className="h-px bg-[#262624] origin-left" style={{ transform: 'scaleX(0)' }} />
 
         {/* ── Tag Filters ──────────────────────────────────────────────── */}
-        <nav ref={filtersRef} className="px-8 md:px-14 lg:px-16 py-5 border-t border-dashed border-[#d0d0c6]">
+        <nav ref={filtersRef} className="px-8 md:px-14 lg:px-16 py-5 border-t border-dashed border-[#262624]">
           <div className="flex items-center gap-1 overflow-x-auto">
             {tags.map((tag) => (
               <button
@@ -180,14 +180,14 @@ export default function LabListContent({ experiments }: LabListContentProps) {
                 onClick={() => setActiveTag(tag.name)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-all duration-200 ${
                   activeTag === tag.name
-                    ? 'bg-[#181816] text-white'
-                    : 'text-[#5a5a50] hover:text-[#181816]'
+                    ? 'bg-[#fffffc] text-[#21211f]'
+                    : 'text-[#9a9a8e] hover:text-[#fffffc]'
                 }`}
               >
                 <span>{tag.name}</span>
                 <span
                   className={`text-[11px] ${
-                    activeTag === tag.name ? 'text-white/50' : 'text-[#aaa89c]'
+                    activeTag === tag.name ? 'text-[#21211f]/50' : 'text-[#aaa89c]'
                   }`}
                 >
                   {tag.count}
@@ -219,7 +219,7 @@ export default function LabListContent({ experiments }: LabListContentProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent pointer-events-none" />
                   <div className="relative z-10 p-5 md:p-6">
                     <h2
-                      className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-transform duration-300 group-hover:translate-y-[-2px]"
+                      className="text-[1.15rem] md:text-xl lg:text-[1.3rem] text-white leading-snug tracking-[-0.01em] mb-6 transition-all duration-300 group-hover:translate-y-[-2px] group-hover:text-[#c0c0b4]"
                       style={{ fontFamily: "'robert-medium', 'general', 'General Sans', sans-serif" }}
                     >
                       {exp.title}
@@ -233,7 +233,7 @@ export default function LabListContent({ experiments }: LabListContentProps) {
                       <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white/25 transition-all duration-300 group-hover:bg-white group-hover:border-white">
                         <ArrowIcon
                           size={13}
-                          className="text-white group-hover:text-[#181816] transition-all duration-300 group-hover:translate-x-0.5"
+                          className="text-white group-hover:text-[#21211f] transition-all duration-300 group-hover:translate-x-0.5"
                         />
                       </div>
                     </div>
@@ -380,7 +380,7 @@ function LabFooter({ heroArt }: { heroArt: string }) {
   )
 
   return (
-    <footer ref={footerRef} className="relative w-screen bg-[#f8f8f6] px-8 md:px-14 lg:px-16 pb-8 pt-4">
+    <footer ref={footerRef} className="relative w-screen bg-[#21211f] px-8 md:px-14 lg:px-16 pb-8 pt-4">
       <div
         className="mx-auto max-w-7xl rounded-2xl overflow-hidden relative px-6 pt-20 pb-8"
         style={{ background: heroArt }}

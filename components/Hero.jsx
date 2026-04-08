@@ -53,7 +53,7 @@ const LOGO_GROUPS = [
 ];
 
 const Hero = () => {
-  const dark = false;
+  const dark = true;
   const [loading, setLoading] = useState(true);
   const [coloradoTime, setColoradoTime] = useState('');
 
@@ -71,6 +71,10 @@ const Hero = () => {
   const loaderRef = useRef(null);
   const pulseRef = useRef(null);
   const drawDoneRef = useRef(false);
+  const signatureRef = useRef(null);
+  const marqueeRef = useRef(null);
+  const helmetWrapperRef = useRef(null);
+  const topMessageRef = useRef(null);
 
   // ── Colorado time ──
   useEffect(() => {
@@ -192,7 +196,7 @@ const Hero = () => {
         strokeDasharray: len,
         strokeDashoffset: len,
         fill: 'transparent',
-        stroke: '#181816',
+        stroke: '#fffffc',
         strokeWidth: 12,
       });
     });
@@ -219,7 +223,7 @@ const Hero = () => {
     });
 
     drawTl.to(paths, {
-      fill: '#181816',
+      fill: '#fffffc',
       strokeWidth: 0,
       duration: 0.3,
       ease: 'power1.inOut',
@@ -251,15 +255,13 @@ const Hero = () => {
         },
       });
 
-      // Trapezoid frame entrance
+      // Frame entrance: zoom in from 0.85
       gsap.set('#video-frame', {
         opacity: 1,
-        clipPath: 'polygon(14% 0%, 72% 0%, 88% 90%, 0% 95%)',
-        scale: 0.6,
-        willChange: 'clip-path, transform',
+        scale: 0.85,
+        willChange: 'transform',
       });
       tl.to('#video-frame', {
-        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
         scale: 1,
         duration: 1.4,
         ease: 'power4.inOut',
@@ -341,33 +343,115 @@ const Hero = () => {
     };
   }, []);
 
-  // ── Trapezoid scroll animation ──
+  // ── Pinned scroll: Lando Norris-style hero transition ──
   useGSAP(() => {
-    gsap.set("#video-frame", {
-      clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
-      borderRadius: "0% 0% 40% 10%",
+    const sig = signatureRef.current;
+    const marquee = marqueeRef.current;
+    const helmetWrapper = helmetWrapperRef.current;
+    const sigPaths = sig ? sig.querySelectorAll('.sig-path') : [];
+
+    // Set up signature paths — hide completely until drawn
+    sigPaths.forEach((path) => {
+      const len = path.getTotalLength();
+      gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 });
     });
-    gsap.from("#video-frame", {
-      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      borderRadius: "0% 0% 0% 0%",
-      ease: "power1.inOut",
+
+    // Master pinned timeline — pin the entire hero section
+    const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: "#video-frame",
-        start: "center center",
-        end: "bottom center",
-        scrub: true,
+        trigger: "#hero-section",
+        start: "top top",
+        end: "+=200%",
+        pin: true,
+        scrub: 0.6,
       },
     });
+
+    // Phase 1 (0–0.3): Hero text, buttons, logos fade out + slide down
+    tl.fromTo('.hero-heading-anim, .hero-subtext-anim',
+      { opacity: 1, y: 0 },
+      { opacity: 0, y: 60, duration: 0.3, stagger: 0.02, ease: 'none' },
+    0);
+
+    // Phase 1 (0–0.5): Hero zooms out to a smaller centered box
+    tl.fromTo('#video-frame',
+      { scale: 1, borderRadius: '0px' },
+      { scale: 0.4, borderRadius: '16px', duration: 0.5, ease: 'none' },
+    0);
+
+    // Phase 1 (0.2–0.5): HelmetReveal wrapper fades — box bg stays, moving elements go away
+    if (helmetWrapper) {
+      tl.to(helmetWrapper, {
+        opacity: 0,
+        duration: 0.3,
+        ease: 'none',
+      }, 0.2);
+    }
+
+    // Phase 1.5 (0.05–0.3): Marquee text fades in (auto-scrolls via CSS, not GSAP)
+    if (marquee) {
+      tl.fromTo(marquee, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'none' }, 0.05);
+    }
+
+    // Phase 3 (0.7–0.9): Top message fades in near end of signature draw
+    const topMsg = topMessageRef.current;
+    if (topMsg) {
+      tl.fromTo(topMsg, { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.2, ease: 'none' }, 0.7);
+    }
+
+    // Phase 2 (0.15–0.9): Signature draws in + scales up over the box
+    if (sig && sigPaths.length) {
+      tl.fromTo(sig, { opacity: 0 }, { opacity: 1, duration: 0.05, ease: 'none' }, 0.15);
+      tl.fromTo(sig, { scale: 0.8 }, { scale: 1.5, duration: 0.85, ease: 'none' }, 0.15);
+
+      const drawStart = 0.15;
+      const drawEnd = 0.9;
+      const drawDuration = drawEnd - drawStart;
+      const perPath = drawDuration / sigPaths.length;
+
+      sigPaths.forEach((path, i) => {
+        const t = drawStart + i * perPath;
+        tl.set(path, { opacity: 1 }, t);
+        tl.to(path, { strokeDashoffset: 0, duration: perPath, ease: 'none' }, t);
+      });
+    }
   });
 
   return (
-    <div className="relative h-dvh w-screen overflow-hidden bg-[#f8f8f6]">
+    <div id="hero-section" className="relative h-dvh w-screen overflow-hidden">
+
+      {/* ── Scrolling marquee text (auto-scrolls via CSS, fades in via GSAP) ── */}
+      <div
+        ref={marqueeRef}
+        className="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none overflow-hidden"
+        style={{ opacity: 0 }}
+      >
+        <div className="whitespace-nowrap flex" style={{ animation: 'marqueeLeft 45s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: 'fk-screamer, serif', fontWeight: 900, color: '#edff66', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
+          <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
+          <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
+        </div>
+        <div className="whitespace-nowrap flex mt-2" style={{ animation: 'marqueeRight 50s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: 'fk-screamer, serif', fontWeight: 900, color: 'rgba(255,255,252,0.8)', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
+          <span>DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; </span>
+          <span>DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; </span>
+        </div>
+      </div>
+
+      {/* ── Top message: logo + "MESSAGE FROM NAVTEJ" (like Lando's site) ── */}
+      <div
+        ref={topMessageRef}
+        className="absolute top-40 left-1/2 -translate-x-1/2 z-[12] pointer-events-none"
+        style={{ opacity: 0 }}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#fffffc]/70" style={{ fontFamily: 'General Sans, sans-serif' }}>
+          Message from Navtej
+        </p>
+      </div>
 
       {/* ── Loading Screen ── */}
       <div
         ref={loaderRef}
         className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden"
-        style={{ backgroundColor: '#f8f8f6' }}
+        style={{ backgroundColor: '#21211f' }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -397,12 +481,22 @@ const Hero = () => {
       {/* ── Video Frame (trapezoid container) ── */}
       <div
         id="video-frame"
-        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-[#f8f8f6]"
+        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-[#21211f]"
         style={{ opacity: 0 }}
       >
 
-      {/* ── HelmetReveal: face/skeleton + contour bg + brush ── */}
-      <HelmetReveal dark={dark} />
+      {/* ── Static face (visible after HelmetReveal fades) ── */}
+      <img
+        src="/models/face.png"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* ── HelmetReveal wrapper (fades during scroll via ref) ── */}
+      <div ref={helmetWrapperRef} className="absolute inset-0 z-0">
+        <HelmetReveal dark={dark} />
+      </div>
 
       {/* ── Hero Text Content ── */}
       <div className="absolute bottom-16 sm:bottom-8 left-0 z-[30] px-5 sm:px-10">
@@ -459,11 +553,11 @@ const Hero = () => {
             </svg>
             <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-black">
               <TiLocationArrow />
-              <span className="relative inline-flex overflow-hidden">
+              <span className="relative inline-flex overflow-hidden leading-tight py-px">
                 <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
                   Get in touch
                 </span>
-                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                <span className="absolute inset-0 translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
                   Get in touch
                 </span>
               </span>
@@ -480,11 +574,11 @@ const Hero = () => {
             </svg>
             <span className="relative z-10 flex items-center gap-2 px-7 py-3 font-general text-xs uppercase text-white">
               <TiLocationArrow />
-              <span className="relative inline-flex overflow-hidden">
+              <span className="relative inline-flex overflow-hidden leading-tight py-px">
                 <span className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
                   Read my blog
                 </span>
-                <span className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
+                <span className="absolute inset-0 translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
                   Read my blog
                 </span>
               </span>
@@ -538,26 +632,94 @@ const Hero = () => {
           onClick={() => setChatOpen((prev) => !prev)}
           className="hover:scale-110 transition-transform duration-200 cursor-pointer"
         >
-          <CloverIcon size={20} loading color="#181816" />
+          <CloverIcon size={20} loading color="#fffffc" />
         </button>
       </div>
 
       </div>{/* end #video-frame */}
+
+      {/* ── Signature stroke-draw overlay (OUTSIDE video-frame so it overflows the box) ── */}
+      <div
+        ref={signatureRef}
+        className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none"
+        style={{ opacity: 0 }}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="131.568 68.328 176.432 90.172"
+          className="signature-svg w-[55vw] max-w-[650px]"
+          fill="none"
+          style={{ filter: 'drop-shadow(0 0 30px rgba(237,255,102,0.3))' }}
+        >
+          <path className="sig-path" d="M 137.000,153.500 C 136.028,150.221 137.000,150.500 137.000,147.500" strokeWidth="5.396" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 137.000,147.500 C 139.297,143.361 138.528,143.221 142.000,139.500" strokeWidth="4.014" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 142.000,139.500 C 146.536,133.527 146.297,133.361 151.000,127.500" strokeWidth="3.236" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 151.000,127.500 C 156.733,120.161 156.536,120.027 162.000,112.500" strokeWidth="2.764" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 162.000,112.500 C 167.583,104.053 167.733,104.161 173.000,95.500" strokeWidth="2.623" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 173.000,95.500 C 177.074,89.044 177.083,89.053 181.000,82.500" strokeWidth="2.853" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 181.000,82.500 C 183.000,75.500 183.074,79.044 185.000,75.500" strokeWidth="3.421" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 185.000,75.500 C 187.475,78.796 187.000,75.500 189.000,82.500" strokeWidth="4.531" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 189.000,82.500 C 190.417,87.526 190.975,87.296 192.000,92.500" strokeWidth="3.744" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 192.000,92.500 C 194.000,98.500 193.917,98.526 196.000,104.500" strokeWidth="3.301" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 196.000,104.500 C 197.781,110.582 198.000,110.500 200.000,116.500" strokeWidth="3.248" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 200.000,116.500 C 202.210,122.641 202.281,122.582 205.000,128.500" strokeWidth="3.205" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 205.000,128.500 C 207.702,132.904 207.210,133.141 210.000,137.500" strokeWidth="3.354" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 210.000,137.500 C 210.345,143.189 211.202,139.904 212.000,142.500" strokeWidth="3.948" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 212.000,142.500 C 217.712,138.049 216.345,140.689 222.000,132.500" strokeWidth="4.680" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 222.000,132.500 C 225.500,126.500 226.212,127.049 229.000,120.500" strokeWidth="3.445" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 229.000,120.500 C 232.500,114.500 232.500,114.500 236.000,108.500" strokeWidth="3.193" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 236.000,108.500 C 239.675,102.595 239.500,102.500 243.000,96.500" strokeWidth="3.063" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 243.000,96.500 C 245.500,91.500 245.675,91.595 248.000,86.500" strokeWidth="3.287" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,86.500 C 250.408,82.640 250.000,82.500 252.000,78.500" strokeWidth="3.556" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 252.000,78.500 C 254.140,74.412 252.908,76.140 253.000,73.500" strokeWidth="4.515" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 253.000,73.500 C 249.959,73.817 251.640,72.412 247.000,74.500" strokeWidth="4.942" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 247.000,74.500 C 243.450,75.350 243.459,75.317 240.000,76.500" strokeWidth="4.721" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 240.000,76.500 C 236.000,78.000 235.950,77.850 232.000,79.500" strokeWidth="4.541" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 232.000,79.500 C 227.269,80.123 228.000,81.000 224.000,82.500" strokeWidth="4.490" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 224.000,82.500 C 220.573,85.149 221.769,84.123 221.000,87.500" strokeWidth="5.064" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 221.000,87.500 C 222.895,91.430 221.573,90.649 226.000,93.500" strokeWidth="4.692" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 226.000,93.500 C 229.550,94.350 228.895,95.430 233.000,95.500" strokeWidth="4.138" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 233.000,95.500 C 236.929,97.228 237.050,96.850 241.000,98.500" strokeWidth="3.854" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 241.000,98.500 C 245.017,99.438 244.929,99.728 249.000,100.500" strokeWidth="3.753" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 249.000,100.500 C 252.500,101.500 252.517,101.438 256.000,102.500" strokeWidth="3.881" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 256.000,102.500 C 259.668,103.112 259.500,103.500 263.000,104.500" strokeWidth="3.921" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 263.000,104.500 C 265.716,105.723 265.668,105.612 268.000,107.500" strokeWidth="4.060" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 268.000,107.500 C 271.563,109.095 270.216,109.223 272.000,111.500" strokeWidth="4.565" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 272.000,111.500 C 271.775,115.456 272.563,114.595 270.000,118.500" strokeWidth="4.801" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 270.000,118.500 C 267.597,121.103 268.275,121.456 265.000,123.500" strokeWidth="4.134" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 265.000,123.500 C 261.318,127.452 261.097,127.103 257.000,130.500" strokeWidth="3.639" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 257.000,130.500 C 252.601,133.200 252.818,133.452 248.000,135.500" strokeWidth="3.543" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,135.500 C 242.618,138.301 242.601,138.200 237.000,140.500" strokeWidth="3.299" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 237.000,140.500 C 231.048,142.659 231.118,142.801 225.000,144.500" strokeWidth="3.247" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 225.000,144.500 C 219.581,146.437 219.548,146.159 214.000,147.500" strokeWidth="3.330" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 214.000,147.500 C 209.010,148.205 209.081,148.437 204.000,148.500" strokeWidth="3.416" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 204.000,148.500 C 200.500,148.500 200.510,148.705 197.000,148.500" strokeWidth="3.795" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 197.000,148.500 C 193.419,149.709 194.000,148.500 191.000,148.500" strokeWidth="4.422" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 191.000,148.500 C 187.621,146.399 188.419,147.209 187.000,143.500" strokeWidth="4.898" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 187.000,143.500 C 186.266,138.464 186.121,139.399 188.000,134.500" strokeWidth="4.549" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 188.000,134.500 C 190.566,130.530 189.766,130.464 194.000,127.500" strokeWidth="3.878" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 194.000,127.500 C 199.262,123.134 199.066,123.030 205.000,119.500" strokeWidth="3.318" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 205.000,119.500 C 214.157,113.307 214.262,113.634 224.000,108.500" strokeWidth="2.593" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 224.000,108.500 C 236.006,103.515 235.657,102.807 248.000,98.500" strokeWidth="2.323" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,98.500 C 263.494,91.985 263.506,92.015 279.000,85.500" strokeWidth="2.001" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 279.000,85.500 C 290.933,80.327 290.994,80.485 303.000,75.500" strokeWidth="2.098" stroke="#edff66" strokeLinecap="round"/>
+        </svg>
+      </div>
 
       {/* ── Chat Panel ── */}
       <div
         ref={chatRef}
         data-lenis-prevent
         className="fixed z-[200] flex flex-col w-[90vw] max-w-[640px] h-[70vh] max-h-[600px] rounded-2xl overflow-hidden shadow-2xl shadow-black/15"
-        style={{ visibility: 'hidden', pointerEvents: 'none', opacity: 0, backgroundColor: '#ffffff', border: '1px solid #d0d0c6', top: 'calc(50% - min(35vh, 300px))', left: 'calc(50% - min(45vw, 320px))' }}
+        style={{ visibility: 'hidden', pointerEvents: 'none', opacity: 0, backgroundColor: '#1a1a18', border: '1px solid #262624', top: 'calc(50% - min(35vh, 300px))', left: 'calc(50% - min(45vw, 320px))' }}
         onWheel={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #d0d0c6' }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #262624' }}>
           <div className="flex items-center gap-3">
-            <CloverIcon size={30} color="#181816" />
+            <CloverIcon size={30} color="#fffffc" />
             <div>
-              <span className="font-robert-regular text-sm font-medium text-[#181816] block leading-tight">Clover</span>
+              <span className="font-robert-regular text-sm font-medium text-[#fffffc] block leading-tight">Clover</span>
               <span className="text-[10px] text-green-400/80 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
                 Online
@@ -566,7 +728,7 @@ const Hero = () => {
           </div>
           <button
             onClick={() => setChatOpen(false)}
-            className="w-8 h-8 rounded-lg flex-center text-[#8a8a7e] hover:text-[#181816] hover:bg-black/5 transition-all"
+            className="w-8 h-8 rounded-lg flex-center text-[#7f7f73] hover:text-[#fffffc] hover:bg-black/5 transition-all"
           >
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
@@ -578,14 +740,14 @@ const Hero = () => {
             <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               {msg.role === 'ai' && (
                 <div className="shrink-0 mt-0.5">
-                  <CloverIcon size={22} color="#181816" />
+                  <CloverIcon size={22} color="#fffffc" />
                 </div>
               )}
               <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed border ${
                 msg.role === 'user'
-                  ? 'text-[#181816] rounded-br-md border-[#d0d0c6]'
-                  : 'text-[#5a5a50] rounded-bl-md border-[#d0d0c6]'
-              }`} style={{ backgroundColor: msg.role === 'user' ? '#f0f0ec' : '#f8f8f6' }}>
+                  ? 'text-[#fffffc] rounded-br-md border-[#262624]'
+                  : 'text-[#9a9a8e] rounded-bl-md border-[#262624]'
+              }`} style={{ backgroundColor: msg.role === 'user' ? '#262624' : '#21211f' }}>
                 {msg.text}
               </div>
             </div>
@@ -593,9 +755,9 @@ const Hero = () => {
           {chatLoading && (
             <div className="flex gap-3 flex-row">
               <div className="shrink-0 mt-0.5">
-                <CloverIcon size={22} loading color="#181816" />
+                <CloverIcon size={22} loading color="#fffffc" />
               </div>
-              <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm border border-[#d0d0c6]" style={{ backgroundColor: '#f8f8f6' }}>
+              <div className="rounded-2xl rounded-bl-md px-4 py-3 text-sm border border-[#262624]" style={{ backgroundColor: '#21211f' }}>
                 <span className="shimmer-text">Thinking</span>
               </div>
             </div>
@@ -604,14 +766,14 @@ const Hero = () => {
 
         {/* Input */}
         <div className="px-4 pb-4 pt-2">
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#f0f0ec', border: '1px solid #d0d0c6' }}>
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: '#262624', border: '1px solid #333330' }}>
             <input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
               placeholder="Ask about Navtej..."
-              className="flex-1 bg-transparent text-sm text-[#181816] placeholder-[#8a8a7e] outline-none font-robert-regular"
+              className="flex-1 bg-transparent text-sm text-[#fffffc] placeholder-[#7f7f73] outline-none font-robert-regular"
             />
             <button
               onClick={handleChatSend}

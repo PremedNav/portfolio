@@ -31,7 +31,7 @@ const Footer = () => {
           strokeDasharray: len,
           strokeDashoffset: len,
           fill: 'transparent',
-          stroke: '#181816',
+          stroke: '#fffffc',
           strokeWidth: 12,
         });
       });
@@ -71,7 +71,7 @@ const Footer = () => {
 
       // Fill in
       tl.to(sorted, {
-        fill: '#181816',
+        fill: '#fffffc',
         strokeWidth: 0,
         duration: 0.4,
         ease: 'power1.inOut',
@@ -95,13 +95,13 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="relative w-screen bg-[#f8f8f6] px-6 pb-8 pt-20"
+      className="relative w-screen px-6 pb-8 pt-20"
     >
       <div className="mx-auto max-w-7xl">
         {/* Divider */}
         <div
           ref={lineRef}
-          className="mb-14 w-full origin-left border-t border-dashed border-[#d0d0c6]"
+          className="mb-14 w-full origin-left border-t border-dashed border-[#262624]"
         />
 
         {/* Logo */}
@@ -143,7 +143,7 @@ const Footer = () => {
               <a
                 key={item}
                 href={item === 'Recommendation Letter' ? '/recommendation' : item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
-                className="nav-hover-btn nav-hover-btn-dark !ms-0 !text-[10px] tracking-[0.2em] !text-[#8a8a7e]"
+                className="nav-hover-btn nav-hover-btn-dark !ms-0 !text-[10px] tracking-[0.2em] !text-[#7f7f73]"
               >
                 {item}
               </a>
@@ -154,7 +154,7 @@ const Footer = () => {
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
             <a
               href="mailto:navmainemail@gmail.com"
-              className="font-robert-regular text-xs tracking-wider text-[#b0b0a4] transition-colors duration-300 hover:text-[#5a5a50]"
+              className="font-robert-regular text-xs tracking-wider text-[#b0b0a4] transition-colors duration-300 hover:text-[#b0b0a4]"
             >
               navmainemail@gmail.com
             </a>

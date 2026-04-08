@@ -16,6 +16,7 @@ const frag = /* glsl */ `
   varying vec2 vUv;
   uniform float uTime;
   uniform float uAspect;
+  uniform vec2 uMouse;
 
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -48,8 +49,10 @@ const frag = /* glsl */ `
     vec2 uv = vUv;
     uv.x *= uAspect;
     float t = uTime * 0.06;
-    float n = snoise(uv * 1.5 + vec2(t, t * 0.7))
-            + snoise(uv * 3.0 + vec2(-t * 0.5, t * 0.3)) * 0.5;
+    // Mouse influence — shifts the noise field with cursor
+    vec2 mouseOffset = (uMouse - 0.5) * 0.12;
+    float n = snoise(uv * 1.5 + vec2(t, t * 0.7) + mouseOffset)
+            + snoise(uv * 3.0 + vec2(-t * 0.5, t * 0.3) + mouseOffset * 0.5) * 0.5;
     float contourSpacing = 0.18;
     float contour = abs(fract(n / contourSpacing) - 0.5) * 2.0;
     float fw = fwidth(n / contourSpacing);
@@ -82,6 +85,7 @@ export default function ContourBackground() {
       uniforms: {
         uTime: { value: 0 },
         uAspect: { value: window.innerWidth / window.innerHeight },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
       },
     });
 
@@ -91,8 +95,18 @@ export default function ContourBackground() {
     const clock = new THREE.Clock();
     let raf: number;
 
+    const mouseTarget = new THREE.Vector2(0.5, 0.5);
+    const onMouseMove = (e: MouseEvent) => {
+      mouseTarget.set(e.clientX / window.innerWidth, 1.0 - e.clientY / window.innerHeight);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+
     function animate() {
       mat.uniforms.uTime.value = clock.getElapsedTime();
+      // Smooth lerp toward mouse — gentle, not jerky
+      const m = mat.uniforms.uMouse.value as THREE.Vector2;
+      m.x += (mouseTarget.x - m.x) * 0.03;
+      m.y += (mouseTarget.y - m.y) * 0.03;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     }
@@ -107,6 +121,7 @@ export default function ContourBackground() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', onMouseMove);
       renderer.dispose();
       mat.dispose();
       geo.dispose();

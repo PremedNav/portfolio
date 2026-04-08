@@ -426,11 +426,11 @@ const Hero = () => {
         className="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none overflow-hidden"
         style={{ opacity: 0 }}
       >
-        <div className="whitespace-nowrap flex" style={{ animation: 'marqueeLeft 45s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: 'fk-screamer, serif', fontWeight: 900, color: '#edff66', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
+        <div className="whitespace-nowrap flex" style={{ animation: 'marqueeLeft 45s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: "'robert-medium', 'general', sans-serif", fontWeight: 500, color: '#edff66', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
           <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
           <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
         </div>
-        <div className="whitespace-nowrap flex mt-2" style={{ animation: 'marqueeRight 50s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: 'fk-screamer, serif', fontWeight: 900, color: 'rgba(255,255,252,0.8)', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
+        <div className="whitespace-nowrap flex mt-2" style={{ animation: 'marqueeRight 50s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: "'robert-medium', 'general', sans-serif", fontWeight: 500, color: 'rgba(255,255,252,0.8)', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
           <span>DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; </span>
           <span>DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; DO THE BEST YOU CAN WITH WHAT YOU HAVE WHERE YOU ARE &nbsp;&nbsp;&nbsp;&nbsp; </span>
         </div>

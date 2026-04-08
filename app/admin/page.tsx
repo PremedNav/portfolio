@@ -221,9 +221,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
 const TEMPLATES: { label: string; text: (title: string) => string; linkLabel: string }[] = [
   { label: 'New Post', text: (t) => `New blog post: ${t}.`, linkLabel: 'Read it here' },
-  { label: 'Featured', text: (t) => `Featured: ${t} — don\u2019t miss it.`, linkLabel: 'Check it out' },
+  { label: 'Featured', text: (t) => `Featured: ${t} \u2014 don\u2019t miss it.`, linkLabel: 'Check it out' },
   { label: 'Just Published', text: (t) => `Just published: ${t}.`, linkLabel: 'Read now' },
-  { label: 'Deep Dive', text: (t) => `Deep dive: ${t} — a comprehensive guide.`, linkLabel: 'Explore' },
+  { label: 'Deep Dive', text: (t) => `Deep dive: ${t} \u2014 a comprehensive guide.`, linkLabel: 'Explore' },
   { label: 'Now Live', text: (t) => `Now live: ${t}.`, linkLabel: 'Take a look' },
 ]
 

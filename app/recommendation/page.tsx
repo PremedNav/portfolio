@@ -1019,7 +1019,7 @@ export default function RecommendationPage() {
     return (
       <div className="flex flex-col gap-5 px-4 pb-6 sm:px-6">
         {pc('Studyur', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               riveSrc="/rive/hero_section.riv"
               title={<img src="/img/studyur-logo-white.svg" alt="Studyur" className="h-28 md:h-36 w-auto pointer-events-none" style={{ marginTop: '-40px', marginBottom: '-40px', marginLeft: '-25px' }} />}
@@ -1032,7 +1032,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Clover', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               title={<img src="/img/clover-logo-white.svg" alt="Clover" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A proprietary 12-billion parameter AI model. Not available to the public — built on the belief that LLMs aren't the future, and other AI models will benefit humankind more."
@@ -1045,7 +1045,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Zoov', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               title={<img src="/img/zoov-logo-white.svg" alt="Zoov" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A proprietary medical AI transcription platform to help healthcare providers spend more time with patients and less on paperwork. Discontinued after Doximity launched a free AI scribe."
@@ -1058,7 +1058,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('PreMeder', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/feature-4.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1072,7 +1072,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Trovex', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/trovex.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1086,7 +1086,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Pangroup', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/feature-5.mp4"
               videoClassName="!w-[90%] !h-[90%] !left-auto !right-4 !top-auto !bottom-4 !object-contain"
@@ -1099,14 +1099,14 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Synthr', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               title={<img src="/img/synthr-logo-white.svg" alt="Synthr" className="h-12 md:h-16 w-auto pointer-events-none" />}
               description="A programming language purpose-built for ML pipelines. Tensor-native syntax, auto-differentiation, and GPU-first execution."
               ribbon="Complete"
               isComingSoon
             >
-              <div className="size-full bg-[#21211f] overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
+              <div className="size-full bg-black overflow-hidden font-mono text-xs sm:text-sm md:text-base leading-relaxed flex items-center justify-center px-6 py-20">
                 <pre className="text-[#fffffc] max-w-3xl" dangerouslySetInnerHTML={{ __html: synthrCodeHTML }} />
               </div>
             </BentoCard>
@@ -1114,7 +1114,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Histia', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/histia.mp4"
               videoClassName="!left-auto !top-auto !right-6 !bottom-6 !w-[80%] !h-[80%] !object-contain"
@@ -1127,7 +1127,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Topographify', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/topographify.mp4"
               title={<img src="/img/topographify-logo-white.svg" alt="Topographify" className="h-12 md:h-16 w-auto pointer-events-none" />}
@@ -1139,7 +1139,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Aethon', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/aethon.mp4"
               videoClassName="!object-contain scale-[0.9] translate-x-[10%]"
@@ -1152,7 +1152,7 @@ export default function RecommendationPage() {
         ))}
 
         {pc('Rivex', (
-          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-[#21211f]">
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
             <BentoCard
               src="/videos/rivex.mp4"
               videoClassName="!object-contain scale-[1.1]"
@@ -1172,7 +1172,7 @@ export default function RecommendationPage() {
   if (!unlocked) {
     return (
       <div className="relative min-h-screen w-screen bg-[#21211f]">
-        <NavBar />
+        <NavBar variant="light" />
         <div
           className={`fixed bottom-8 left-1/2 z-[200] -translate-x-1/2 rounded-lg bg-red-500/90 px-5 py-3 font-robert-regular text-sm text-[#fffffc] shadow-lg backdrop-blur-sm transition-all duration-300 ${toast ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         >
@@ -1190,7 +1190,7 @@ export default function RecommendationPage() {
 
   return (
     <div className="flex min-h-screen w-screen flex-col bg-[#21211f]">
-      <NavBar />
+      <NavBar variant="light" />
 
       <div ref={contentRef} className="flex-1 px-4 pb-20 pt-32 sm:px-8 md:px-16 lg:px-24">
         {/* Hero */}

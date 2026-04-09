@@ -28,7 +28,7 @@ const CloverIcon = ({ size = 20, loading = false, color = 'white' }) => (
     {loading && (
       <path
         fill="none"
-        stroke="#edff66"
+        stroke="#a3b898"
         strokeWidth={150}
         strokeLinecap="round"
         strokeDasharray="3000 12000"
@@ -426,7 +426,7 @@ const Hero = () => {
         className="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none overflow-hidden"
         style={{ opacity: 0 }}
       >
-        <div className="whitespace-nowrap flex" style={{ animation: 'marqueeLeft 45s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: "'robert-medium', 'general', sans-serif", fontWeight: 500, color: '#edff66', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
+        <div className="whitespace-nowrap flex" style={{ animation: 'marqueeLeft 45s linear infinite', fontSize: 'clamp(50px, 8vw, 120px)', fontFamily: "'robert-medium', 'general', sans-serif", fontWeight: 500, color: '#a3b898', lineHeight: 1, letterSpacing: '-0.02em', opacity: 0.7, width: 'max-content' }}>
           <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
           <span>DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; DO EVERYTHING IN YOUR POWER TO MAKE A DIFFERENCE &nbsp;&nbsp;&nbsp;&nbsp; </span>
         </div>
@@ -649,60 +649,60 @@ const Hero = () => {
           viewBox="131.568 68.328 176.432 90.172"
           className="signature-svg w-[55vw] max-w-[650px]"
           fill="none"
-          style={{ filter: 'drop-shadow(0 0 30px rgba(237,255,102,0.3))' }}
+          style={{ filter: 'drop-shadow(0 0 30px rgba(163,184,152,0.3))' }}
         >
-          <path className="sig-path" d="M 137.000,153.500 C 136.028,150.221 137.000,150.500 137.000,147.500" strokeWidth="5.396" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 137.000,147.500 C 139.297,143.361 138.528,143.221 142.000,139.500" strokeWidth="4.014" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 142.000,139.500 C 146.536,133.527 146.297,133.361 151.000,127.500" strokeWidth="3.236" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 151.000,127.500 C 156.733,120.161 156.536,120.027 162.000,112.500" strokeWidth="2.764" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 162.000,112.500 C 167.583,104.053 167.733,104.161 173.000,95.500" strokeWidth="2.623" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 173.000,95.500 C 177.074,89.044 177.083,89.053 181.000,82.500" strokeWidth="2.853" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 181.000,82.500 C 183.000,75.500 183.074,79.044 185.000,75.500" strokeWidth="3.421" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 185.000,75.500 C 187.475,78.796 187.000,75.500 189.000,82.500" strokeWidth="4.531" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 189.000,82.500 C 190.417,87.526 190.975,87.296 192.000,92.500" strokeWidth="3.744" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 192.000,92.500 C 194.000,98.500 193.917,98.526 196.000,104.500" strokeWidth="3.301" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 196.000,104.500 C 197.781,110.582 198.000,110.500 200.000,116.500" strokeWidth="3.248" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 200.000,116.500 C 202.210,122.641 202.281,122.582 205.000,128.500" strokeWidth="3.205" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 205.000,128.500 C 207.702,132.904 207.210,133.141 210.000,137.500" strokeWidth="3.354" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 210.000,137.500 C 210.345,143.189 211.202,139.904 212.000,142.500" strokeWidth="3.948" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 212.000,142.500 C 217.712,138.049 216.345,140.689 222.000,132.500" strokeWidth="4.680" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 222.000,132.500 C 225.500,126.500 226.212,127.049 229.000,120.500" strokeWidth="3.445" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 229.000,120.500 C 232.500,114.500 232.500,114.500 236.000,108.500" strokeWidth="3.193" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 236.000,108.500 C 239.675,102.595 239.500,102.500 243.000,96.500" strokeWidth="3.063" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 243.000,96.500 C 245.500,91.500 245.675,91.595 248.000,86.500" strokeWidth="3.287" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 248.000,86.500 C 250.408,82.640 250.000,82.500 252.000,78.500" strokeWidth="3.556" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 252.000,78.500 C 254.140,74.412 252.908,76.140 253.000,73.500" strokeWidth="4.515" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 253.000,73.500 C 249.959,73.817 251.640,72.412 247.000,74.500" strokeWidth="4.942" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 247.000,74.500 C 243.450,75.350 243.459,75.317 240.000,76.500" strokeWidth="4.721" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 240.000,76.500 C 236.000,78.000 235.950,77.850 232.000,79.500" strokeWidth="4.541" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 232.000,79.500 C 227.269,80.123 228.000,81.000 224.000,82.500" strokeWidth="4.490" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 224.000,82.500 C 220.573,85.149 221.769,84.123 221.000,87.500" strokeWidth="5.064" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 221.000,87.500 C 222.895,91.430 221.573,90.649 226.000,93.500" strokeWidth="4.692" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 226.000,93.500 C 229.550,94.350 228.895,95.430 233.000,95.500" strokeWidth="4.138" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 233.000,95.500 C 236.929,97.228 237.050,96.850 241.000,98.500" strokeWidth="3.854" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 241.000,98.500 C 245.017,99.438 244.929,99.728 249.000,100.500" strokeWidth="3.753" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 249.000,100.500 C 252.500,101.500 252.517,101.438 256.000,102.500" strokeWidth="3.881" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 256.000,102.500 C 259.668,103.112 259.500,103.500 263.000,104.500" strokeWidth="3.921" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 263.000,104.500 C 265.716,105.723 265.668,105.612 268.000,107.500" strokeWidth="4.060" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 268.000,107.500 C 271.563,109.095 270.216,109.223 272.000,111.500" strokeWidth="4.565" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 272.000,111.500 C 271.775,115.456 272.563,114.595 270.000,118.500" strokeWidth="4.801" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 270.000,118.500 C 267.597,121.103 268.275,121.456 265.000,123.500" strokeWidth="4.134" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 265.000,123.500 C 261.318,127.452 261.097,127.103 257.000,130.500" strokeWidth="3.639" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 257.000,130.500 C 252.601,133.200 252.818,133.452 248.000,135.500" strokeWidth="3.543" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 248.000,135.500 C 242.618,138.301 242.601,138.200 237.000,140.500" strokeWidth="3.299" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 237.000,140.500 C 231.048,142.659 231.118,142.801 225.000,144.500" strokeWidth="3.247" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 225.000,144.500 C 219.581,146.437 219.548,146.159 214.000,147.500" strokeWidth="3.330" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 214.000,147.500 C 209.010,148.205 209.081,148.437 204.000,148.500" strokeWidth="3.416" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 204.000,148.500 C 200.500,148.500 200.510,148.705 197.000,148.500" strokeWidth="3.795" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 197.000,148.500 C 193.419,149.709 194.000,148.500 191.000,148.500" strokeWidth="4.422" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 191.000,148.500 C 187.621,146.399 188.419,147.209 187.000,143.500" strokeWidth="4.898" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 187.000,143.500 C 186.266,138.464 186.121,139.399 188.000,134.500" strokeWidth="4.549" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 188.000,134.500 C 190.566,130.530 189.766,130.464 194.000,127.500" strokeWidth="3.878" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 194.000,127.500 C 199.262,123.134 199.066,123.030 205.000,119.500" strokeWidth="3.318" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 205.000,119.500 C 214.157,113.307 214.262,113.634 224.000,108.500" strokeWidth="2.593" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 224.000,108.500 C 236.006,103.515 235.657,102.807 248.000,98.500" strokeWidth="2.323" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 248.000,98.500 C 263.494,91.985 263.506,92.015 279.000,85.500" strokeWidth="2.001" stroke="#edff66" strokeLinecap="round"/>
-          <path className="sig-path" d="M 279.000,85.500 C 290.933,80.327 290.994,80.485 303.000,75.500" strokeWidth="2.098" stroke="#edff66" strokeLinecap="round"/>
+          <path className="sig-path" d="M 137.000,153.500 C 136.028,150.221 137.000,150.500 137.000,147.500" strokeWidth="5.396" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 137.000,147.500 C 139.297,143.361 138.528,143.221 142.000,139.500" strokeWidth="4.014" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 142.000,139.500 C 146.536,133.527 146.297,133.361 151.000,127.500" strokeWidth="3.236" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 151.000,127.500 C 156.733,120.161 156.536,120.027 162.000,112.500" strokeWidth="2.764" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 162.000,112.500 C 167.583,104.053 167.733,104.161 173.000,95.500" strokeWidth="2.623" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 173.000,95.500 C 177.074,89.044 177.083,89.053 181.000,82.500" strokeWidth="2.853" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 181.000,82.500 C 183.000,75.500 183.074,79.044 185.000,75.500" strokeWidth="3.421" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 185.000,75.500 C 187.475,78.796 187.000,75.500 189.000,82.500" strokeWidth="4.531" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 189.000,82.500 C 190.417,87.526 190.975,87.296 192.000,92.500" strokeWidth="3.744" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 192.000,92.500 C 194.000,98.500 193.917,98.526 196.000,104.500" strokeWidth="3.301" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 196.000,104.500 C 197.781,110.582 198.000,110.500 200.000,116.500" strokeWidth="3.248" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 200.000,116.500 C 202.210,122.641 202.281,122.582 205.000,128.500" strokeWidth="3.205" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 205.000,128.500 C 207.702,132.904 207.210,133.141 210.000,137.500" strokeWidth="3.354" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 210.000,137.500 C 210.345,143.189 211.202,139.904 212.000,142.500" strokeWidth="3.948" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 212.000,142.500 C 217.712,138.049 216.345,140.689 222.000,132.500" strokeWidth="4.680" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 222.000,132.500 C 225.500,126.500 226.212,127.049 229.000,120.500" strokeWidth="3.445" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 229.000,120.500 C 232.500,114.500 232.500,114.500 236.000,108.500" strokeWidth="3.193" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 236.000,108.500 C 239.675,102.595 239.500,102.500 243.000,96.500" strokeWidth="3.063" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 243.000,96.500 C 245.500,91.500 245.675,91.595 248.000,86.500" strokeWidth="3.287" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,86.500 C 250.408,82.640 250.000,82.500 252.000,78.500" strokeWidth="3.556" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 252.000,78.500 C 254.140,74.412 252.908,76.140 253.000,73.500" strokeWidth="4.515" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 253.000,73.500 C 249.959,73.817 251.640,72.412 247.000,74.500" strokeWidth="4.942" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 247.000,74.500 C 243.450,75.350 243.459,75.317 240.000,76.500" strokeWidth="4.721" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 240.000,76.500 C 236.000,78.000 235.950,77.850 232.000,79.500" strokeWidth="4.541" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 232.000,79.500 C 227.269,80.123 228.000,81.000 224.000,82.500" strokeWidth="4.490" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 224.000,82.500 C 220.573,85.149 221.769,84.123 221.000,87.500" strokeWidth="5.064" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 221.000,87.500 C 222.895,91.430 221.573,90.649 226.000,93.500" strokeWidth="4.692" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 226.000,93.500 C 229.550,94.350 228.895,95.430 233.000,95.500" strokeWidth="4.138" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 233.000,95.500 C 236.929,97.228 237.050,96.850 241.000,98.500" strokeWidth="3.854" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 241.000,98.500 C 245.017,99.438 244.929,99.728 249.000,100.500" strokeWidth="3.753" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 249.000,100.500 C 252.500,101.500 252.517,101.438 256.000,102.500" strokeWidth="3.881" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 256.000,102.500 C 259.668,103.112 259.500,103.500 263.000,104.500" strokeWidth="3.921" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 263.000,104.500 C 265.716,105.723 265.668,105.612 268.000,107.500" strokeWidth="4.060" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 268.000,107.500 C 271.563,109.095 270.216,109.223 272.000,111.500" strokeWidth="4.565" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 272.000,111.500 C 271.775,115.456 272.563,114.595 270.000,118.500" strokeWidth="4.801" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 270.000,118.500 C 267.597,121.103 268.275,121.456 265.000,123.500" strokeWidth="4.134" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 265.000,123.500 C 261.318,127.452 261.097,127.103 257.000,130.500" strokeWidth="3.639" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 257.000,130.500 C 252.601,133.200 252.818,133.452 248.000,135.500" strokeWidth="3.543" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,135.500 C 242.618,138.301 242.601,138.200 237.000,140.500" strokeWidth="3.299" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 237.000,140.500 C 231.048,142.659 231.118,142.801 225.000,144.500" strokeWidth="3.247" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 225.000,144.500 C 219.581,146.437 219.548,146.159 214.000,147.500" strokeWidth="3.330" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 214.000,147.500 C 209.010,148.205 209.081,148.437 204.000,148.500" strokeWidth="3.416" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 204.000,148.500 C 200.500,148.500 200.510,148.705 197.000,148.500" strokeWidth="3.795" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 197.000,148.500 C 193.419,149.709 194.000,148.500 191.000,148.500" strokeWidth="4.422" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 191.000,148.500 C 187.621,146.399 188.419,147.209 187.000,143.500" strokeWidth="4.898" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 187.000,143.500 C 186.266,138.464 186.121,139.399 188.000,134.500" strokeWidth="4.549" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 188.000,134.500 C 190.566,130.530 189.766,130.464 194.000,127.500" strokeWidth="3.878" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 194.000,127.500 C 199.262,123.134 199.066,123.030 205.000,119.500" strokeWidth="3.318" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 205.000,119.500 C 214.157,113.307 214.262,113.634 224.000,108.500" strokeWidth="2.593" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 224.000,108.500 C 236.006,103.515 235.657,102.807 248.000,98.500" strokeWidth="2.323" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 248.000,98.500 C 263.494,91.985 263.506,92.015 279.000,85.500" strokeWidth="2.001" stroke="#a3b898" strokeLinecap="round"/>
+          <path className="sig-path" d="M 279.000,85.500 C 290.933,80.327 290.994,80.485 303.000,75.500" strokeWidth="2.098" stroke="#a3b898" strokeLinecap="round"/>
         </svg>
       </div>
 

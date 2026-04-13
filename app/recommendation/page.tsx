@@ -627,12 +627,12 @@ export default function RecommendationPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const passwordMap: Record<string, string> = {
-      'thankyoudrmaron!': 'maron',
       'thankyoudrkim!': 'kim',
       'thankyoudrbull!': 'bull',
       'thankyouhadee!': 'hadee',
       'thankyoushelby&breck!': 'shelby-breck',
       'thankyoudr.kimbrough!': 'kimbrough',
+      'thankyouprofessormodica!': 'modica',
       '12345': 'general'
     };
 
@@ -1207,10 +1207,6 @@ export default function RecommendationPage() {
             containerClass="!text-left"
           />
           <div className="hero-sub mt-6 max-w-3xl font-robert-regular text-sm leading-relaxed text-[#8a8a85] space-y-3" style={{ opacity: 0 }}>
-            {recipient === 'maron' && (
-              <p><strong className="text-[#b0b0a4]">Hi Dr. Maron</strong> — Your speeches about your own experiences towards education and being in the position you are now were really motivating and eye-opening. They single-handedly influenced the amount of effort I gave to school and the perseverance I had.</p>
-            )}
-
             {recipient === 'kim' && (
               <p><strong className="text-[#b0b0a4]">Hi Dr. Kim</strong> — I really appreciate your understanding when I absolutely failed my first biochem test. On top of that, thank you for letting me into your research and being a part of something meaningful.</p>
             )}
@@ -1233,6 +1229,10 @@ export default function RecommendationPage() {
 
             {recipient === 'kimbrough' && (
               <p><strong className="text-[#b0b0a4]">Hi Dr. Kimbrough</strong> — Thank you for giving me your time and for being so open about your own experiences, from singing mezzo in choir to your time in hospice. Hearing you share that gave me a perspective I really value. On top of that, you've been such a great professor, and I really appreciate everything you've done for me.</p>
+            )}
+
+            {recipient === 'modica' && (
+              <p><strong className="text-[#b0b0a4]">Hi Professor Modica</strong> — Thank you for making your class one of the most enjoyable ones I've taken. You created an environment where I genuinely felt like I could be myself, and that's not something I can say about many classes. I really appreciate how welcoming and understanding you were — it made a real difference for me.</p>
             )}
           </div>
 
@@ -1289,9 +1289,9 @@ export default function RecommendationPage() {
               <span className="font-robert-regular text-sm uppercase tracking-widest text-red-400/60">
                 {(() => {
                   const now = new Date();
-                  const dueDate = new Date('2026-05-25');
+                  const dueDate = new Date('2026-05-24');
                   const daysLeft = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                  if (daysLeft > 0) return `May 25 · ${daysLeft}d left · Submit on Interfolio`;
+                  if (daysLeft > 0) return `May 24 · ${daysLeft}d left · Submit on Interfolio`;
                   if (daysLeft === 0) return 'Due Today · Submit on Interfolio';
                   return 'Past Due';
                 })()}
@@ -1564,7 +1564,7 @@ export default function RecommendationPage() {
                   </h4>
                   <div className="rounded-lg bg-yellow-300/[0.04] p-4 ring-1 ring-yellow-300/20 font-robert-regular text-xs">
                     <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
-                      <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
+                      <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 24, 2026{(() => { const d = Math.ceil((new Date('2026-05-24').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
                     </div>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-[#7f7f73]">
                       <p><span className="text-[#b0b0a4]">Submit via:</span> Interfolio</p>
@@ -1718,7 +1718,7 @@ export default function RecommendationPage() {
                   </button>
                 </div>
                 <div className="mb-3 rounded-lg bg-red-400/[0.06] px-3 py-2 ring-1 ring-red-400/20">
-                  <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 25, 2026{(() => { const d = Math.ceil((new Date('2026-05-25').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
+                  <p className="font-fk-screamer text-xs font-black uppercase tracking-wide text-red-400">Due: May 24, 2026{(() => { const d = Math.ceil((new Date('2026-05-24').getTime() - new Date().getTime()) / (1000*60*60*24)); return d > 0 ? ` · ${d}d left` : d === 0 ? ' · Today' : ' · Past Due'; })()}</p>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-[#7f7f73]">
                   <p><span className="text-[#b0b0a4]">Submit via:</span> Interfolio</p>

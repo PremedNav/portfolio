@@ -627,17 +627,19 @@ export default function RecommendationPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const passwordMap: Record<string, string> = {
-      'ThankyouDrMaron!': 'maron',
-      'ThankyouDrKim!': 'kim',
-      'ThankyouDrBull!': 'bull',
-      'ThankyouHadee!': 'hadee',
-      'ThankyouShelby&Breck!': 'shelby-breck',
+      'thankyoudrmaron!': 'maron',
+      'thankyoudrkim!': 'kim',
+      'thankyoudrbull!': 'bull',
+      'thankyouhadee!': 'hadee',
+      'thankyoushelby&breck!': 'shelby-breck',
+      'thankyoudr.kimbrough!': 'kimbrough',
       '12345': 'general'
     };
 
-    if (passwordMap[password]) {
+    const match = passwordMap[password.toLowerCase()];
+    if (match) {
       setError(false);
-      setRecipient(passwordMap[password]);
+      setRecipient(match);
       setUnlocked(true);
     } else {
       setError(true);
@@ -1227,6 +1229,10 @@ export default function RecommendationPage() {
 
                 <p><strong className="text-[#b0b0a4]">Hi Shelby</strong> — Thank you for letting me onto your project and helping me so many times, even with the silliest questions. You were always there to support me through my research journey and I'm really grateful for all you've done for me. I really hope the best for you after graduation, after you get your PhD, and that you do something you really want to do.</p>
               </>
+            )}
+
+            {recipient === 'kimbrough' && (
+              <p><strong className="text-[#b0b0a4]">Hi Dr. Kimbrough</strong> — Thank you for giving me your time and for being so open about your own experiences, from singing mezzo in choir to your time in hospice. Hearing you share that gave me a perspective I really value. On top of that, you've been such a great professor, and I really appreciate everything you've done for me.</p>
             )}
           </div>
 

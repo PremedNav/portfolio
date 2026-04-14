@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   ...(process.env.STATIC_EXPORT === '1' ? { output: 'export' } : {}),
+  async redirects() {
+    return [
+      {
+        source: '/recommendations',
+        destination: '/recommendation',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

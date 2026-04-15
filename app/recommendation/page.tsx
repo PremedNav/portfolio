@@ -297,7 +297,7 @@ const SCHOOL_LIST: SchoolTier[] = [
 
 const SCHOOL_COUNT = SCHOOL_LIST.reduce((sum, tier) => sum + tier.schools.length, 0);
 
-const PROJECT_NAMES = ['Studyur', 'Clover', 'Zoov', 'PreMeder', 'Trovex', 'Pangroup', 'Synthr', 'Histia', 'Topographify', 'Aethon', 'Rivex'];
+const PROJECT_NAMES = ['Studyur', 'Clover', 'Zoov', 'PreMeder', 'Trovex', 'Pangroup', 'Synthr', 'Histia', 'Topographify', 'Aethon', 'Rivex', 'Shred'];
 
 const PROJECT_INFO: Record<string, { desc: string; ribbon: string }> = {
   Studyur: { desc: 'AI-powered study platform for maximizing learning efficiency.', ribbon: 'Under Construction' },
@@ -311,6 +311,7 @@ const PROJECT_INFO: Record<string, { desc: string; ribbon: string }> = {
   Topographify: { desc: 'High-resolution terrain mapping from satellite & LiDAR data.', ribbon: 'Complete' },
   Aethon: { desc: 'AI model for discovering novel biochemical mechanisms.', ribbon: 'Complete' },
   Rivex: { desc: 'AI visual inspection for robotic & packing machine maintenance.', ribbon: 'Complete' },
+  Shred: { desc: 'AI platform detecting fake & fraudulent research papers from paper mills.', ribbon: 'Under Development' },
 };
 
 // ─── Personal Statement ──────────────────────────────────────────────────────
@@ -1173,6 +1174,19 @@ export default function RecommendationPage() {
             />
           </BentoTilt>
         ))}
+
+        {pc('Shred', (
+          <BentoTilt className="inner-card border-hsla relative h-72 w-full overflow-hidden rounded-md sm:h-80 md:h-96 bg-black">
+            <BentoCard
+              title={<img src="/img/shred-logo-white.svg" alt="Shred" className="h-12 md:h-16 w-auto pointer-events-none" />}
+              description="An AI-powered platform that detects fake, false, and semi-false research papers from paper mills — protecting scientific integrity at scale."
+              ribbon="Under Development"
+              isComingSoon
+            >
+              <div className="size-full bg-gradient-to-br from-[#0a1628] via-[#0f2347] to-[#1E54C0]/40" />
+            </BentoCard>
+          </BentoTilt>
+        ))}
       </div>
     );
   };
@@ -1908,7 +1922,7 @@ export default function RecommendationPage() {
 
                   {/* Badge */}
                   <span className="rounded-full bg-yellow-300/15 px-3 py-0.5 font-robert-regular text-xs font-medium text-yellow-300">
-                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '11 projects' : `${formatHours(cat.hours)}h`}
+                    {isAcademics ? `${ACADEMICS.cumGPA} GPA` : isPS ? `${PERSONAL_STATEMENT.text.replace(/\n/g, '').length.toLocaleString()}/${PERSONAL_STATEMENT.maxChars.toLocaleString()}` : isSchools ? `${SCHOOL_COUNT} schools` : isProjects ? '12 projects' : `${formatHours(cat.hours)}h`}
                   </span>
 
                   <span className="hidden font-robert-regular text-xs text-[#5a5a55] sm:inline">

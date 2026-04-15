@@ -334,14 +334,21 @@ const Features = () => {
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-card-anim bento-tilt_2">
-          <div className="flex size-full flex-col justify-between bg-yellow-300 p-5">
-            <h1 className="bento-title special-font max-w-64 text-black">
-              M<b>o</b>re co<b>m</b>ing s<b>o</b>on.
-            </h1>
-
-            <TiLocationArrow className="m-5 scale-[5] self-end" />
-          </div>
+        <BentoTilt className="bento-card-anim bento-tilt_2 bg-black">
+          <BentoCard
+            title={
+              <img
+                src="/img/shred-logo-white.svg"
+                alt="Shred"
+                className="h-12 md:h-16 w-auto pointer-events-none"
+              />
+            }
+            description="An AI-powered platform that detects fake, false, and semi-false research papers from paper mills — protecting scientific integrity at scale."
+            ribbon="Under Development"
+            isComingSoon
+          >
+            <div className="size-full bg-gradient-to-br from-[#0a1628] via-[#0f2347] to-[#1E54C0]/40" />
+          </BentoCard>
         </BentoTilt>
 
         <BentoTilt className="bento-card-anim bento-tilt_2 bg-black">

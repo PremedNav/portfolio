@@ -376,11 +376,11 @@ const INITIAL_CATEGORIES: Category[] = [
   {
     id: 'volunteer-nonmedical',
     name: 'Community Service/Volunteer – Not Medical/Clinical',
-    hours: 165,
+    hours: 178,
     icon: <FaHandsHelping />,
     activities: [
       { title: 'Dental Assistant Volunteer', hours: 136, role: 'Dental Assistant Volunteer', contact: 'Wesley Stanton, DDS · (303) 768-8137', location: 'Open and Affordable Dental, 12501 Lincoln Ave, Englewood, CO 80112', startDate: '10/14/2023', endDate: '11/16/2023', description: 'At Open and Affordable Dental, I worked as a dental assistant, first as a volunteer (136 hrs) and then as a paid employee (141 hrs). I sterilized instruments, assisted with procedures, and did patient intake. Working chairside taught me to read a patient\u2019s anxiety before they voiced it, anticipate the provider\u2019s next move, and stay calm under pressure. Gradually, I found myself reading the patients\u2019 medical histories more deeply than their dental charts, pondering how their conditions connected to what I saw in the chair. What I learned will stay with me; however, the curiosity it sparked about understanding why a patient is sick, not just treating what is visible, guided me to medicine.' },
-      { title: 'Community Volunteering', hours: 29, role: 'Various Roles', location: 'Denver Metro, CO', startDate: '10/04/2023', endDate: '06/20/2024', description: '' },
+      { title: 'Community Volunteering', hours: 42, role: 'Various Roles', location: 'Denver Metro, CO', startDate: '10/04/2023', ongoing: true, description: 'At the Food Bank of the Rockies, I sorted bell peppers by hand, pulling the rotten from the fresh (3 hrs). At A Precious Child, I organized donations and helped families find clothing, shoes, and bikes (18 hrs). I set up wildlife cameras in local parks for UWIN research with Dr. Laurel Hartley (4 hrs), coordinated research presentations at the 27th Annual RaCAS (4 hrs), judged student projects at the Denver Metro Regional Science & Engineering Fair (8 hrs), and made a baby blanket for a child at Children\u2019s Hospital through Biology Club (1 hr). On move-in day, I directed incoming students to their dorms and set up their IDs for CU Denver Housing (4 hrs).' },
     ],
   },
   {

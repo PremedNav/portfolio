@@ -639,6 +639,7 @@ export default function RecommendationPage() {
       'thankyoudrkim!': 'kim',
       'thankyoudrbull!': 'bull',
       'thankyouhadee!': 'hadee',
+      'hadee': 'hadee',
       'thankyoushelby&breck!': 'shelby-breck',
       'thankyoudr.kimbrough!': 'kimbrough',
       'thankyouprofessormodica!': 'modica',
@@ -1238,7 +1239,23 @@ export default function RecommendationPage() {
             )}
 
             {recipient === 'hadee' && (
-              <p><strong className="text-[#b0b0a4]">Hi Hadee</strong> — Thank you for letting me in without any hesitation, for talking to me kindly, and being understanding about my schedule. You've been one of the best mentors I've ever had. Seeing you as a provider for so many and being really understanding of patients and their situations will stick with me. I've learned lessons from you that I'll pass on to others as I continue my journey as a physician.</p>
+              <>
+                <p><strong className="text-[#b0b0a4]">Hi Hadee</strong> — Thank you for letting me in without any hesitation, for talking to me kindly, and being understanding about my schedule. You've been one of the best mentors I've ever had. Seeing you as a provider for so many and being really understanding of patients and their situations will stick with me. I've learned lessons from you that I'll pass on to others as I continue my journey as a physician.</p>
+                <div className="mt-4 inline-flex items-center gap-3 rounded-lg bg-yellow-300/10 p-4 ring-1 ring-yellow-300/30">
+                  <FaFileAlt className="text-2xl text-yellow-300" />
+                  <div className="flex flex-col">
+                    <span className="font-fk-screamer text-sm font-black uppercase tracking-wide text-[#fffffc]">Recommendation Packet</span>
+                    <span className="font-robert-regular text-xs text-[#8a8a85]">Full reference materials for your letter</span>
+                  </div>
+                  <a
+                    href="/hadee-recommendation-packet.pdf"
+                    download="Navtej-Singh-Recommendation-Packet.pdf"
+                    className="ml-4 rounded-md bg-yellow-300 px-4 py-2 font-fk-screamer text-xs font-black uppercase tracking-wide text-[#21211f] transition-all hover:bg-yellow-200"
+                  >
+                    Download PDF
+                  </a>
+                </div>
+              </>
             )}
 
             {recipient === 'shelby-breck' && (

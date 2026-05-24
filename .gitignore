@@ -42,3 +42,7 @@ cp3.html
 tsconfig.tsbuildinfo
 data/subscribers.json
 data/likes.json
+
+# Local tooling
+.claude/
+.wrangler/
